@@ -125,6 +125,10 @@ TODO
 
 YOLOv1 is a **single-stage** object detection model. Object detection is framed as a regression problem to spatially separated bounding boxes and associated class probabilities. A single neural network predicts bounding boxes and class probabilities directly from full images in one evaluation. Since the whole detection pipeline is a single network, it can be optimized end-to-end directly on detection performance.
 
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/596ae49e-22d6-4a11-85da-d89a50df9a3b" alt="yolo_v1" height="250"/>
+</p>
+
 ### How it works:
 * YOLO divides the input image into an S × S grid. If the center of an object falls into a grid cell, that grid cell is responsible for detecting that object.
 * Each grid cell predicts B bounding boxes and confidence scores for those boxes. These confidence scores reflect how
@@ -177,6 +181,10 @@ is responsible for each object. One predictor is assigned to be “responsible�
 
 YOLOv2 (or YOLO9000) is a single-stage real-time object detection model. It improves upon YOLOv1 in several ways, including the use of Darknet-19 as a backbone, batch normalization, use of a high-resolution classifier, multi-scale training, the use of dimension clusters, fine-grained features and direct location prediction to predict bounding boxes, and more
 
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/3956c34f-f205-4366-9cbb-83f2308689d6" alt="yolo_v2" height="250"/>
+</p>
+
 ### How it works:
 It works similar to the YOLOv1, the main differences include each predicted bbox has its own C class probabilities, so the predictions are encoded as an _S × S × (B ∗ (5 + C))_ tensor and added passtrough layer, dimension clusters prior and direct location prediction for easier training.
 Main improvements:
@@ -199,12 +207,37 @@ on higher resolution input. Then finetune the resulting network on detection. Th
 
 ### Training details:
 **Training for classification** - the network is trained on the standard ImageNet 1000 class classification dataset for 160 epochs using stochastic gradient descent (SGD) with a starting learning rate of 0.1, polynomial rate decay with a power of 4, weight decay of 0.0005 and momentum of 0.9. During training the standard data augmentation tricks are used, including random crops, rotations, and hue, saturation, and exposure shifts. As discussed above, after initial training on images at _224 × 224_ the model is finetuned at a larger size, _448_ for 10 epochs starting at learning rate of 0.001. After finetuning the model achieves a top-1 accuracy of 76.5% and a top-5 accuracy of 93.3%.
+
 **Training for detection** - for detection the last convolutional layer is removed and instead three _3 × 3_ convolutional layers are added (each with 1024 filters) and a final _1 × 1_ convolutional layer with the number of outputs needed for detection (for VOC 5 boxes are predicted, each with 5 coordinated and 20 classes, so 125 filters in total). The passtrough layer is also added from the final _3 × 3 × 512_ layer to the second to last convolutional layer so that the model can use fine grain features. The network is trained for 160 epochs with a starting
 learning rate of 0.001, dividing it by 10 at 60 and 90 epochs. The weight decay is 0.0005, momentum is 0.9 and data augmentation includes random crops, color shifting, and other similar to YOLO and SSD
 
 ## **YOLO v3**
 2018 | [paper](https://arxiv.org/pdf/1804.02767.pdf) | _YOLOv3: An Incremental Improvement_
-TODO
+YOLOv3 is a real-time, single-stage object detection model that builds on YOLOv2 with several improvements. Improvements include the use of a new backbone network, Darknet-53 that utilises residual connections, as well as some improvements to the bbox prediction step, and use of three different scales from which to extract features. Ultralytics implementation can be found [here](https://github.com/ultralytics/yolov3).
+
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/c86504c6-7712-4ceb-a358-279ae53ebb0e" alt="yolo_v3" height="300"/>
+</p>
+
+### How it works:
+* Similar to YOLOv2, the model outputs a tensor of size _S × S × (B ∗ (5 + C))_, but now the model outputs bboxes at three different scales
+* Different to previous versions, YOLOv3 uses multiple independent logistic classifiers rather than one softmax layer for each class. During training, they use binary cross-entropy loss in a one vs all setup (using a softmax imposes the assumption that each box has exactly one class which is often not the case - the multilabel approach better models the data)
+* The bigger backbone is used (DarkNet-53) for feature extraction - the architecture has alternative _1 × 1_ and _3 × 3_ convolution layers and skip/residual connections inspired by the ResNet model. Although DarkNet53 is smaller than ResNet101 or RestNet-152, it is faster and has equivalent or better performance
+* The idea of FPN (Feature Pyramid Networks) is added to leverage the benefit from all the prior computations and fine-grained features early on in the network
+* The bboxes anchors are defined using k-means (same as in YOLOv2), but YOLOv3 uses three prior boxes for different scales
+
+### Model architecture:
+* **Darknet-53 classifier** - The network is a hybrid approach between the network used in YOLOv2 (Darknet-19), and the residual networks. It uses successive _3 × 3_ and _1 × 1_ convolutional layers but now has some shortcut connections as well and is significantly larger (53 layers)
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/fb6d5b7d-9d6d-4c93-8fa1-314e76f96b2d" alt="darknet_53" height="400"/>
+</p>
+* **Detector** - From the base feature extractor several convolutional layers are added:
+	* The last of these predicts a _3-d_ tensor encoding bounding box, objectness, and class predictions. For COCO the predictions include 3 boxes at each scale so the tensor is _S × S × [3 ∗ (4 + 1 + 80)]_ for the 4 bbox offsets, 1 objectness prediction, and 80 class predictions
+ 	* Next the feature map from 2 layers previous is taken and is upsampled by 2x. The feature map from earlier point in the network is also taken and it is merged with the upsampled features using concatenation. This method allows to get more meaningful semantic information from the upsampled features and finer-grained information from the earlier feature map. On top of that a few more convolutional layers are added to process this combined feature map, and eventually predict a similar tensor (_S × S × [3 ∗ (4 + 1 + 80)]_), although now twice the size.
+  	* The same design if performed one more time to predict boxes for the final scale. Thus the predictions for the 3rd scale benefit from all the prior computation as well as fine-grained features from early on in the network.
+
+### Training details:
+The network is trained similar to YOLOv2
 
 ## **YOLO v4**
 2020 | [paper](https://arxiv.org/pdf/2004.10934.pdf) | _YOLOv4: Optimal Speed and Accuracy of Object Detection_
