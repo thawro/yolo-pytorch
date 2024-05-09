@@ -179,7 +179,7 @@ is responsible for each object. One predictor is assigned to be â€œresponsibleâ€
 ## **YOLO v2**
 2016 | [paper](https://arxiv.org/pdf/1612.08242.pdf) | _YOLO9000: Better, Faster, Stronger_
 
-YOLOv2 (or YOLO9000) is a single-stage real-time object detection model. It improves upon YOLOv1 in several ways, including the use of Darknet-19 as a backbone, batch normalization, use of a high-resolution classifier, multi-scale training, the use of dimension clusters, fine-grained features and direct location prediction to predict bounding boxes, and more
+YOLOv2 (or YOLO9000) is a single-stage real-time object detection model. It improves upon [_YOLOv1_](#yolo-v1) in several ways, including the use of Darknet-19 as a backbone, batch normalization, use of a high-resolution classifier, multi-scale training, the use of dimension clusters, fine-grained features and direct location prediction to predict bounding boxes, and more
 
 <p align="center">
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/3956c34f-f205-4366-9cbb-83f2308689d6" alt="yolo_v2" height="250"/>
@@ -213,7 +213,7 @@ learning rate of 0.001, dividing it by 10 at 60 and 90 epochs. The weight decay 
 
 ## **YOLO v3**
 2018 | [paper](https://arxiv.org/pdf/1804.02767.pdf) | _YOLOv3: An Incremental Improvement_
-YOLOv3 is a real-time, single-stage object detection model that builds on YOLOv2 with several improvements. Improvements include the use of a new backbone network, Darknet-53 that utilises residual connections, as well as some improvements to the bbox prediction step, and use of three different scales from which to extract features. Ultralytics implementation can be found [here](https://github.com/ultralytics/yolov3).
+_YOLOv3_ is a real-time, single-stage object detection model that builds on [_YOLOv2_](#yolo-v2) with several improvements. Improvements include the use of a new backbone network, Darknet-53 that utilises residual connections, as well as some improvements to the bbox prediction step, and use of three different scales from which to extract features. Ultralytics implementation can be found [here](https://github.com/ultralytics/yolov3).
 
 <p align="center">
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/c86504c6-7712-4ceb-a358-279ae53ebb0e" alt="yolo_v3" height="300"/>
@@ -250,16 +250,69 @@ TODO
 ## **YOLOv5**
 2020 | [code](https://github.com/ultralytics/yolov5)[docs](https://docs.ultralytics.com/yolov5/tutorials/architecture_description/) | _YOLOv5_
 
-YOLOv5 is built on top of the work of [YOLOv3](#yolo-v3) and YOLOv4. All the YOLOv5 models are composed of the same 3 components: _CSP-Darknet53_ as a backbone, _SPP_ and _PANet_ in the model neck and the head used in YOLOv4.
+YOLOv5 is built on top of the work of [_YOLO v3_](#yolo-v3) and [_YOLO v4_](#yolo-v4). All the YOLOv5 models are composed of the same 3 components: _CSP-Darknet53_ as a backbone, [_SPP_](#SPP) (**S**patial **P**yramid **P**ooling) and [_PANet_](#PAN) (**P**ath **A**ggregation **Net**works) in the model neck and the head used in YOLOv4. Most of the YOLOv5 blocks are improved using the [_CSP_](#CSP) (**C**ross **S**tage **P**artial) module.
+
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/d3563351-69f1-4a3c-ad5f-704d744b057b" alt="yolo_v5_short" height="400"/>
+</p>
 
 ### How it works:
 
 
 ### Model architecture:
-![yolo_v5](https://github.com/thawro/yolo-pytorch/assets/50373360/c7660fce-8a0c-41b5-a429-1ca77d0f597c)
+* **Bakcbone** - _CSP-Darknet53_ architecture based on Darknet53 from YOLOv3 to which the authors applied the Cross Stage Partial (_CSP_) network strategy.
+YOLO is a deep network, it uses residual and dense blocks in order to enable the flow of information to the deepest layers and to overcome the vanishing gradient problem. However one of the perks of using dense and residual blocks is the problem of redundant gradients. _CSPNet_ helps tackling this problem by truncating the gradient flow. According to the authors of CSP:
+
+> _CSP_ network preserves the advantage of _DenseNet's_ feature reuse characteristics and helps reducing the excessive amount of redundant gradient information by truncating the gradient flow.
+
+_YOLOv5_ employs _CSPNet_ strategy to partition the feature map of the base layer into two parts and then merges them through a cross-stage hierarchy as shown in the figure bellow
+
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/e7bf01c8-a015-4f49-a216-e3549a4c3612" alt="yolo_v5_CSP" height="400"/>
+</p>
+
+Applying this strategy comes with big advantages to YOLOv5, since it helps reducing the number of parameters and helps reducing an important amount of computation (less FLOPS) which lead to increasing the inference speed that is crucial parameter in real-time object detection models
+
+An example of yolov5L architecture:
+
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/c7660fce-8a0c-41b5-a429-1ca77d0f597c" alt="yolo_v5_L" height="400"/>
+</p>
+
+* **Neck** - YOLOv5 brought two major changes to the model neck. First a variant of Spatial Pyramid Pooling (_SPP_) has been used, and the Path Aggregation Network (_PANet_) has been modified by incorporating the _BottleNeckCSP_ in its architecture
+
+_PANet_ is a feature pyramid network, it has been used in previous version of YOLO (YOLOv4) to improve information flow and to help in the proper localization of pixels in the task of mask prediction. In YOLOv5 this network has been modified by applying the CSPNet strategy to it as shown in the network's architecture figure
+
+_SPP_ block performs an aggregation of the information that receives from the inputs and returns a fixed length output. Thus it has the advantage of significantly increasing the receptive field and segregating the most relevant context features without lowering the speed of the network. This block has been used in previous versions of YOLO (YOLOv3 and YOLOv4) to separate the most important features from the backbone, however in YOLOv5(6.0/6.1) SPPF has been used , which is just another variant of the SPP block, to improve the speed of the network (same outputs, but faster).
+
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/8f95fa80-0184-48c5-97fb-55a5c08f123a" alt="yolo_v5_SPP" height="400"/>
+</p>
+
+* **Head** - _YOLOv5_ uses the same head as _YOLOv3_ and _YOLOv4_. It is composed from three convolution layers that predicts the location of the bounding boxes _(x, y, height, width)_, the scores and the objects classes. The equation to compute the target coordinates for the bounding boxes have changed from previous versions, the difference is shown in the figure bellow.
+
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/8d62b83e-0916-4a2c-a37f-ae3e731f5301" alt="yolo_v5_head_eq" height="400"/>
+</p>
+
+* **Activation** - for YOLOv5 the authors went with _SiLU_ and _Sigmoid_ activation function. _SiLU_ stands for Sigmoid Linear Unit and it is also called the swish activation function. It has been used with the convolution operations in the hidden layers. While the Sigmoid activation function has been used with the convolution operations in the output layer
+
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/3e2142d1-4b9e-4816-b5d5-0aacb69a3bb9" alt="yolo_v5_activation" height="400"/>
+</p>
+
+### Loss function
+YOLOv5 returns three outputs: the classes of the detected objects, their bounding boxes and the objectness scores. Thus, it uses _BCE_ (Binary Cross Entropy) to compute the classes loss and the objectness loss. While [_CIoU_](#ciou) (Complete Intersection over Union) loss to compute the location loss. The formula for the final loss is given by the following equation
+
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/57d86a5a-2f08-4a34-a7bd-21fd39a9988b" alt="yolo_v5_loss" height="400"/>
+</p>
+
 
 ### Training details:
 
+* **Data augmentation** - TODO
+* 
 
 ## **Scaled YOLO v4**
 2021 | [paper](https://arxiv.org/pdf/2011.08036.pdf) | _Scaled-YOLOv4: Scaling Cross Stage Partial Network_
