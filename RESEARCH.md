@@ -42,6 +42,7 @@
 ---
 
 
+
 # Components
 
 ## **SPP**
@@ -245,6 +246,14 @@ The network is trained similar to YOLOv2
 ## **YOLO v4**
 2020 | [paper](https://arxiv.org/pdf/2004.10934.pdf) | _YOLOv4: Optimal Speed and Accuracy of Object Detection_
 TODO
+
+
+### How it works:
+
+### Model architecture:
+
+### Training details:
+
 
 
 ## **YOLOv5**
