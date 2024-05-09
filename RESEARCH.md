@@ -250,7 +250,7 @@ TODO
 ## **YOLOv5**
 2020 | [code](https://github.com/ultralytics/yolov5)[docs](https://docs.ultralytics.com/yolov5/tutorials/architecture_description/) | _YOLOv5_
 
-YOLOv5 is built on top of the work of [YOLOv3](#yolo-yolo-v3) and YOLOv4. All the YOLOv5 models are composed of the same 3 components: _CSP-Darknet53_ as a backbone, _SPP_ and _PANet_ in the model neck and the head used in YOLOv4.
+YOLOv5 is built on top of the work of [YOLOv3](#yolo-v3) and YOLOv4. All the YOLOv5 models are composed of the same 3 components: _CSP-Darknet53_ as a backbone, _SPP_ and _PANet_ in the model neck and the head used in YOLOv4.
 
 ### How it works:
 
