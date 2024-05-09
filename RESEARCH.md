@@ -348,12 +348,12 @@ The objectness losses of the three prediction layers (P3, P4, P5) are weighted d
     3. Assign the matched anchor to the appropriate cells, keeping in mind that due to the revised center point offset, a ground truth box can be assigned to more than one anchor. Because the center point offset range is adjusted from _[0, 1]_ to _[-0.5, 1.5]_. GT Box can be assigned to more anchors.
 
 <p align="center">
-  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/96994899-f1f9-46fe-8ad6-e3f3071208b9" alt="yolo_v5_target_build_1" height="200"/>
-  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/fce7cd74-24e4-4351-ac53-841f12137e9a" alt="yolo_v5_target_build_2" height="200"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/96994899-f1f9-46fe-8ad6-e3f3071208b9" alt="yolo_v5_target_build_1" height="150"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/fce7cd74-24e4-4351-ac53-841f12137e9a" alt="yolo_v5_target_build_2" height="150"/>
 </p>
 
 <p align="center">
-  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/c65841ad-51c0-47f5-af45-fcfe9eee20bd" alt="yolo_v5_target_build_3" height="200"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/c65841ad-51c0-47f5-af45-fcfe9eee20bd" alt="yolo_v5_target_build_3" height="250"/>
 </p>
 
 <p align="center">
@@ -361,7 +361,7 @@ The objectness losses of the three prediction layers (P3, P4, P5) are weighted d
 </p>
 
 <p align="center">
-  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/e47185fd-3a7d-4896-b0ba-ecb2fbcf5a19" alt="yolo_v5_target_build_5" height="200"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/e47185fd-3a7d-4896-b0ba-ecb2fbcf5a19" alt="yolo_v5_target_build_5" height="280"/>
 </p>
 
 
