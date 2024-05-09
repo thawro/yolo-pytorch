@@ -42,7 +42,7 @@
 ---
 
 
-# Used in YOLO Research
+# Components
 
 ## **SPP**
 2015 | [paper](https://arxiv.org/pdf/1406.4729.pdf) | _Spatial Pyramid Pooling in Deep Convolutional Networks for Visual Recognition_
@@ -118,7 +118,7 @@ TODO
 
 ---
 
-# YOLO Research
+# YOLO
 
 ## **YOLO v1**
 2016 | [paper](https://arxiv.org/pdf/1506.02640.pdf) | _You Only Look Once: Unified, Real-Time Object Detection_
@@ -241,13 +241,25 @@ YOLOv3 is a real-time, single-stage object detection model that builds on YOLOv2
 ### Training details:
 The network is trained similar to YOLOv2
 
+
 ## **YOLO v4**
 2020 | [paper](https://arxiv.org/pdf/2004.10934.pdf) | _YOLOv4: Optimal Speed and Accuracy of Object Detection_
 TODO
 
+
 ## **YOLOv5**
-2020 | [paper](https://github.com/ultralytics/yolov5) | _YOLOv5_
-TODO
+2020 | [code](https://github.com/ultralytics/yolov5)[docs](https://docs.ultralytics.com/yolov5/tutorials/architecture_description/) | _YOLOv5_
+
+YOLOv5 is built on top of the work of [YOLOv3](#yolo-yolo-v3) and YOLOv4. All the YOLOv5 models are composed of the same 3 components: _CSP-Darknet53_ as a backbone, _SPP_ and _PANet_ in the model neck and the head used in YOLOv4.
+
+### How it works:
+
+
+### Model architecture:
+![yolo_v5](https://github.com/thawro/yolo-pytorch/assets/50373360/c7660fce-8a0c-41b5-a429-1ca77d0f597c)
+
+### Training details:
+
 
 ## **Scaled YOLO v4**
 2021 | [paper](https://arxiv.org/pdf/2011.08036.pdf) | _Scaled-YOLOv4: Scaling Cross Stage Partial Network_
