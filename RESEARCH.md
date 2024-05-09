@@ -216,7 +216,7 @@ learning rate of 0.001, dividing it by 10 at 60 and 90 epochs. The weight decay 
 _YOLOv3_ is a real-time, single-stage object detection model that builds on [_YOLOv2_](#yolo-v2) with several improvements. Improvements include the use of a new backbone network, Darknet-53 that utilises residual connections, as well as some improvements to the bbox prediction step, and use of three different scales from which to extract features. Ultralytics implementation can be found [here](https://github.com/ultralytics/yolov3).
 
 <p align="center">
-  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/c86504c6-7712-4ceb-a358-279ae53ebb0e" alt="yolo_v3" height="300"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/c86504c6-7712-4ceb-a358-279ae53ebb0e" alt="yolo_v3" height="400"/>
 </p>
 
 ### How it works:
@@ -255,13 +255,13 @@ YOLOv5 is built on top of the work of [_YOLO v3_](#yolo-v3) and [_YOLO v4_](#yol
 The key changes in YOLOv5 that didn't exist in previous version are: applying the CSPNet to the Darknet53 backbone, the integration of the Focus layer (conv 6x6) to the CSP-Darknet53 backbone, replacing the SPP block by the SPPF block in the model neck and applying the CSPNet strategy on the PANet model. YOLOv5 and YOLOv4 tackled the problem of grid sensitivity and can now detect easily bounding boxes having center points in the edges. Finally, YOLOv5 is lighter and faster than previous versions.
 
 <p align="center">
-  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/d3563351-69f1-4a3c-ad5f-704d744b057b" alt="yolo_v5_short" height="400"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/d3563351-69f1-4a3c-ad5f-704d744b057b" alt="yolo_v5_short" height="350"/>
 </p>
 
 ### How it works:
 
 <p align="center">
-  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/821b0953-8822-4cfe-bde4-fdfcfc6f2fa1" alt="yolo_v5_brief" height="400"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/821b0953-8822-4cfe-bde4-fdfcfc6f2fa1" alt="yolo_v5_brief" height="200"/>
 </p>
 
 * The image is processed through an input layer (input) and sent to the backbone for feature extraction.
@@ -275,7 +275,7 @@ The key changes in YOLOv5 that didn't exist in previous version are: applying th
 An example of yolov5L architecture:
 
 <p align="center">
-  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/c7660fce-8a0c-41b5-a429-1ca77d0f597c" alt="yolo_v5_L" height="400"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/c7660fce-8a0c-41b5-a429-1ca77d0f597c" alt="yolo_v5_L" height="600"/>
 </p>
 
 * **Bakcbone** - _CSP-Darknet53_ architecture based on Darknet53 from YOLOv3 to which the authors applied the Cross Stage Partial (_CSP_) network strategy.
@@ -286,7 +286,7 @@ YOLO is a deep network, it uses residual and dense blocks in order to enable the
 _YOLOv5_ employs _CSPNet_ strategy to partition the feature map of the base layer into two parts and then merges them through a cross-stage hierarchy as shown in the figure bellow
 
 <p align="center">
-  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/e7bf01c8-a015-4f49-a216-e3549a4c3612" alt="yolo_v5_CSP" height="400"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/e7bf01c8-a015-4f49-a216-e3549a4c3612" alt="yolo_v5_CSP" height="250"/>
 </p>
 
 Applying this strategy comes with big advantages to YOLOv5, since it helps reducing the number of parameters and helps reducing an important amount of computation (less FLOPS) which lead to increasing the inference speed that is crucial parameter in real-time object detection models
@@ -304,7 +304,7 @@ _SPP_ block performs an aggregation of the information that receives from the in
 * **Head** - _YOLOv5_ uses the same head as _YOLOv3_ and _YOLOv4_. It is composed from three convolution layers that predicts the location of the bounding boxes _(x, y, height, width)_, the scores and the objects classes. The equation to compute the target coordinates for the bounding boxes have changed from previous versions, the difference is shown in the figure bellow.
 
 <p align="center">
-  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/8d62b83e-0916-4a2c-a37f-ae3e731f5301" alt="yolo_v5_head_eq" height="200"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/8d62b83e-0916-4a2c-a37f-ae3e731f5301" alt="yolo_v5_head_eq" height="150"/>
 </p>
 
 * **Activation** - for YOLOv5 the authors went with _SiLU_ and _Sigmoid_ activation function. _SiLU_ stands for Sigmoid Linear Unit and it is also called the swish activation function. It has been used with the convolution operations in the hidden layers. While the Sigmoid activation function has been used with the convolution operations in the output layer
@@ -323,13 +323,13 @@ YOLOv5 returns three outputs: the classes of the detected objects, their boundin
 The formula for the final loss is given by the following equation
 
 <p align="center">
-  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/57d86a5a-2f08-4a34-a7bd-21fd39a9988b" alt="yolo_v5_loss"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/57d86a5a-2f08-4a34-a7bd-21fd39a9988b" alt="yolo_v5_loss" height="40"/>
 </p>
 
 The objectness losses of the three prediction layers (P3, P4, P5) are weighted differently. The balance weights are _[4.0, 1.0, 0.4]_ respectively. This approach ensures that the predictions at different scales contribute appropriately to the total loss.
 
 <p align="center">
-  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/d1aaf623-29bf-45dd-9574-7d103a260646" alt="yolo_v5_loss_balance"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/d1aaf623-29bf-45dd-9574-7d103a260646" alt="yolo_v5_loss_balance" height="70"/>
 </p>
 
 ### Other improvements
