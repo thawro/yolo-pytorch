@@ -1,64 +1,63 @@
 # YOLO papers
-| Link | Year | Title | Approach | Features |
-| ----: | :--: | :----: | :----: | :----- |
-| [paper](https://arxiv.org/pdf/1506.02640.pdf) | 2016 | You Only Look Once: Unified, Real-Time Object Detection | YOLOv1 | TODO |
-| [paper](https://arxiv.org/pdf/1612.08242.pdf) | 2016 | YOLO9000: Better, Faster, Stronger | YOLOv2, YOLO9000 | TODO |
-| [paper](https://arxiv.org/pdf/1804.02767.pdf), [video](https://www.youtube.com/watch?v=Grir6TZbc1M), [blog](https://blog.paperspace.com/how-to-implement-a-yolo-object-detector-in-pytorch/), [code](https://github.com/ultralytics/yolov3) | 2018 | YOLOv3: An Incremental Improvement | YOLOv3 | TODO |
-| [paper](https://arxiv.org/pdf/1904.04620) | 2019 | Gaussian YOLOv3: An Accurate and Fast Object Detector Using Localization Uncertainty for Autonomous Driving | Gaussian YOLO | TODO | 
-| [paper](https://arxiv.org/pdf/1904.04620) | 2020 | PP-YOLO: An Effective and Efficient Implementation of Object Detector | PP-YOLO | TODO | 
-| [paper](https://arxiv.org/pdf/2004.10934.pdf) , [blog](https://alexeyab84.medium.com/yolov4-the-most-accurate-real-time-neural-network-on-ms-coco-dataset-73adfd3602fe), [code_1](https://github.com/WongKinYiu/PyTorch_YOLOv4), [code_2](https://github.com/Tianxiaomo/pytorch-YOLOv4) | 2020 | YOLOv4: Optimal Speed and Accuracy of Object Detection | YOLOv4 | TODO |
-| [code](https://github.com/ultralytics/yolov5) | 2020 | YOLOv5 | YOLOv5 | TODO |
-| [paper](https://arxiv.org/pdf/2011.08036.pdf) , [blog](https://alexeyab84.medium.com/scaled-yolo-v4-is-the-best-neural-network-for-object-detection-on-ms-coco-dataset-39dfa22fa982), [code](https://github.com/WongKinYiu/ScaledYOLOv4) | 2021 | Scaled-YOLOv4: Scaling Cross Stage Partial Network |  Scaled-YOLOv4 | TODO |
-| [paper](https://arxiv.org/pdf/2105.04206), [code](https://github.com/WongKinYiu/yolor) | 2021 | You Only Learn One Representation: Unified Network for Multiple Tasks | YOLOR | TODO |
-| [paper](https://arxiv.org/pdf/2107.08430.pdf) | 2021 | YOLOX: Exceeding YOLO Series in 2021 | YOLOX | TODO |
-| [paper](https://arxiv.org/pdf/2207.02696.pdf), [code](https://github.com/WongKinYiu/yolov7) | 2022 | YOLOv7: Trainable bag-of-freebies sets new state-of-the-art for real-time object detectors | YOLOv7 | TODO |
-| [paper](https://arxiv.org/abs/2209.02976), [code](https://github.com/meituan/YOLOv6) | 2022 | YOLOv6: A Single-Stage Object Detection Framework for Industrial Applications | YOLOv6 | TODO |
-| [paper](https://arxiv.org/pdf/2301.05586.pdf) | 2023 | YOLOv6 v3.0: A Full-Scale Reloading | YOLOv6 v3.0 | TODO |
-| [paper](https://arxiv.org/pdf/2304.05552) | 2023 | DynamicDet: A Unified Dynamic Architecture for Object Detection | Dynamic YOLOv7 | TODO |
-| [paper](https://arxiv.org/pdf/2304.00501.pdf) | 2023 | A comprehensive review of YOLO: from YOLOv1 and beyond | Review | TODO |
-| [code](https://github.com/ultralytics/ultralytics) | 2023 | YOLOv8 | YOLOv8 | TODO |
-| [paper](https://arxiv.org/pdf/2402.13616), [code](https://github.com/WongKinYiu/yolov9) | 2024 | YOLOv9: Learning What You Want to Learn Using Programmable Gradient Information | YOLOv9 | TODO |
+| Link | Year | Title | Approach |
+| ----: | :--: | :----: | :----- |
+| [paper](https://arxiv.org/pdf/1506.02640.pdf) | 2016 | You Only Look Once: Unified, Real-Time Object Detection | YOLOv1 |
+| [paper](https://arxiv.org/pdf/1612.08242.pdf) | 2016 | YOLO9000: Better, Faster, Stronger | YOLOv2, YOLO9000 |
+| [paper](https://arxiv.org/pdf/1804.02767.pdf), [video](https://www.youtube.com/watch?v=Grir6TZbc1M), [blog](https://blog.paperspace.com/how-to-implement-a-yolo-object-detector-in-pytorch/), [code](https://github.com/ultralytics/yolov3) | 2018 | YOLOv3: An Incremental Improvement | YOLOv3 |
+| [paper](https://arxiv.org/pdf/1904.04620) | 2019 | Gaussian YOLOv3: An Accurate and Fast Object Detector Using Localization Uncertainty for Autonomous Driving | Gaussian YOLO | 
+| [paper](https://arxiv.org/pdf/1904.04620) | 2020 | PP-YOLO: An Effective and Efficient Implementation of Object Detector | PP-YOLO | 
+| [paper](https://arxiv.org/pdf/2004.10934.pdf) , [blog](https://alexeyab84.medium.com/yolov4-the-most-accurate-real-time-neural-network-on-ms-coco-dataset-73adfd3602fe), [code_1](https://github.com/WongKinYiu/PyTorch_YOLOv4), [code_2](https://github.com/Tianxiaomo/pytorch-YOLOv4) | 2020 | YOLOv4: Optimal Speed and Accuracy of Object Detection | YOLOv4 |
+| [code](https://github.com/ultralytics/yolov5) | 2020 | YOLOv5 | YOLOv5 |
+| [paper](https://arxiv.org/pdf/2011.08036.pdf) , [blog](https://alexeyab84.medium.com/scaled-yolo-v4-is-the-best-neural-network-for-object-detection-on-ms-coco-dataset-39dfa22fa982), [code](https://github.com/WongKinYiu/ScaledYOLOv4) | 2021 | Scaled-YOLOv4: Scaling Cross Stage Partial Network |  Scaled-YOLOv4 |
+| [paper](https://arxiv.org/pdf/2105.04206), [code](https://github.com/WongKinYiu/yolor) | 2021 | You Only Learn One Representation: Unified Network for Multiple Tasks | YOLOR |
+| [paper](https://arxiv.org/pdf/2107.08430.pdf) | 2021 | YOLOX: Exceeding YOLO Series in 2021 | YOLOX |
+| [paper](https://arxiv.org/pdf/2207.02696.pdf), [code](https://github.com/WongKinYiu/yolov7) | 2022 | YOLOv7: Trainable bag-of-freebies sets new state-of-the-art for real-time object detectors | YOLOv7 |
+| [paper](https://arxiv.org/abs/2209.02976), [code](https://github.com/meituan/YOLOv6) | 2022 | YOLOv6: A Single-Stage Object Detection Framework for Industrial Applications | YOLOv6 |
+| [paper](https://arxiv.org/pdf/2301.05586.pdf) | 2023 | YOLOv6 v3.0: A Full-Scale Reloading | YOLOv6 v3.0 |
+| [paper](https://arxiv.org/pdf/2304.05552) | 2023 | DynamicDet: A Unified Dynamic Architecture for Object Detection | Dynamic YOLOv7 |
+| [paper](https://arxiv.org/pdf/2304.00501.pdf) | 2023 | A comprehensive review of YOLO: from YOLOv1 and beyond | Review |
+| [code](https://github.com/ultralytics/ultralytics) | 2023 | YOLOv8 | YOLOv8 |
+| [paper](https://arxiv.org/pdf/2402.13616), [code](https://github.com/WongKinYiu/yolov9) | 2024 | YOLOv9: Learning What You Want to Learn Using Programmable Gradient Information | YOLOv9 |
 
 # Used in YOLO papers:
-| Link | Year | Title | Approach | Features | Used in |
-| ---: | :--: | :----: | :-----: | :--- | --- |
-| [paper](https://arxiv.org/pdf/1512.03385) | 2015 | Deep Residual Learning for Image Recognition | ResNet | TODO | TODO |
-| [paper](https://arxiv.org/pdf/1406.4729.pdf) | 2015 | Spatial Pyramid Pooling in Deep Convolutional Networks for Visual Recognition | SPP | TODO | v4 |
-| [paper](https://arxiv.org/pdf/1611.05431) | 2017 | Aggregated Residual Transformations for Deep Neural Networks | ResNext | TODO | TODO |
-| [paper](https://arxiv.org/pdf/1612.03144.pdf) | 2017 | Feature Pyramid Networks for Object Detection | FPN | TODO | v4 |
-| [paper](https://arxiv.org/pdf/1704.04503.pdf) | 2017 | Improving Object Detection With One Line of Code | Soft NMS | TODO | v4 |
-| [paper](https://arxiv.org/pdf/1608.03983.pdf) | 2017 | SGDR: Stochastic Gradient Descent with Warm Restarts | Cosine Annealing | TODO | v4 |
-| [paper](https://arxiv.org/pdf/1810.12890.pdf) | 2018 | DropBlock: A regularization method for convolutional networks | DropBlock | TODO | v4 |
-| [paper](http://arxiv.org/pdf/1710.09412) | 2018 | MixUp: Beyond Empirical Risk Minimization | MixUp | TODO | X |
-| [paper](https://arxiv.org/pdf/1708.02002v2.pdf) | 2018 | Focal Loss for Dense Object Detection | Focal Loss / RetinaNet | TODO | v4 |
-| [paper](https://arxiv.org/pdf/1911.08287.pdf) | 2018 | Distance-IoU Loss: Faster and Better Learning for Bounding Box Regression | DIoU | TODO | v4 |
-| [paper](https://arxiv.org/vc/arxiv/papers/1908/1908.08681v1.pdf) | 2019 | Mish: A Self Regularized Non-Monotonic Neural Activation Function | Mish | TODO | v4 |
-| [paper](https://arxiv.org/pdf/1803.01534v4.pdf) | 2018 | Path Aggregation Network for Instance Segmentation | PAN | TODO | v6 |
-| [paper](https://arxiv.org/pdf/1911.11929.pdf) | 2019 | CSPNet: A new backbone that can enhance learning capability of CNN | CSP | TODO | v6, v9 |
-| [paper](https://arxiv.org/pdf/1912.02424) | 2020 | Bridging the Gap Between Anchor-based and Anchor-free Detection via Adaptive Training Sample Selection | ATSS | TODO | v6.3 |
-| [paper](https://arxiv.org/pdf/1911.09070) | 2020 | EfficientDet: Scalable and Efficient Object Detection | EfficientDet | TODO | v6.3 |
-| [paper](https://arxiv.org/pdf/2101.03697.pdf) | 2021 | RepVGG: Making VGG-style ConvNets Great Again | RepVGG | TODO | v6 |
-| [paper](https://arxiv.org/pdf/2211.04800) | 2022 | Designing Network Design Strategies Through Gradient Path Analysis | ELAN | TODO | v9 |
-| [paper](https://arxiv.org/pdf/2012.01724) | 2023 | Parallel Residual Bi-Fusion Feature Pyramid Network For Accurate Single-Shot Object Detection | PRB-FPN | TODO | v6.3 |
+| Link | Year | Title | Approach | Used in |
+| ---: | :--: | :----: | :-----: | :--- |
+| [paper](https://arxiv.org/pdf/1406.4729.pdf) | 2015 | Spatial Pyramid Pooling in Deep Convolutional Networks for Visual Recognition | SPP | v4 |
+| [paper](https://arxiv.org/pdf/1611.05431) | 2017 | Aggregated Residual Transformations for Deep Neural Networks | ResNext | TODO |
+| [paper](https://arxiv.org/pdf/1612.03144.pdf) | 2017 | Feature Pyramid Networks for Object Detection | FPN | v4 |
+| [paper](https://arxiv.org/pdf/1704.04503.pdf) | 2017 | Improving Object Detection With One Line of Code | Soft NMS | v4 |
+| [paper](https://arxiv.org/pdf/1608.03983.pdf) | 2017 | SGDR: Stochastic Gradient Descent with Warm Restarts | Cosine Annealing | v4 |
+| [paper](https://arxiv.org/pdf/1810.12890.pdf) | 2018 | DropBlock: A regularization method for convolutional networks | DropBlock | v4 |
+| [paper](http://arxiv.org/pdf/1710.09412) | 2018 | MixUp: Beyond Empirical Risk Minimization | MixUp | X |
+| [paper](https://arxiv.org/pdf/1708.02002v2.pdf) | 2018 | Focal Loss for Dense Object Detection | Focal Loss / RetinaNet | v4 |
+| [paper](https://arxiv.org/pdf/1911.08287.pdf) | 2018 | Distance-IoU Loss: Faster and Better Learning for Bounding Box Regression | DIoU | v4 |
+| [paper](https://arxiv.org/vc/arxiv/papers/1908/1908.08681v1.pdf) | 2019| Mish: A Self Regularized Non-Monotonic Neural Activation Function | Mish | v4 |
+| [paper](https://arxiv.org/pdf/1803.01534v4.pdf) | 2018 | Path Aggregation Network for Instance Segmentation | PAN | v6 |
+| [paper](https://arxiv.org/pdf/1911.11929.pdf) | 2019 | CSPNet: A new backbone that can enhance learning capability of CNN | CSP | v6, v9 |
+| [paper](https://arxiv.org/pdf/1912.02424) | 2020 | Bridging the Gap Between Anchor-based and Anchor-free Detection via Adaptive Training Sample Selection | ATSS | v6.3 |
+| [paper](https://arxiv.org/pdf/1911.09070) | 2020 | EfficientDet: Scalable and Efficient Object Detection | EfficientDet | v6.3 |
+| [paper](https://arxiv.org/pdf/2101.03697.pdf) | 2021 | RepVGG: Making VGG-style ConvNets Great Again | RepVGG | v6 |
+| [paper](https://arxiv.org/pdf/2211.04800) | 2022 | Designing Network Design Strategies Through Gradient Path Analysis | ELAN | v9 |
+| [paper](https://arxiv.org/pdf/2012.01724) | 2023 | Parallel Residual Bi-Fusion Feature Pyramid Network For Accurate Single-Shot Object Detection | PRB-FPN | v6.3 |
 
 
 # Recommended papers before diving into object detection
-| Link | Year | Title | Approach | Features |
-| ---: | :--: | :---: | :---: | --- |
-| [paper](https://arxiv.org/pdf/1409.4842) | 2014 | Going deeper with convolutions | GoogLeNet/InceptionV1 | TODO |
-| [paper](https://arxiv.org/pdf/1512.00567) | 2015 | Rethinking the Inception Architecture for Computer Vision | InceptionV2/V3 | TODO |
-| [paper](https://arxiv.org/pdf/1512.03385) | 2015 | Deep Residual Learning for Image Recognition | ResNet | TODO |
-| [paper](https://arxiv.org/pdf/1602.07261) | 2016 | Inception-v4, Inception-ResNet and the Impact of Residual Connections on Learning | InceptionV4 | TODO |
+| Link | Year | Title | Approach |
+| ---: | :--: | :---: | :--- |
+| [paper](https://arxiv.org/pdf/1409.4842) | 2014 | Going deeper with convolutions | GoogLeNet/InceptionV1 |
+| [paper](https://arxiv.org/pdf/1512.00567) | 2015 | Rethinking the Inception Architecture for Computer Vision | InceptionV2/V3 |
+| [paper](https://arxiv.org/pdf/1512.03385) | 2015 | Deep Residual Learning for Image Recognition | ResNet |
+| [paper](https://arxiv.org/pdf/1602.07261) | 2016 | Inception-v4, Inception-ResNet and the Impact of Residual Connections on Learning | InceptionV4 |
 | [paper](https://arxiv.org/pdf/1602.07360) | 2016 | SqueezeNet: AlexNet-level accuracy with 50x fewer parameters and <0.5MB model size | SqueezeNet |
-| [paper](https://arxiv.org/pdf/1605.07146v4) | 2017 | Wide Residual Networks | WideResNet | TODO |
-| [paper](https://arxiv.org/pdf/1611.05431) | 2017 | Aggregated Residual Transformations for Deep Neural Networks | ResNext | TODO |
-| [paper](https://arxiv.org/pdf/1704.04861) | 2017 | MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications | MobileNetV1 | TODO |
-| [paper](https://arxiv.org/pdf/1807.06521.pdf) | 2018 | CBAM: Convolutional Block Attention Module | CBAM / SAM | TODO |
-| [paper](https://arxiv.org/pdf/1608.06993v5) | 2018 | Densely Connected Convolutional Networks | DenseNet | TODO |
-| [paper](https://arxiv.org/pdf/1801.04381) | 2019 | MobileNetV2: Inverted Residuals and Linear Bottlenecks | MobileNetV2 | TODO |
-| [paper](https://arxiv.org/pdf/1905.02244) | 2019 | Searching for MobileNetV3 | MobileNetV3 | TODO |
-| [paper](https://arxiv.org/pdf/1709.01507) | 2019 | Squeeze-and-Excitation Networks | SE | TODO |
-| [paper](https://arxiv.org/pdf/1905.11946v5.pdf) | 2020 | EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks | EfficientNet | TODO |
+| [paper](https://arxiv.org/pdf/1605.07146v4) | 2017 | Wide Residual Networks | WideResNet |
+| [paper](https://arxiv.org/pdf/1611.05431) | 2017 | Aggregated Residual Transformations for Deep Neural Networks | ResNext |
+| [paper](https://arxiv.org/pdf/1704.04861) | 2017 | MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications | MobileNetV1 |
+| [paper](https://arxiv.org/pdf/1807.06521.pdf) | 2018 | CBAM: Convolutional Block Attention Module | CBAM / SAM |
+| [paper](https://arxiv.org/pdf/1608.06993v5) | 2018 | Densely Connected Convolutional Networks | DenseNet |
+| [paper](https://arxiv.org/pdf/1801.04381) | 2019 | MobileNetV2: Inverted Residuals and Linear Bottlenecks | MobileNetV2 |
+| [paper](https://arxiv.org/pdf/1905.02244) | 2019 | Searching for MobileNetV3 | MobileNetV3 |
+| [paper](https://arxiv.org/pdf/1709.01507) | 2019 | Squeeze-and-Excitation Networks | SE |
+| [paper](https://arxiv.org/pdf/1905.11946v5.pdf) | 2020 | EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks | EfficientNet |
 
 ---
 
