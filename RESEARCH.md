@@ -243,7 +243,7 @@ DropBlock is a structured form of dropout, that is particularly effective to reg
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/d8718292-fb1e-44f8-9103-4034e1b73ade" alt="drop_block" height="350"/>
 </p>
 
-DropBlock is inspired by [Cutout](), a data augmentation method where parts of the input examples are zeroed out. DropBlock generalizes Cutout by applying Cutout at every feature map in a convolutional networks. In our experiments, having a fixed zero-out ratio for DropBlock during training is not as robust as having an increasing schedule for the ratio during training. In other words, it’s better to set the DropBlock ratio to be small initially during training, and linearly increase it over time during training.
+DropBlock is inspired by [Cutout](https://arxiv.org/pdf/1708.04552), a data augmentation method where parts of the input examples are zeroed out. DropBlock generalizes Cutout by applying Cutout at every feature map in a convolutional networks. In our experiments, having a fixed zero-out ratio for DropBlock during training is not as robust as having an increasing schedule for the ratio during training. In other words, it’s better to set the DropBlock ratio to be small initially during training, and linearly increase it over time during training.
 
 DropBlock is a simple method similar to dropout. Its main difference from dropout is that it drops contiguous regions from a feature map of a layer instead of dropping out independent random units. Pseudocode of DropBlock is shown below. 
 
