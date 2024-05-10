@@ -51,7 +51,7 @@
 | [paper](https://arxiv.org/pdf/1512.00567) | 2015 | Rethinking the Inception Architecture for Computer Vision | InceptionV2/V3 | TODO |
 | [paper](https://arxiv.org/pdf/1512.03385) | 2015 | Deep Residual Learning for Image Recognition | ResNet | TODO |
 | [paper](https://arxiv.org/pdf/1602.07261) | 2016 | Inception-v4, Inception-ResNet and the Impact of Residual Connections on Learning | InceptionV4 | TODO |
-| [paper](https://arxiv.org/pdf/1602.07360) | 2016 | SqueezeNet: AlexNet-level accuracy with 50x fewer parameters and <0.5MB model size | TODO |
+| [paper](https://arxiv.org/pdf/1602.07360) | 2016 | SqueezeNet: AlexNet-level accuracy with 50x fewer parameters and <0.5MB model size | SqueezeNet |
 | [paper](https://arxiv.org/pdf/1605.07146v4) | 2017 | Wide Residual Networks | WideResNet | TODO |
 | [paper](https://arxiv.org/pdf/1611.05431) | 2017 | Aggregated Residual Transformations for Deep Neural Networks | ResNext | TODO |
 | [paper](https://arxiv.org/pdf/1704.04861) | 2017 | MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications | MobileNetV1 | TODO |
