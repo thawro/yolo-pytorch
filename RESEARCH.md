@@ -567,14 +567,14 @@ The biggest difference between image classification and object detection is that
 * **Neck** - in order to effectively reduce the amount of computation, [CSP](https://arxiv.org/pdf/1911.11929) is applied to the [PAN](https://arxiv.org/pdf/1803.01534) architecture in YOLOv4. The computation list of a PAN architecture is illustrated below (left). It mainly integrates the features coming from different feature pyramids, and then passes through two sets of reversed Darknet residual layer without shortcut connections. After applying [CSP](https://arxiv.org/pdf/1911.11929) (right), the computation is cut down by 40% and the neck is called CSPPAN.
 
 <p align="center">
-  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/dfa8d3b9-34d6-4244-a370-a3f2834f9037" alt="reversed_CSP_dark_layers_SPP" height="350"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/dfa8d3b9-34d6-4244-a370-a3f2834f9037" alt="reversed_CSP_dark_layers_SPP" height="300"/>
 </p>
 
 * **SPP** - the [SPP](https://arxiv.org/pdf/1406.4729) module was originally inserted in the middle position of the first computation list group of the neck. Therefore, in Scaled YOLOv4, the SPP is also inserted in the middle position of the first computation list group of the CSPPAN
 
 Improvements in Scaled YOLOv4 over YOLOv4:
 * Improved network architecture - backbone is optimized and Neck (PAN) uses CSP connections and Mish activation
-* Exponential Moving Average (EMA) is used during training — this is a special case of Stochastic Weight Averaging ([SWA](https://pytorch.org/blog/pytorch-1.6-now-includes-stochastic-weight-averaging/))
+* Exponential Moving Average (EMA) is used during training — this is a special case of Stochastic Weight Averaging ([SWA](https://arxiv.org/pdf/1803.05407), [SWA-PyTorch](https://pytorch.org/blog/pytorch-1.6-now-includes-stochastic-weight-averaging/))
 * Multiresolution - For each resolution of the network, a separate neural network is trained (in YOLOv4, only one neural network was trained for all resolutions)
 * Improved objectness normalizers in prediction layers
 * Changed activations for Width and Height, which allows faster network training
@@ -584,7 +584,7 @@ Improvements in Scaled YOLOv4 over YOLOv4:
 YOLOv4-tiny is designed for low-end GPU device. The _CSPOSANet_ with _PCB_ (Partial in Computational Block) architecture is used as backbone. Growth rate (_g_) is set to _b/2_  (_b_ - base width) and it grows to _b/2 + kg = 2b_ at the end (_k_ - number of layers). Through calculation,  _k = 3_ is set, and its architecture and the computational block of YOLOv4-tiny is shown below. As for the number of channels of each stage and the part of neck, the design of YOLOv3-tiny is followed.
 
 <p align="center">
-  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/81da6cf6-6ce8-4e41-a5d4-aa47038c4b17" alt="yolo_v4_tiny" height="350"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/81da6cf6-6ce8-4e41-a5d4-aa47038c4b17" alt="yolo_v4_tiny" height="300"/>
 </p>
 
 #### YOLOv4-large
@@ -593,7 +593,7 @@ YOLOv4-large is designed for cloud GPU, the main purpose is to achieve high accu
 
 
 <p align="center">
-  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/9c5e0666-d82d-4944-8877-889783e02090" alt="yolo_v4_large" height="350"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/9c5e0666-d82d-4944-8877-889783e02090" alt="yolo_v4_large" height="400"/>
 </p>
 
 ### Training details
@@ -609,7 +609,7 @@ The models are trained directly on MS COCO dataset (no pre-training on ImageNet)
 There are different Losses in YOLOv3, YOLOv4 and Scaled-YOLOv4:
 
 <p align="center">
-  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/7005d806-0928-4686-8dfa-cb79252a5ee4" alt="scaled_yolo_v4_losses" height="350"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/7005d806-0928-4686-8dfa-cb79252a5ee4" alt="scaled_yolo_v4_losses" height="250"/>
 </p>
 
 * for _bx_ and _by_ — this eliminates grid sensitivity in the same way as in YOLOv4, but more aggressively
