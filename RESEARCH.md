@@ -122,7 +122,20 @@ Those plugin modules and post-processing methods that only increase the inferenc
 
 ## **SPP**
 2015 | [paper](https://arxiv.org/pdf/1406.4729.pdf) | _Spatial Pyramid Pooling in Deep Convolutional Networks for Visual Recognition_
-TODO
+
+Authors of the paper introduced a Spatial Pyramid Pooling (SPP) layer to remove the fixed-size constraint of the network. Specifically, added an SPP layer on top of the last convolutional layer. The SPP layer pools the features and generates fixed length outputs, which are then fed into the fullyconnected layers (or other classifiers). In other words, we perform some information “aggregation” at a deeper stage of the network hierarchy (between convolutional layers and fully-connected layers) to avoid the need for cropping or warping at the beginning
+
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/20e4130d-8b7d-40be-9e03-3de729989654" alt="SPP" height="350"/>
+</p>
+
+Spatial pyramid pooling (also knows as spatial pyramid matching or SPM), as an extension of the Bag-of-Words (BoW) model, is one of the most successful methods in computer vision. It partitions the image into divisions from finer to coarser levels, and aggregates local features in them. SPP has long been a key component in the leading and competition-winning systems for classification and detection  before the prevalence of CNNs. Nevertheless, SPP has not been considered in the context of CNNs before this paper. Authors noted that SPP has several remarkable properties for deep CNNs: 
+
+*  SPP is able to generate a fixed-length output regardless of the input size, while the sliding window pooling used in the previous deep networks cannot
+* SPP uses multi-level spatial bins, while the sliding window pooling uses only a single window size. Multi-level pooling has been shown to be robust to object deformations
+* SPP can pool features extracted at variable scales thanks to the flexibility of input scales. Through experiments authors have shown that all these factors elevate the recognition accuracy of deep networks.
+
+SPP-net not only makes it possible to generate representations from arbitrarily sized images/windows for testing, but also allows us to feed images with varying sizes or scales during training. Training with variable-size images increases scale-invariance and reduces over-fitting. 
 
 ## **FPN**
 2017 | [paper](https://arxiv.org/pdf/1612.03144.pdf) | _Feature Pyramid Networks for Object Detection_
@@ -209,6 +222,7 @@ confident the model is that the box contains an object and also how accurate it 
 * Each bounding box consists of 5 predictions: _x_, _y_, _w_, _h_, and confidence. The _(x, y)_ coordinates represent the center of the box relative to the bounds of the grid cell. The width and height are predicted relative to the whole image. Finally the confidence prediction represents the IoU between the predicted box and any ground truth box.
 * Each grid cell also predicts _C_ conditional class probabilities, _Pr(Class_i|Object)_. These probabilities are conditioned on the grid cell containing an object. We only predict one set of class probabilities per grid cell, regardless of the number of boxes _B_.
 * predictions are encoded as an _S × S × (B ∗ 5 + C)_ tensor (_S_ - grid size, _B_ - number of bboxes, _C_ - number of classes). In paper: 7 × 7 × 30, that is _S = 7_, _B = 2_, _C = 20_ (PASCAL VOC has 20 labels)
+
 <p align="center">
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/2304ce9a-56e2-450e-be12-6eb5294b561d" alt="yolo_how" width="500"/>
 </p>
