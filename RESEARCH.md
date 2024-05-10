@@ -301,7 +301,7 @@ The network is trained similar to YOLOv2
 ## **YOLO v4**
 2020 | [paper](https://arxiv.org/pdf/2004.10934.pdf) | _YOLOv4: Optimal Speed and Accuracy of Object Detection_
 
-YOLOv4 addresses the need for real-time object detection systems that can achieve high accuracy while maintaining fast inference speeds and possibility to train the object detector on a single customer GPU. Authors of the paper put a great emphasis on analyzing and evaluating the possible training and architectural choices for object detector training and architecture. Two sets of concepts were evaluated separately, that is the Bag of Freebies ([**BoF**](#bag-of-freebies) and Bag of Specials ([**BoS**](#bag-of-specials)). 
+YOLOv4 addresses the need for real-time object detection systems that can achieve high accuracy while maintaining fast inference speeds and possibility to train the object detector on a single customer GPU. Authors of the paper put a great emphasis on analyzing and evaluating the possible training and architectural choices for object detector training and architecture. Two sets of concepts were evaluated separately, that is the Bag of Freebies ([**BoF**](#bag-of-freebies)) and Bag of Specials ([**BoS**](#bag-of-specials)). 
 
 Authors noticed that the reference model which is optimal for classification is not always optimal for a detector. In contrast to the classifier, the detector requires the following:
 * Higher input network size (resolution) – for detecting multiple small-sized objects
@@ -331,7 +331,7 @@ In order to make the designed detector more suitable for training on single GPU,
 	* Mosaic - represents a new data augmentation method that mixes 4 training images. Thus 4 different contexts are while CutMix mixes only 2 input images. This allows detection of objects outside their normal context. In addition, batch normalization calculates activation statistics from 4 different images on each layer. This significantly reduces the need for a large mini-batch size
 	* Self-Adversarial Training (SAT) - new data augmentation technique that operates in 2 forward backward stages. In the 1st stage the neural network alters the original image instead of the network weights. In this way the neural network executes an adversarial attack on itself, altering the original image to create the deception that there is no desired object on the image. In the 2nd stage, the neural network is trained to detect an object on this modified image in the normal way
 * Selected optimal hyper-parameters while applying genetic algorithms
-• Modified some exsiting methods to make YOLOv4 design suitble for efficient training and detection - modified SAM, modified PAN, and Cross mini-Batch Normalization (CmBN)
+* Modified some exsiting methods to make YOLOv4 design suitble for efficient training and detection - modified SAM, modified PAN, and Cross mini-Batch Normalization (CmBN)
 
 ### Model architecture:
 
