@@ -48,54 +48,54 @@ Object detectors are constantly upgraded by addressing two main concepts, that i
 
 ### Bag of Freebies
 Methods that only change the training strategy or only increase the training cost. Usually, a conventional object detector is trained offline. Therefore, researchers always like to take this advantage and develop better training methods which can make the object detector receive better accuracy without increasing the inference cost. The possible BoF include:
-* **Data augmentation**:
-	* photometric distortions - adjust the brightness, contrast, hue, saturation and noise of an image
-	* geometric distortions - add random scaling, cropping, flipping and rotating 
-	* [random erase](100), [CutOut](https://arxiv.org/pdf/1708.04552) - randomly select the rectangle region in an image and fill a random or zero value
-	* [Hide and Seek](https://arxiv.org/pdf/1811.02545), [Grid Mask](https://arxiv.org/pdf/2001.04086) - randomly or evenly select multiple rectangle regions in an image and replace with zeros
-	* [DropOut](https://www.cs.toronto.edu/~rsalakhu/papers/srivastava14a.pdf), [DropConnect](http://proceedings.mlr.press/v28/wan13.pdf), [DropBlock](https://arxiv.org/pdf/1810.12890) - randomly or evenly select multiple rectangle regions in a feature map and replace with zeros
-	* [MixUp](http://arxiv.org/pdf/1710.09412) - multiply and superimpose two images with different coefficients ratios and adjust the label with these superimposed ratios
-	* [CutMix](https://arxiv.org/pdf/1905.04899) - cover the cropped image to rectangle region of other images and adjust the label according to the size of the mix area 
-	* [style transfer GAN](https://arxiv.org/pdf/1811.12231) - use GAN to change style of the image (helps to reduce the texture bias learned by CNN)
-* Solving the problem of biased dataset semantic distribution (problem of data imbalance between different classes)
-	* [hard negative example mining](https://ieeexplore.ieee.org/document/655648)
-	* Online Hard Example Mining ([OHEM](https://arxiv.org/pdf/1604.03540)) - bootstrapping technique that modifies SGD to sample from examples in a non-uniform way depending on the current loss of each example under consideration. The method takes advantage of detection-specific problem structure in which each SGD mini-batch consists of only one or two images, but thousands of candidate examples. The candidate examples are subsampled according to a distribution that favors diverse, high loss instances
- 	* [Focal loss](https://arxiv.org/pdf/1708.02002) - reshaping the standard cross entropy loss such that it downweights the loss assigned to well classified examples
+* **Data augmentation**
+	* **photometric distortions** - adjust the brightness, contrast, hue, saturation and noise of an image
+	* **geometric distortions** - add random scaling, cropping, flipping and rotating 
+	* [**random erase**](100), [CutOut](https://arxiv.org/pdf/1708.04552) - randomly select the rectangle region in an image and fill a random or zero value
+	* [**Hide and Seek**](https://arxiv.org/pdf/1811.02545), [Grid Mask](https://arxiv.org/pdf/2001.04086) - randomly or evenly select multiple rectangle regions in an image and replace with zeros
+	* [**DropOut**](https://www.cs.toronto.edu/~rsalakhu/papers/srivastava14a.pdf), [DropConnect](http://proceedings.mlr.press/v28/wan13.pdf), [DropBlock](https://arxiv.org/pdf/1810.12890) - randomly or evenly select multiple rectangle regions in a feature map and replace with zeros
+	* [**MixUp**](http://arxiv.org/pdf/1710.09412) - multiply and superimpose two images with different coefficients ratios and adjust the label with these superimposed ratios
+	* [**CutMix**](https://arxiv.org/pdf/1905.04899) - cover the cropped image to rectangle region of other images and adjust the label according to the size of the mix area 
+	* [**style transfer GAN**](https://arxiv.org/pdf/1811.12231) - use GAN to change style of the image (helps to reduce the texture bias learned by CNN)
+* **Data imbalance** - Solving the problem of biased dataset semantic distribution (problem of data imbalance between different classes)
+	* [**hard negative example mining**](https://ieeexplore.ieee.org/document/655648)
+	* **Online Hard Example Mining** ([OHEM](https://arxiv.org/pdf/1604.03540)) - bootstrapping technique that modifies SGD to sample from examples in a non-uniform way depending on the current loss of each example under consideration. The method takes advantage of detection-specific problem structure in which each SGD mini-batch consists of only one or two images, but thousands of candidate examples. The candidate examples are subsampled according to a distribution that favors diverse, high loss instances
+ 	* [**Focal loss**](https://arxiv.org/pdf/1708.02002) - reshaping the standard cross entropy loss such that it downweights the loss assigned to well classified examples
 * **Target labels** - express the relationship of the degree of association between different categories with the one-hot hard representation:
-	* [Label smoothing](https://arxiv.org/pdf/1512.00567) - convert hard label into soft label for training, which can make model more robust
- 	* [Label refinement network](https://arxiv.org/pdf/1703.00551) - via knowledge distillation
+	* [**Label smoothing**](https://arxiv.org/pdf/1512.00567) - convert hard label into soft label for training, which can make model more robust
+ 	* [**Label smoothing with refinement network**](https://arxiv.org/pdf/1703.00551) - via knowledge distillation
 * **Objective function** of Bounding Box regression
 	* MSE - directly perform regression on the center point coordinates and height and width of the bbox
- 	* [IoU loss](https://arxiv.org/pdf/1608.01471) - puts the coverage of predicted bbox area and ground truth BBox area into consideration. The IoU loss computing process will trigger the calculation of the four coordinate points of the bbox by executing IoU with the ground truth, and then connecting the generated results into a whole code. Because IoU is a scale invariant representation, it can solve the problem that when traditional methods calculate the l1 or l2 loss of {x, y, w, h} (MSE treat these points as independent variables), the loss will increase with the scale.
-	* General IoU Loss ([GIoU loss](https://arxiv.org/pdf/1902.09630)) - include the shape and orientation of object in addition to the coverage area. GIoU proposes to find the smallest area BBox that can simultaneously cover the predicted bbox and ground truth bbox, and use this bbox as the denominator to replace the denominator originally used in IoU loss
- 	* Distance IoU Loss ([DIoU loss](https://arxiv.org/pdf/1911.08287)) - additionally considers the distance of the center of an object
-  	* Complete IoU Loss ([CIoU loss](https://arxiv.org/pdf/1911.08287)) - simultaneously considers the overlapping area, the distance between center points, and the aspect ratio. CIoU can achieve better convergence speed and accuracy on the bbox regression problem
+ 	* [**IoU loss**](https://arxiv.org/pdf/1608.01471) - puts the coverage of predicted bbox area and ground truth BBox area into consideration. The IoU loss computing process will trigger the calculation of the four coordinate points of the bbox by executing IoU with the ground truth, and then connecting the generated results into a whole code. Because IoU is a scale invariant representation, it can solve the problem that when traditional methods calculate the l1 or l2 loss of {x, y, w, h} (MSE treat these points as independent variables), the loss will increase with the scale.
+	* **General IoU Loss** ([GIoU loss](https://arxiv.org/pdf/1902.09630)) - include the shape and orientation of object in addition to the coverage area. GIoU proposes to find the smallest area BBox that can simultaneously cover the predicted bbox and ground truth bbox, and use this bbox as the denominator to replace the denominator originally used in IoU loss
+ 	* **Distance IoU Loss** ([DIoU loss](https://arxiv.org/pdf/1911.08287)) - additionally considers the distance of the center of an object
+  	* **Complete IoU Loss** ([CIoU loss](https://arxiv.org/pdf/1911.08287)) - simultaneously considers the overlapping area, the distance between center points, and the aspect ratio. CIoU can achieve better convergence speed and accuracy on the bbox regression problem
  
 ### Bag of Specials
 Those plugin modules and post-processing methods that only increase the inference cost by a small amount but can significantly improve the accuracy of object detection. Generally speaking, these plugin modules are for enhancing certain attributes in a model, such as enlarging receptive field, introducing attention mechanism, or strengthening feature integration capability, etc. The post-processing is a method for screening model prediction results. The possible BoS include:
-* **Enhance receptive field**:
-	* Spatial Pyramid Pooling ([SPP](25)) - originated from Spatial Pyramid Matching ([SPM](39)). SPMs original method was to split feature map into several d × d equal blocks, where d can be {1, 2, 3, ...}, thus forming spatial pyramid, and then extracting bag-of-word features. SPP integrates SPM into CNN and use max-pooling operation instead of bag-of-word operation. Since the SPP module will output one dimensional feature vector, it is infeasible to be applied in Fully Convolutional Network (FCN). Thus in the design of [YOLOv3](63), Redmon and Farhadi improved SPP module to the concatenation of max-pooling outputs with kernel size k × k, where k = {1, 5, 9, 13}, and stride equals to 1. Under this design, a relatively large k × k max-pooling effectively increase the receptive field of backbone feature
-	* Atrous Spatial Pyramid Pooling ([ASPP](5)) - exploits multi-scale features by employing multiple dilated convolutions with kernel size = 3 × 3, dilatet ratio = k, stride = 1
-	* Receptive Field Block ([RFB](47)) - use several dilated convolutions of k × k kernel, dilated ratio equals to k, and stride equals to 1 to obtain a more comprehensive spatial coverage than ASPP. RFB makes use of multi-branch pooling with varying kernels corresponding to RFs of different sizes, applies dilated convolution layers to control their eccentricities, and reshapes them to generate final representation
+* **Enhance receptive field**
+	* **Spatial Pyramid Pooling** ([SPP](25)) - originated from Spatial Pyramid Matching ([SPM](39)). SPMs original method was to split feature map into several d × d equal blocks, where d can be {1, 2, 3, ...}, thus forming spatial pyramid, and then extracting bag-of-word features. SPP integrates SPM into CNN and use max-pooling operation instead of bag-of-word operation. Since the SPP module will output one dimensional feature vector, it is infeasible to be applied in Fully Convolutional Network (FCN). Thus in the design of [YOLOv3](63), Redmon and Farhadi improved SPP module to the concatenation of max-pooling outputs with kernel size k × k, where k = {1, 5, 9, 13}, and stride equals to 1. Under this design, a relatively large k × k max-pooling effectively increase the receptive field of backbone feature
+	* **Atrous Spatial Pyramid Pooling** ([ASPP](5)) - exploits multi-scale features by employing multiple dilated convolutions with kernel size = 3 × 3, dilatet ratio = k, stride = 1
+	* **Receptive Field Block** ([RFB](47)) - use several dilated convolutions of k × k kernel, dilated ratio equals to k, and stride equals to 1 to obtain a more comprehensive spatial coverage than ASPP. RFB makes use of multi-branch pooling with varying kernels corresponding to RFs of different sizes, applies dilated convolution layers to control their eccentricities, and reshapes them to generate final representation
 * **Attention Module**
-	* Squeeze-and-Excitation ([SE](https://arxiv.org/pdf/1709.01507)) - architectural unit designed to improve the representational power of a network by enabling it to perform dynamic channel-wise feature recalibration. Spatial dimensions of block input feature maps are squeezed into a single numeric value using average pooling, then a dense layer (with ReLU) adds non-linearity and output channel complexity is reduced by a ratio and another dense layer (with sigmoid) gives each channel a smooth gating (weight, attention) function to finally weight each input feature map of the block based on using the attention weights. 
-	* Spatial Attention Module ([SAM](https://arxiv.org/pdf/1807.06521v2)) - A Spatial Attention Module (introduced in [CBAM](#cbam)) is a module for spatial attention in convolutional neural networks. It generates a spatial attention map by utilizing the inter-spatial relationship of features. Different from the channel attention, the spatial attention focuses on where is an informative part, which is complementary to the channel attention. To compute the spatial attention, we first apply average-pooling and max-pooling operations along the channel axis and concatenate them to generate an efficient feature descriptor. On the concatenated feature descriptor, we apply a convolution layer to generate a spatial attention map which encodes where to emphasize or suppress.
+	* **Squeeze-and-Excitation** ([SE](https://arxiv.org/pdf/1709.01507)) - architectural unit designed to improve the representational power of a network by enabling it to perform dynamic channel-wise feature recalibration. Spatial dimensions of block input feature maps are squeezed into a single numeric value using average pooling, then a dense layer (with ReLU) adds non-linearity and output channel complexity is reduced by a ratio and another dense layer (with sigmoid) gives each channel a smooth gating (weight, attention) function to finally weight each input feature map of the block based on using the attention weights. 
+	* **Spatial Attention Module** ([SAM](https://arxiv.org/pdf/1807.06521v2)) - A Spatial Attention Module (introduced in [CBAM](#cbam)) is a module for spatial attention in convolutional neural networks. It generates a spatial attention map by utilizing the inter-spatial relationship of features. Different from the channel attention, the spatial attention focuses on where is an informative part, which is complementary to the channel attention. To compute the spatial attention, we first apply average-pooling and max-pooling operations along the channel axis and concatenate them to generate an efficient feature descriptor. On the concatenated feature descriptor, we apply a convolution layer to generate a spatial attention map which encodes where to emphasize or suppress.
 * **Feature Integration**
-	* Feature Pyramid Networks ([FPN](https://arxiv.org/pdf/1612.03144)) -  feature extractor that takes a single-scale image of an arbitrary size as input, and outputs proportionally sized feature maps at multiple levels, in a fully convolutional fashion. This process is independent of the backbone convolutional architectures. It therefore acts as a generic solution for building feature pyramids inside deep convolutional networks to be used in tasks like object detection. The construction of the pyramid involves a bottom-up pathway and a top-down pathway. The **bottom-up** pathway is the feedforward computation of the backbone ConvNet, which computes a feature hierarchy consisting of feature maps at several scales with a scaling step of 2. For the feature pyramid, one pyramid level is defined for each stage. The output of the last layer of each stage is used as a reference set of feature maps. For ResNets we use the feature activations output by each stage’s last residual block. The **top-down** pathway hallucinates higher resolution features by upsampling spatially coarser, but semantically stronger, feature maps from higher pyramid levels. These features are then enhanced with features from the bottom-up pathway via lateral connections. Each lateral connection merges feature maps of the same spatial size from the bottom-up pathway and the top-down pathway. The bottom-up feature map is of lower-level semantics, but its activations are more accurately localized as it was subsampled fewer times.
-	* Path Aggregation Networks ([PAN](https://arxiv.org/pdf/1803.01534v4)) - aims to boost information flow in a proposal-based instance segmentation framework. Specifically, the feature hierarchy is enhanced with accurate localization signals in lower layers by bottom-up path augmentation, which shortens the information path between lower layers and topmost feature. Additionally, adaptive feature pooling is employed, which links feature grid and all feature levels to make useful information in each feature level propagate directly to following proposal subnetworks. A complementary branch capturing different views for each proposal is created to further improve mask prediction.
-	* Scale-wise Feature Aggregation Module ([SFAM](https://arxiv.org/pdf/1811.04533v3)) - use SE module to execute channel wise level re-weighting on multi-scale concatenated feature maps
-	* Adaptively Spatial Feature Fusion ([ASFF](https://arxiv.org/pdf/1911.09516v2)) - learns the way to spatially filter conflictive information to suppress inconsistency across different feature scales, thus improving the scale-invariance of features. ASFF enables the network to directly learn how to spatially filter features at other levels so that only useful information is kept for combination. For the features at a certain level, features of other levels are first integrated and resized into the same resolution and then trained to find the optimal fusion. At each spatial location, features at different levels are fused adaptively, i.e., some features may be filter out as they carry contradictory information at this location and some may dominate with more discriminative clues. ASFF offers several advantages: (1) as the operation of searching the optimal fusion is differential, it can be conveniently learned in back-propagation; (2) it is agnostic to the backbone model and it is applied to single-shot detectors that have a feature pyramid structure; and (3) its implementation is simple and the increased computational cost is marginal.
-	* Weighted Bi-directional Feature Pyramid Networks ([BiFPN](https://arxiv.org/pdf/1911.09070v7)) - type of feature pyramid network which allows easy and fast multi-scale feature fusion. It incorporates the multi-level feature fusion idea from FPN, PANet and NAS-FPN that enables information to flow in both the top-down and bottom-up directions, while using regular and efficient connections. It also utilizes a fast normalized fusion technique. Traditional approaches usually treat all features input to the FPN equally, even those with different resolutions. However, input features at different resolutions often have unequal contributions to the output features. Thus, the BiFPN adds an additional weight for each input feature allowing the network to learn the importance of each. All regular convolutions are also replaced with less expensive depthwise separable convolutions. Comparing with PANet, PANet added an extra bottom-up path for information flow at the expense of more computational cost. Whereas BiFPN optimizes these cross-scale connections by removing nodes with a single input edge, adding an extra edge from the original input to output node if they are on the same level, and treating each bidirectional path as one feature network layer (repeating it several times for more high-level future fusion).
+	* **Feature Pyramid Networks** ([FPN](https://arxiv.org/pdf/1612.03144)) -  feature extractor that takes a single-scale image of an arbitrary size as input, and outputs proportionally sized feature maps at multiple levels, in a fully convolutional fashion. This process is independent of the backbone convolutional architectures. It therefore acts as a generic solution for building feature pyramids inside deep convolutional networks to be used in tasks like object detection. The construction of the pyramid involves a bottom-up pathway and a top-down pathway. The **bottom-up** pathway is the feedforward computation of the backbone ConvNet, which computes a feature hierarchy consisting of feature maps at several scales with a scaling step of 2. For the feature pyramid, one pyramid level is defined for each stage. The output of the last layer of each stage is used as a reference set of feature maps. For ResNets we use the feature activations output by each stage’s last residual block. The **top-down** pathway hallucinates higher resolution features by upsampling spatially coarser, but semantically stronger, feature maps from higher pyramid levels. These features are then enhanced with features from the bottom-up pathway via lateral connections. Each lateral connection merges feature maps of the same spatial size from the bottom-up pathway and the top-down pathway. The bottom-up feature map is of lower-level semantics, but its activations are more accurately localized as it was subsampled fewer times.
+	* **Path Aggregation Networks** ([PAN](https://arxiv.org/pdf/1803.01534v4)) - aims to boost information flow in a proposal-based instance segmentation framework. Specifically, the feature hierarchy is enhanced with accurate localization signals in lower layers by bottom-up path augmentation, which shortens the information path between lower layers and topmost feature. Additionally, adaptive feature pooling is employed, which links feature grid and all feature levels to make useful information in each feature level propagate directly to following proposal subnetworks. A complementary branch capturing different views for each proposal is created to further improve mask prediction.
+	* **Scale-wise Feature Aggregation** Module ([SFAM](https://arxiv.org/pdf/1811.04533v3)) - use SE module to execute channel wise level re-weighting on multi-scale concatenated feature maps
+	* **Adaptively Spatial Feature Fusion** ([ASFF](https://arxiv.org/pdf/1911.09516v2)) - learns the way to spatially filter conflictive information to suppress inconsistency across different feature scales, thus improving the scale-invariance of features. ASFF enables the network to directly learn how to spatially filter features at other levels so that only useful information is kept for combination. For the features at a certain level, features of other levels are first integrated and resized into the same resolution and then trained to find the optimal fusion. At each spatial location, features at different levels are fused adaptively, i.e., some features may be filter out as they carry contradictory information at this location and some may dominate with more discriminative clues. ASFF offers several advantages: (1) as the operation of searching the optimal fusion is differential, it can be conveniently learned in back-propagation; (2) it is agnostic to the backbone model and it is applied to single-shot detectors that have a feature pyramid structure; and (3) its implementation is simple and the increased computational cost is marginal.
+	* **Weighted Bi-directional Feature Pyramid Networks** ([BiFPN](https://arxiv.org/pdf/1911.09070v7)) - type of feature pyramid network which allows easy and fast multi-scale feature fusion. It incorporates the multi-level feature fusion idea from FPN, PANet and NAS-FPN that enables information to flow in both the top-down and bottom-up directions, while using regular and efficient connections. It also utilizes a fast normalized fusion technique. Traditional approaches usually treat all features input to the FPN equally, even those with different resolutions. However, input features at different resolutions often have unequal contributions to the output features. Thus, the BiFPN adds an additional weight for each input feature allowing the network to learn the importance of each. All regular convolutions are also replaced with less expensive depthwise separable convolutions. Comparing with PANet, PANet added an extra bottom-up path for information flow at the expense of more computational cost. Whereas BiFPN optimizes these cross-scale connections by removing nodes with a single input edge, adding an extra edge from the original input to output node if they are on the same level, and treating each bidirectional path as one feature network layer (repeating it several times for more high-level future fusion).
 * **Activation function**
-	* Rectified Linear Unit ([ReLU](https://www.cs.toronto.edu/~fritz/absps/reluICML.pdf)) - solve the gradient vanish problem which is frequently encountered in traditional tanh and sigmoid activation function
-	* Leaky ReLU ([LReLU](https://ai.stanford.edu/~amaas/papers/relu_hybrid_icml2013_final.pdf)) and Parametric ReLU ([PReLU](https://arxiv.org/pdf/1502.01852)) - solve the problem that the gradient of ReLU is zero when the output is less than zero
-	* [ReLU6](https://arxiv.org/pdf/1704.04861) and [hard-Swish](https://arxiv.org/pdf/1905.02244) - specially designed for quantization networks
+	* **Rectified Linear Unit** ([ReLU](https://www.cs.toronto.edu/~fritz/absps/reluICML.pdf)) - solve the gradient vanish problem which is frequently encountered in traditional tanh and sigmoid activation function
+	* **Leaky ReLU** ([LReLU](https://ai.stanford.edu/~amaas/papers/relu_hybrid_icml2013_final.pdf)) and Parametric ReLU ([PReLU](https://arxiv.org/pdf/1502.01852)) - solve the problem that the gradient of ReLU is zero when the output is less than zero
+	* [**ReLU6**](https://arxiv.org/pdf/1704.04861) and [**hard-Swish**](https://arxiv.org/pdf/1905.02244) - specially designed for quantization networks
 	* Scaled Exponential Linear Unit ([SELU](https://arxiv.org/pdf/1706.02515v5)) - for self-normalizing a neural network
-	* [Swish](https://arxiv.org/pdf/1710.05941v2) and [Mish](https://arxiv.org/pdf/1908.08681) - continuously differentiable activation functions
+	* [**Swish**](https://arxiv.org/pdf/1710.05941v2) and [**Mish**](https://arxiv.org/pdf/1908.08681) - continuously differentiable activation functions
 * **Post-Processing**
-	* Non Maximum Supression (NMS / [Greedy NMS](https://arxiv.org/pdf/1311.2524)) - Non-maximum suppression is an integral part of the object detection pipeline. First, it sorts all detection boxes on the basis of their scores (Greedy NMS). The detection box **M** with the maximum score is selected and all other detection boxes with a significant overlap (using a pre-defined threshold) with **M** are suppressed. This process is recursively applied on the remaining boxes. As per the design of the algorithm, if an object lies within the predefined overlap threshold, it leads to a miss. 
-	* [soft NMS](https://arxiv.org/pdf/1704.04503v2) - it considers the problem that the occlusion of an object may cause the degradation of confidence score in greedy NMS with IoU score. Soft-NMS solves classic NMS problem by decaying the detection scores of all other objects as a continuous function of their overlap with M. Hence, no object is eliminated in this process.
-	* [DIoU NMS](https://arxiv.org/pdf/1911.08287v1) - added the information of the center point distance to the bbox screening process on the basis of soft NMS. In original NMS, the IoU metric is used to suppress the redundant detection boxes, where the overlap area is the unique factor, often yielding false suppression for the cases with occlusion. With DIoU-NMS, we not only consider the overlap area but also central point distance between two boxes.
+	* **Non Maximum Supression** (NMS / [Greedy NMS](https://arxiv.org/pdf/1311.2524)) - Non-maximum suppression is an integral part of the object detection pipeline. First, it sorts all detection boxes on the basis of their scores (Greedy NMS). The detection box **M** with the maximum score is selected and all other detection boxes with a significant overlap (using a pre-defined threshold) with **M** are suppressed. This process is recursively applied on the remaining boxes. As per the design of the algorithm, if an object lies within the predefined overlap threshold, it leads to a miss. 
+	* [**soft NMS**](https://arxiv.org/pdf/1704.04503v2) - it considers the problem that the occlusion of an object may cause the degradation of confidence score in greedy NMS with IoU score. Soft-NMS solves classic NMS problem by decaying the detection scores of all other objects as a continuous function of their overlap with M. Hence, no object is eliminated in this process.
+	* [**DIoU NMS**](https://arxiv.org/pdf/1911.08287v1) - added the information of the center point distance to the bbox screening process on the basis of soft NMS. In original NMS, the IoU metric is used to suppress the redundant detection boxes, where the overlap area is the unique factor, often yielding false suppression for the cases with occlusion. With DIoU-NMS, we not only consider the overlap area but also central point distance between two boxes.
 
 
 # Components
@@ -185,7 +185,8 @@ YOLOv1 is a **single-stage** object detection model. Object detection is framed 
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/596ae49e-22d6-4a11-85da-d89a50df9a3b" alt="yolo_v1" height="250"/>
 </p>
 
-### How it works:
+### How it works
+
 * YOLO divides the input image into an S × S grid. If the center of an object falls into a grid cell, that grid cell is responsible for detecting that object.
 * Each grid cell predicts B bounding boxes and confidence scores for those boxes. These confidence scores reflect how
 confident the model is that the box contains an object and also how accurate it thinks the box is that it predicts. The confidence score is defined as _Pr(Object) ∗ IoU(pred, gt)_. If no object exists in that cell, the confidence scores should be zero. Otherwise we want the confidence score to equal the intersection over union (IOU) between the predicted box and the ground truth.
@@ -196,7 +197,8 @@ confident the model is that the box contains an object and also how accurate it 
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/2304ce9a-56e2-450e-be12-6eb5294b561d" alt="yolo_how" width="500"/>
 </p>
 
-### Model architecture:
+### Model architecture
+
 * The initial convolutional layers of the network extract features from the image while the fully connected layers predict the output probabilities and coordinates.
 * The network architecture is inspired by the GoogLeNet. It has 24 convolutional layers followed by 2 fully connected layers
 * Instead of the inception modules used by GoogLeNet, the _1 × 1_ conv reduction layers followed by _3 × 3_ convolutional layers are used
@@ -207,7 +209,8 @@ confident the model is that the box contains an object and also how accurate it 
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/a29f820b-b37f-472e-b5ea-52456b4383eb" alt="yolo_loss" width="500"/>
 </p>
 
-### Training details:
+### Training details
+
 * pretrain first 20 conv layers (+ global pool and fc) as classifier on the ImageNet -> val top-5 88% accuracy
 * add 4 conv layers and 2 fc layers on top of the pretrained backbone and increase input size from 224 to 448 to train the detector
 * normalize bbox width and height to _[0, 1]_ and parametrize bbox x and y to be offsets of a particular grid cell location so they are also bounded in _[0, 1]_
@@ -241,7 +244,8 @@ YOLOv2 (or YOLO9000) is a single-stage real-time object detection model. It impr
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/3956c34f-f205-4366-9cbb-83f2308689d6" alt="yolo_v2" height="250"/>
 </p>
 
-### How it works:
+### How it works
+
 It works similar to the YOLOv1, the main differences include each predicted bbox has its own C class probabilities, so the predictions are encoded as an _S × S × (B ∗ (5 + C))_ tensor and added passtrough layer, dimension clusters prior and direct location prediction for easier training.
 Main improvements:
 * **Batch Normalization** - leads to significant improvements in convergence while eliminating the need for other forms of regularization (removed dropout from fc). By adding batch normalization on all of the convolutional layers in YOLO mAP improved by more than 2%
@@ -258,7 +262,8 @@ on higher resolution input. Then finetune the resulting network on detection. Th
 * **Fine-Grained Features** - YOLOv2 predicts detections on a _13 × 13_ feature map. While this is sufficient for large objects, it may benefit from finer grained features for localizing smaller objects. The passthrough layer is added that brings features from an earlier layer at _26 × 26_ resolution. The passthrough layer concatenates the higher resolution features with the low resolution features by stacking adjacent features into different channels instead of spatial locations, similar to the identity mappings in ResNet. This turns the _26 × 26 × 512_ feature map into a _13 × 13 × 2048_ feature map, which can be concatenated with the original features
 * **Multi-Scale Training**. The original YOLO uses an input resolution of _448 × 448_. With the addition of anchor boxes the resolution is changed to _416 × 416_. However, since the model only uses convolutional and pooling layers it can be resized on the fly. The YOLOv2 is designed to be robust to running on images of different sizes. Instead of fixing the input image size, it is changed every few iterations. Every 10 batches a new image dimension size is chosen from multiples of 32 (model downsamples by a factor of 32): {320, 352, ..., 608}  Thus the smallest option is _320 × 320_ and the largest is _608 × 608_.
 
-### Model architecture:
+### Model architecture
+
 **Darknet-19** - a new classification model to be used as the backbone of YOLOv2. Similar to the VGG models, Darknet-19 use mostly _3 × 3_ filters and double the number of channels after every pooling step. Following the work on Network in Network (NIN) the global average pooling to is used make predictions as well as _1 × 1_ filters to compress the feature representation between _3 × 3_ convolutions. Batch normalization is used to stabilize training, speed up convergence, and regularize the model. The final model, called Darknet-19, has 19 convolutional layers and 5 maxpooling It achieves 72.9% top-1 accuracy and 91.2% top-5 accuracy on ImageNet.
 
 ### Training details:
@@ -275,14 +280,16 @@ _YOLOv3_ is a real-time, single-stage object detection model that builds on [_YO
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/c86504c6-7712-4ceb-a358-279ae53ebb0e" alt="yolo_v3" height="400"/>
 </p>
 
-### How it works:
+### How it works
+
 * Similar to YOLOv2, the model outputs a tensor of size _S × S × [B ∗ (5 + C)]_, but now the model outputs bboxes at three different scales
 * Different to previous versions, YOLOv3 uses multiple independent logistic classifiers rather than one softmax layer for each class. During training, they use binary cross-entropy loss in a one vs all setup (using a softmax imposes the assumption that each box has exactly one class which is often not the case - the multilabel approach better models the data)
 * The bigger backbone is used (DarkNet-53) for feature extraction - the architecture has alternative _1 × 1_ and _3 × 3_ convolution layers and skip/residual connections inspired by the ResNet model. Although DarkNet53 is smaller than ResNet101 or RestNet-152, it is faster and has equivalent or better performance
 * The idea of FPN (Feature Pyramid Networks) is added to leverage the benefit from all the prior computations and fine-grained features early on in the network
 * The bboxes anchors are defined using k-means (same as in YOLOv2), but YOLOv3 uses three prior boxes for different scales
 
-### Model architecture:
+### Model architecture
+
 * **Darknet-53 classifier** - The network is a hybrid approach between the network used in YOLOv2 (Darknet-19), and the residual networks. It uses successive _3 × 3_ and _1 × 1_ convolutional layers but now has some shortcut connections as well and is significantly larger (53 layers)
 
 <p align="center">
@@ -313,7 +320,7 @@ They also noticed that the influence of the receptive field with different sizes
 * Exceeding the network size - increases the number of connections between the image point and the final activation
 
 
-### How it works:
+### How it works
 
 Different settings of BoF and BoS were tested for two backbones, that is CSPResNext50 and CSPDarknet53 (CSP module applied to ResNext50 and Darknet53 architectures). The settings include:
 * Activations: ReLU, leaky-ReLU, Swish, or Mish
@@ -333,7 +340,7 @@ In order to make the designed detector more suitable for training on single GPU,
 * Selected optimal hyper-parameters while applying genetic algorithms
 * Modified some exsiting methods to make YOLOv4 design suitble for efficient training and detection - modified SAM, modified PAN, and Cross mini-Batch Normalization (CmBN)
 
-### Model architecture:
+### Model architecture
 
 YOLOv4 consists of:
 * Backbone - CSPDarknet53
@@ -356,7 +363,7 @@ Modified SPP, PAN and PAN:
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/72e5c007-20ff-44e9-a42d-b90d0ee2e019" alt="modified_PAN" height="300"/>
 </p>
 
-### Training details:
+### Training details
 
 **Classification** (ImageNet): 
 * training steps is 8,000,000
@@ -392,7 +399,7 @@ The key changes in YOLOv5 that didn't exist in previous version are: applying th
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/d3563351-69f1-4a3c-ad5f-704d744b057b" alt="yolo_v5_short" height="350"/>
 </p>
 
-### How it works:
+### How it works
 
 <p align="center">
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/821b0953-8822-4cfe-bde4-fdfcfc6f2fa1" alt="yolo_v5_brief" height="200"/>
@@ -404,7 +411,7 @@ The key changes in YOLOv5 that didn't exist in previous version are: applying th
 * Head - three feature maps are sent to the prediction head, the confidence calculation and bbox regression are executed for each pixel in the feature map using the prior anchors, so as to obtain a multi-dimensional array (bboxes) including object class, class confidence, box coordinates, width, and height information.
 * Postprocessing (NMS) - by setting the corresponding thresholds (confthreshold, objthreshold) to filter the useless information in the array, and performing a non-maximum suppression (NMS) process, the final detection is done
 
-### Model architecture:
+### Model architecture
 
 An example of yolov5L architecture:
 
@@ -500,7 +507,8 @@ The objectness losses of the three prediction layers (P3, P4, P5) are weighted d
 
 
 
-### Training details:
+### Training details
+
 YOLOv5 applies several sophisticated training strategies to enhance the model's performance. They include
 * **Multiscale Training** - the input images are randomly rescaled within a range of 0.5 to 1.5 times their original size during the training process
 * **Warmup** and **Cosine LR Scheduler** - a method to adjust the learning rate to enhance model performance
@@ -521,6 +529,12 @@ Sources: [[1](https://sh-tsang.medium.com/brief-review-yolov5-for-object-detecti
 ## **Scaled YOLO v4**
 2021 | [paper](https://arxiv.org/pdf/2011.08036.pdf) | _Scaled-YOLOv4: Scaling Cross Stage Partial Network_
 TODO
+
+### How it works
+
+### Model architecture
+
+### Training details
 
 ## **YOLO R**
 2021 | [paper](https://arxiv.org/pdf/2105.04206) | _You Only Learn One Representation: Unified Network for Multiple Tasks_
