@@ -204,11 +204,15 @@ During the analysis of old NMS, authors wanted the improved metric to take the f
 It would be ideal if the penalty function was continuous, otherwise it could lead to abrupt changes to the ranked list of detections. A continuous penalty function should have no penalty when there is no overlap and very high penalty at a high overlap. Also, when the overlap is low, it should increase the penalty gradually, as _M_ should not affect the scores of boxes which have a very low overlap with it. However, when overlap of a box _bi_ with _M_ becomes close to one, _bi_ should be significantly penalized. Taking this into consideration, authors proposed a Gaussian penalty function:
 
 <p align="center">
-  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/24ac7cb8-9152-49b3-9127-b13b03f98bf7" alt="soft_NMS_eq" height="350"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/24ac7cb8-9152-49b3-9127-b13b03f98bf7" alt="soft_NMS_eq" height="60"/>
+</p>
+
+<p align="center">
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/db925ea6-ff65-4af1-9be3-023f1b4f5a0f" alt="soft_NMS_algo" height="350"/>
 </p>
 
-This update rule (right) is applied in each iteration and scores of all remaining detection boxes are updated
+
+This update rule (top) is applied in each iteration and scores of all remaining detection boxes are updated
 
 
 ## **Cosine Annealing**
