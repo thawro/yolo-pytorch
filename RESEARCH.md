@@ -245,8 +245,41 @@ The network is trained similar to YOLOv2
 
 ## **YOLO v4**
 2020 | [paper](https://arxiv.org/pdf/2004.10934.pdf) | _YOLOv4: Optimal Speed and Accuracy of Object Detection_
-TODO
 
+YOLOv4 addresses the need for real-time object detection systems that can achieve high accuracy while maintaining fast inference speeds and possibility to train the object detector on a single customer GPU. Authors of the paper put a great emphasis on analyzing and evaluating the possible training and architectural choices for object detector training and architecture. Two sets of concepts were evaluated separately, that is the Bag of Freebies (**BoF**) and Bag of Specials (**BoS**). 
+
+* **Bag of Freebies**  - methods that only change the training strategy or only increase the training cost. Usually, a conventional object detector is trained offline. Therefore, researchers always like to take this advantage and develop better training methods which can make the object detector receive better accuracy without increasing the inference cost. The possible BoF include:
+* Data augmentation:
+	* photometric distortions - adjust the brightness, contrast, hue, saturation and noise of an image
+	* geometric distortions - add random scaling, cropping, flipping and rotating 
+	* [random erase](100), [CutOut](https://arxiv.org/pdf/1708.04552) - randomly select the rectangle region in an image and fill a random or zero value
+	* [Hide and Seek](https://arxiv.org/pdf/1811.02545), [Grid Mask](https://arxiv.org/pdf/2001.04086) - randomly or evenly select multiple rectangle regions in an image and replace with zeros
+	* [DropOut](https://www.cs.toronto.edu/~rsalakhu/papers/srivastava14a.pdf), [DropConnect](http://proceedings.mlr.press/v28/wan13.pdf), [DropBlock](https://arxiv.org/pdf/1810.12890) - randomly or evenly select multiple rectangle regions in a feature map and replace with zeros
+	* [MixUp](http://arxiv.org/pdf/1710.09412) - multiply and superimpose two images with different coefficients ratios and adjust the label with these superimposed ratios
+	* [CutMix](https://arxiv.org/pdf/1905.04899) - cover the cropped image to rectangle region of other images and adjust the label according to the size of the mix area 
+	* [style transfer GAN](https://arxiv.org/pdf/1811.12231) - use GAN to change style of the image (helps to reduce the texture bias learned by CNN)
+* Solving the problem of biased dataset semantic distribution (problem of data imbalance between different classes)
+	* [hard negative example mining](https://ieeexplore.ieee.org/document/655648)
+	* [online hard example mining](https://arxiv.org/pdf/1604.03540) - bootstrapping technique that modifies SGD to sample from examples in a non-uniform way depending on the current loss of each example under consideration. The method takes advantage of detection-specific problem structure in which each SGD mini-batch consists of only one or two images, but thousands of candidate examples. The candidate examples are subsampled according to a distribution that favors diverse, high loss instances
+ 	* [focal loss](https://arxiv.org/pdf/1708.02002) - reshaping the standard cross entropy loss such that it downweights the loss assigned to well classified examples
+* express the relationship of the degree of association between different categories with the one-hot hard representation:
+	* [label smoothing](https://arxiv.org/pdf/1512.00567) - convert hard label into soft label for training, which can make model more robust
+ 	* [label refinement network](https://arxiv.org/pdf/1703.00551) - via knowledge distillation
+* Objective function of Bounding Box regression
+	* MSE - directly perform regression on the center point coordinates and height and width of the bbox
+ 	* [IoU loss](https://arxiv.org/pdf/1608.01471) - puts the coverage of predicted bbox area and ground truth BBox area into consideration. The IoU loss computing process will trigger the calculation of the four coordinate points of the bbox by executing IoU with the ground truth, and then connecting the generated results into a whole code. Because IoU is a scale invariant representation, it can solve the problem that when traditional methods calculate the l1 or l2 loss of {x, y, w, h} (MSE treat these points as independent variables), the loss will increase with the scale.
+	* [GIoU loss](https://arxiv.org/pdf/1902.09630) - include the shape and orientation of object in addition to the coverage area. GIoU proposes to find the smallest area BBox that can simultaneously cover the predicted bbox and ground truth bbox, and use this bbox as the denominator to replace the denominator originally used in IoU loss
+ 	* [DIoU loss](https://arxiv.org/pdf/1911.08287) - additionally considers the distance of the center of an object
+  	* [CIoU loss](https://arxiv.org/pdf/1911.08287) - simultaneously considers the overlapping area, the distance between center points, and the aspect ratio. CIoU can achieve better convergence speed and accuracy on the bbox regression problem
+ 
+* **Bag of Specials** - those plugin modules and post-processing methods that only increase the inference cost by a small amount but can significantly improve the accuracy of object detection. Generally speaking, these plugin modules are for enhancing certain attributes in a model, such as enlarging receptive field, introducing attention mechanism, or strengthening feature integration capability, etc. The post-processing is a method for screening model prediction results. The possible BoS include:
+* Enhance receptive field:
+	* [SPP](25) - originated from Spatial Pyramid Matching ([SPM](39)). SPMs original method was to split feature map into several d × d equal blocks, where d can be {1, 2, 3, ...}, thus forming spatial pyramid, and then extracting bag-of-word features. SPP integrates SPM into CNN and use max-pooling operation instead of bag-of-word operation. Since the SPP module will output one dimensional feature vector, it is infeasible to be applied in Fully Convolutional Network (FCN). Thus in the design of [YOLOv3](63), Redmon and Farhadi improved SPP module to the concatenation of max-pooling outputs with kernel size k × k, where k = {1, 5, 9, 13}, and stride equals to 1. Under this design, a relatively large k × k max-pooling effectively increase the receptive field of backbone feature
+ 	* Atrous Spatial Pyramid Pooling ([ASPP](5)) - exploits multi-scale features by employing multiple dilated convolutions with kernel size = 3 × 3, dilatet ratio = k, stride = 1
+  	* Receptive Field Block ([RFB](47)) - use several dilated convolutions of k × k kernel, dilated ratio equals to k, and stride equals to 1 to obtain a more comprehensive spatial coverage than ASPP. RFB makes use of multi-branch pooling with varying kernels corresponding to RFs of different sizes, applies dilated convolution layers to control their eccentricities, and reshapes them to generate final representation
+* Attention Module
+	* Squeeze-and-Excitation ([SE](29)) -
+ 	* Spatial Attention Module ([SAM](85)) - 
 
 ### How it works:
 
