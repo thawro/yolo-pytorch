@@ -22,7 +22,9 @@
 # Used in YOLO papers:
 |                                                             Link | Year |                                                 Title                                                  |        Approach        | Features | Used in |
 | ---------------------------------------------------------------: | :--: | :----------------------------------------------------------------------------------------------------: | :--------------------: | :------- | ------- |
+| [paper](https://arxiv.org/pdf/1512.03385) | 2015 | Deep Residual Learning for Image Recognition | ResNet | TODO | TODO |
 |                     [paper](https://arxiv.org/pdf/1406.4729.pdf) | 2015 |             Spatial Pyramid Pooling in Deep Convolutional Networks for Visual Recognition              |          SPP           |          | v4      |
+| [paper](https://arxiv.org/pdf/1611.05431) | 2017 | Aggregated Residual Transformations for Deep Neural Networks | ResNext | TODO | TODO |
 |                    [paper](https://arxiv.org/pdf/1612.03144.pdf) | 2017 |                             Feature Pyramid Networks for Object Detection                              |          FPN           |          | v4      |
 |                    [paper](https://arxiv.org/pdf/1704.04503.pdf) | 2017 |                            Improving Object Detection With One Line of Code                            |        Soft NMS        |          | v4      |
 |                    [paper](https://arxiv.org/pdf/1608.03983.pdf) | 2017 |                          SGDR: Stochastic Gradient Descent with Warm Restarts                          |    Cosine Annealing    |          | v4      |
@@ -40,6 +42,23 @@
 |                    [paper](https://arxiv.org/pdf/2101.03697.pdf) | 2021 |                             RepVGG: Making VGG-style ConvNets Great Again                              |         RepVGG         | TODO     | v6      |
 |                        [paper](https://arxiv.org/pdf/2211.04800) | 2022 |                   Designing Network Design Strategies Through Gradient Path Analysis                   |          ELAN          | TODO     | v9      |
 |                        [paper](https://arxiv.org/pdf/2012.01724) | 2023 |     Parallel Residual Bi-Fusion Feature Pyramid Network For Accurate Single-Shot Object Detection      |        PRB-FPN         |          | v6.3    |
+
+
+# Recommended papers before diving into object detection
+| Link | Year | Title | Approach | Features |
+| ---: | :--: | :---: | :---: | --- |
+| [paper](https://arxiv.org/pdf/1409.4842) | 2014 | Going deeper with convolutions | GoogLeNet/InceptionV1 | TODO |
+| [paper](https://arxiv.org/pdf/1512.00567) | 2015 | Rethinking the Inception Architecture for Computer Vision | InceptionV2/V3 | TODO |
+| [paper](https://arxiv.org/pdf/1512.03385) | 2015 | Deep Residual Learning for Image Recognition | ResNet | TODO |
+| [paper](https://arxiv.org/pdf/1602.07261) | 2016 | Inception-v4, Inception-ResNet and the Impact of Residual Connections on Learning | InceptionV4 | TODO |
+| [paper](https://arxiv.org/pdf/1602.07360) | 2016 | SqueezeNet: AlexNet-level accuracy with 50x fewer parameters and <0.5MB model size | TODO |
+| [paper](https://arxiv.org/pdf/1605.07146v4) | 2017 | Wide Residual Networks | WideResNet | TODO |
+| [paper](https://arxiv.org/pdf/1611.05431) | 2017 | Aggregated Residual Transformations for Deep Neural Networks | ResNext | TODO |
+| [paper](https://arxiv.org/pdf/1704.04861) | 2017 | MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications | MobileNetV1 | TODO |
+| [paper](https://arxiv.org/pdf/1608.06993v5) | 2018 | Densely Connected Convolutional Networks | DenseNet | TODO |
+| [paper](https://arxiv.org/pdf/1801.04381) | 2019 | MobileNetV2: Inverted Residuals and Linear Bottlenecks | MobileNetV2 | TODO |
+| [paper](https://arxiv.org/pdf/1905.02244) | 2019 | Searching for MobileNetV3 | MobileNetV3 | TODO |
+| [paper](https://arxiv.org/pdf/1709.01507) | 2019 | Squeeze-and-Excitation Networks | SE | TODO |
 
 ---
 
