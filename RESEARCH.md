@@ -138,7 +138,7 @@ Those plugin modules and post-processing methods that only increase the inferenc
 
 # Components
 
-## **SPP**
+## SPP
 2015 | [paper](https://arxiv.org/pdf/1406.4729.pdf) | _Spatial Pyramid Pooling in Deep Convolutional Networks for Visual Recognition_
 
 Authors of the paper introduced a Spatial Pyramid Pooling (SPP) layer to remove the fixed-size constraint of the network. Specifically, added an SPP layer on top of the last convolutional layer. The SPP layer pools the features and generates fixed length outputs, which are then fed into the fullyconnected layers (or other classifiers). In other words, we perform some information “aggregation” at a deeper stage of the network hierarchy (between convolutional layers and fully-connected layers) to avoid the need for cropping or warping at the beginning
@@ -155,7 +155,7 @@ Spatial pyramid pooling (also knows as spatial pyramid matching or SPM), as an e
 
 SPP-net not only makes it possible to generate representations from arbitrarily sized images/windows for testing, but also allows us to feed images with varying sizes or scales during training. Training with variable-size images increases scale-invariance and reduces over-fitting. 
 
-## **FPN**
+## FPN
 2017 | [paper](https://arxiv.org/pdf/1612.03144.pdf) | _Feature Pyramid Networks for Object Detection_
 
 Authors of the paper exploited the inherent multi-scale, pyramidal hierarchy of deep convolutional networks to construct feature pyramids with marginal extra cost. A top-down architecture with lateral connections is developed for building high-level semantic feature maps at all scales. This architecture, called a Feature Pyramid Network (FPN), shows significant improvement as a generic feature extractor in several applications. 
@@ -189,7 +189,7 @@ FPN compared to [similar](https://arxiv.org/pdf/1603.08695) approach:
 With a coarser-resolution feature map, the spatial resolution is upsampled by a factor of 2 (using nearest neighbor upsampling for simplicity). The upsampled map is then merged with the corresponding bottom-up map (which undergoes a _1 × 1_ convolutional layer to reduce channel dimensions) by element-wise addition. This process is iterated until the finest resolution map is generated. Iteration is started by simply attaching a _1×1_ convolutional layer on _C5_ to produce the coarsest resolution map. Finally, a _3×3_ convolution is appended on each merged map to generate the final feature map, which is to reduce the aliasing effect of upsampling. This final set of feature maps is called _{P2, P3, P4, P5}_, corresponding to _{C2, C3, C4, C5}_ that are respectively of the same spatial sizes. Because all levels of the pyramid use shared classifiers/regressors as in a traditional featurized image pyramid, the feature dimension (numbers of channels, denoted as _d_) is fixed in all the feature maps. _d = 256_ in this paper and thus all extra convolutional layers have 256-channel outputs. There are no non-linearities in these extra layers, which has been empirically found to have minor impacts. The more sophisticated blocks (e.g., using multi-layer residual blocks as the connections) have been tested and observed marginally better results.
 * 
 
-## **Soft NMS**
+## Soft NMS
 2017 | [paper](https://arxiv.org/pdf/1704.04503.pdf) | _Improving Object Detection With One Line of Code_
 
 Non-maximum suppression (NMS) is an integral part of the object detection pipeline. First, it sorts all detection boxes on the basis of their scores. The detection box _M_ with the maximum score is selected and all other detection boxes with a significant overlap (using a pre-defined threshold) with _M_ are suppressed. This process is recursively applied on the remaining boxes. As per the design of the algorithm, if an object lies within the predefined overlap threshold, it leads to a miss. 
@@ -215,59 +215,72 @@ It would be ideal if the penalty function was continuous, otherwise it could lea
 This update rule (top) is applied in each iteration and scores of all remaining detection boxes are updated
 
 
-## **Cosine Annealing**
+## Cosine Annealing
 2017 | [paper](https://arxiv.org/pdf/1608.03983.pdf) | _SGDR: Stochastic Gradient Descent with Warm Restarts_
-TODO
 
-## **DropBlock**
+Cosine Annealing with warm restarts is a type of learning rate schedule that has the effect of starting with a large learning rate that is relatively rapidly decreased to a minimum value before being increased rapidly again. The resetting of the learning rate acts like a simulated restart of the learning process and the re-use of good weights as the starting point of the restart is referred to as a "warm restart" in contrast to a "cold restart" where a new set of small random numbers may be used as a starting point.
+
+Authors of the work considered one of the simplest warm restart approaches. They simulated a new warm-started run / restart of SGD once _Ti_ epochs are performed, where _i_ is the index of the run. Importantly, the restarts are not performed from scratch but emulated by increasing the learning rate _ηt_ while the old value of xt is used as an initial solution. The amount of this increase controls to which extent the previously acquired information (e.g., momentum) is used. Within the _i_-th run, the learning rate is decayed with a cosine annealing for each batch as follows:
+
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/a9c1d5c7-2912-451c-bd63-5b0006052bd8" alt="cosine_annealing_eq" height="350"/>
+</p>
+
+where _ηi\_min_ and _ηi\_max_ are ranges for the learning rate, and _Tcur_ accounts for how many epochs have been performed since the last restart. Since _Tcur_ is updated at each batch iteration _t_, it can take discredited values such as _0.1_, _0.2_, etc. Thus, _ηt = _ηi\_max_ when _t = 0_ and _Tcur = 0_. Once _Tcur = Ti_, the cos function will output _−1_ and thus _ηt = _ηi\_min_. The decrease of the learning rate is shown below (left - without restart, right - with restart every ~2k iterations).
+
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/2d2c4971-fd4a-4ab6-a6f8-bc068b60c624" alt="cosine_annealing" height="350"/>
+</p>
+
+## DropBlock
 2018 | [paper](https://arxiv.org/pdf/1810.12890.pdf) | _DropBlock: A regularization method for convolutional networks_
 TODO
 
-## **MixUp**
+## MixUp
 2018 | [paper](http://arxiv.org/pdf/1710.09412) | _MixUp: Beyond Empirical Risk Minimization_
 TODO
 
-## **CBAM**
+## CBAM
 2018 | [paper](https://arxiv.org/pdf/1807.06521.pdf) | _CBAM: Convolutional Block Attention Module_
 TODO
 
-## **Focal Loss / RetinaNet**
+## Focal Loss / RetinaNet
 2018 | [paper](https://arxiv.org/pdf/1708.02002v2.pdf) | _Focal Loss for Dense Object Detection_
 TODO
 
-## **DIoU**
+## DIoU
 2018 | [paper](https://arxiv.org/pdf/1911.08287.pdf) | _Distance-IoU Loss: Faster and Better Learning for Bounding Box Regression_
 TODO
 
-## **PAN**
+## PAN
 2018 | [paper](https://arxiv.org/pdf/1803.01534v4.pdf) | _Path Aggregation Network for Instance Segmentation_
 TODO
 
-## **Mish**
+## Mish
 2019 | [paper](https://arxiv.org/vc/arxiv/papers/1908/1908.08681v1.pdf) | _Mish: A Self Regularized Non-Monotonic Neural Activation Function_
 TODO
 
-## **CSP**
+## CSP
 2019 | [paper](https://arxiv.org/pdf/1911.11929.pdf) | _CSPNet: A new backbone that can enhance learning capability of CNN_
 TODO
 
-## **ATSS**
+## ATSS
 2020 | [paper](https://arxiv.org/pdf/1912.02424) | _Bridging the Gap Between Anchor-based and Anchor-free Detection via Adaptive Training Sample Selection_
 TODO
 
-## **EfficientDet**
+## EfficientDet
 2020 | [paper](https://arxiv.org/pdf/1911.09070) | _EfficientDet: Scalable and Efficient Object Detection_
 TODO
 
-## **RepVGG**
+## RepVGG
 2021 | [paper](https://arxiv.org/pdf/2101.03697.pdf) | _RepVGG: Making VGG-style ConvNets Great Again_
 TODO
 
-## **ELAN**
+## ELAN
 2022 | [paper](https://arxiv.org/pdf/2211.04800) | _Designing Network Design Strategies Through Gradient Path Analysis_
 TODO
 
-## **PRB-FPN**
+## PRB-FPN
 2023 | [paper](https://arxiv.org/pdf/2012.01724) | _Parallel Residual Bi-Fusion Feature Pyramid Network For Accurate Single-Shot Object Detection_
 TODO
 
