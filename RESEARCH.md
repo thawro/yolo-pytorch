@@ -295,13 +295,13 @@ Convolutional Block Attention Module (**CBAM**) is a simple yet effective attent
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/055969ff-3ef1-43bc-9d19-1da921f87680" alt="CBAM_overview" height="300"/>
 </p>
 
-Given an intermediate feature map _F_ (shape _C×H×W_) as input, CBAM sequentially infers a _1D_ channel attention map _Mc_ (shape _C×1×1_) and a _2D_ spatial attention map Ms (shape _1×H×W_) as illustrated above. The overall attention process can be summarized as:
+Given an intermediate feature map $F$ (shape: $C × H × W$) as input, CBAM sequentially infers a $1D$ channel attention map $M_c$ (shape: $C × 1 × 1$) and a $2D$ spatial attention map $M_s$ (shape: $1 × H × W$) as illustrated above. The overall attention process can be summarized as:
 
 <p align="center">
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/503f9b0d-ed52-4094-bc7e-6988e1765968" alt="CBAM_overview_eq" height="80"/>
 </p>
 
-where _⊗_ denotes element-wise multiplication. During multiplication, the attention values are broadcasted (copied) accordingly: channel attention values are broadcasted along the spatial dimension, and vice versa. _F′′_ is the final refined output. The figure below depicts the computation process of each attention map. The following describes the details of each attention module.
+where $⊗$ denotes element-wise multiplication. During multiplication, the attention values are broadcasted (copied) accordingly: channel attention values are broadcasted along the spatial dimension, and vice versa. $F^{′′}$ is the final refined output. The figure below depicts the computation process of each attention map. The following describes the details of each attention module.
 
 <p align="center">
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/12a9a4ed-4484-4207-99f0-c826c8b87253" alt="CBAM_detail" height="400"/>
@@ -309,24 +309,24 @@ where _⊗_ denotes element-wise multiplication. During multiplication, the atte
 
 **Channel attention module** - channel attention map is produced by exploiting the inter-channel relationship of features. As each channel of a feature map is considered as a feature detector, channel attention focuses on **‘what’** is meaningful given an input image. The spatial dimension of the input feature map is squeezed to compute the channel attention efficiently. For aggregating spatial information, _average-pooling_ has been commonly adopted so far. Authors argued that _max-pooling_ gathers another important clue about distinctive object features to infer finer channel-wise attention. Thus, they used both average-pooled and max-pooled features simultaneously and empirically confirmed that exploiting both features greatly improves representation power of networks rather than using each independently.
 
-The first step is to aggregate spatial information of a feature map by using both _average-pooling_ and _max-pooling_ operations, generating two different spatial context descriptors: _Fc{avg}_ and _Fc{max}_, which denote average-pooled features and max-pooled features respectively. Both descriptors are then forwarded to a shared network to produce the channel attention map _Mc_ (shape _C×1×1_). The shared network is composed of multi-layer perceptron (MLP) with one hidden layer. To reduce parameter overhead, the hidden activation size is set to _C/r×1×1_, where r is the reduction ratio. After the shared network is applied to each descriptor, the output feature vectors are merged using element-wise summation. In short, the channel attention is computed as:
+The first step is to aggregate spatial information of a feature map by using both _average-pooling_ and _max-pooling_ operations, generating two different spatial context descriptors: _Fc{avg}_ and _Fc{max}_, which denote average-pooled features and max-pooled features respectively. Both descriptors are then forwarded to a shared network to produce the channel attention map $M_c$ (shape $C × 1 × 1$). The shared network is composed of multi-layer perceptron (MLP) with one hidden layer. To reduce parameter overhead, the hidden activation size is set to $C/r × 1 × 1$, where $r$ is the reduction ratio. After the shared network is applied to each descriptor, the output feature vectors are merged using element-wise summation. In short, the channel attention is computed as:
 
 <p align="center">
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/605f2500-ef28-4e3b-a0e8-b63fc4f5fdcc" alt="CBAM_channel_att" height="80"/>
 </p>
 
-where _σ_ denotes the sigmoid function, W0 has shape _C/r×C_, and _W1_ has shape _C×C/r_. Note that the MLP weights, _W0_ and _W1_, are shared for both inputs and the ReLU activation function is followed by _W0_.
+where $σ$ denotes the sigmoid function, $W_0$ has shape $C/r × C$, and $W_1$ has shape $C × C/r$. Note that the MLP weights, $W_0$ and $W_1$, are shared for both inputs and the ReLU activation function is followed by $W_0$.
 
 
-**Spatial attention module** - the spatial attention map is generated by utilizing the inter-spatial relationship of features. Different from the channel attention, the spatial attention focuses on **‘where’** is an informative part, which is complementary to the channel attention. To compute the spatial attention, the first step is to apply _average-pooling_ and _max-pooling_ operations along the channel axis and concatenate them to generate an efficient feature descriptor. Applying pooling operations along the channel axis is shown to be effective in highlighting informative regions. On the concatenated feature descriptor, the convolution layer is  applied to generate a spatial attention map _Ms(F)_ (shape _H×W_) which encodes where to emphasize or suppress.
+**Spatial attention module** - the spatial attention map is generated by utilizing the inter-spatial relationship of features. Different from the channel attention, the spatial attention focuses on **‘where’** is an informative part, which is complementary to the channel attention. To compute the spatial attention, the first step is to apply _average-pooling_ and _max-pooling_ operations along the channel axis and concatenate them to generate an efficient feature descriptor. Applying pooling operations along the channel axis is shown to be effective in highlighting informative regions. On the concatenated feature descriptor, the convolution layer is  applied to generate a spatial attention map $M_s(F)$ (shape $H × W$) which encodes where to emphasize or suppress.
 
-The channel information of a feature map is aggregated by using two pooling operations, generating two 2D maps: _Fs{avg}_ (shape _1×H×W_) and _Fs{max}_ (shape _1×H×W_). Each denotes average-pooled features and max-pooled features across the channel. Those are then concatenated and convolved by a standard convolution layer, producing the _2D_ spatial attention map. In short, the spatial attention is computed as:
+The channel information of a feature map is aggregated by using two pooling operations, generating two 2D maps: $F^s_{avg}$ (shape $1 × H × W$) and $F^s_{max}$ (shape $1 × H × W$). Each denotes average-pooled features and max-pooled features across the channel. Those are then concatenated and convolved by a standard convolution layer, producing the $2D$ spatial attention map. In short, the spatial attention is computed as:
 
 <p align="center">
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/20b00305-c0af-42ea-9d5b-a449f2f7d825" alt="CBAM_spatial_att" height="80"/>
 </p>
 
-where _σ_ denotes the sigmoid function and _f_ _7×7_ represents a convolution operation with the filter size of _7 × 7_.
+where _σ_ denotes the sigmoid function and $f$ $7 × 7$ represents a convolution operation with the filter size of $7 × 7$.
 
 **Arrangement of attention modules** - given an input image, two attention modules, channel and spatial, compute complementary attention, focusing on **‘what’** and **‘where’** respectively. Considering this, two modules can be placed in a parallel or sequential manner. Authours have found that the sequential arrangement gives a better result than a parallel arrangement. For the arrangement of the sequential process, the experimental result shows that the channel-first order is slightly better than the spatial-first
 
@@ -454,9 +454,49 @@ where $α$ is a positive trade-off parameter, and $v$ measures the consistency o
 
 ## PAN
 2018 | [paper](https://arxiv.org/pdf/1803.01534v4.pdf) | _Path Aggregation Network for Instance Segmentation_
-TODO
 
+The way that information propagates in neural networks is of great importance. In this paper, authors proposed Path Aggregation Network (PANet) aiming at boosting information flow in proposal-based instance segmentation framework. Specifically, they enhanced the entire feature hierarchy with accurate localization signals in lower layers by bottom-up path augmentation, which shortens the information path between lower layers and topmost feature. The adaptive feature pooling was presented, which links feature grid and all feature levels to make useful information in each feature level propagate directly to following proposal subnetworks. A complementary branch capturing different views for each proposal is created to further improve mask prediction.
 
+During the research authors notes that information propagation in SoTA Mask R-CNN can be further improved. Specifically, features in low levels are helpful for large instance identification. But there is a long path from low-level structure to topmost features, increasing difficulty to access accurate localization information. Further, each proposal is predicted based on feature grids pooled from one feature level, which is assigned heuristically. This process can be updated since information discarded in other levels may be helpful for final prediction. Finally, mask prediction is made on a single view, losing the chance to gather more diverse information.
+
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/affbff14-7d90-4515-812d-1c6965e9fd82" alt="PANet" height="350"/>
+</p>
+
+Inspired by these principles and observations, wthey proposed PANet, illustrated above, for instance segmentation with followint properties:
+* To shorten information path and enhance feature pyramid with accurate localization signals existing in low-levels, bottom-up path augmentation is created. In fact, features in low-layers were utilized in the earlier works, but propagating low-level features to enhance entire feature hierarchy for instance recognition was not explored
+* Second, to recover broken information path between each proposal and all feature levels, they develop adaptive feature pooling. It is a simple component to aggregate features from all feature levels for each proposal, avoiding arbitrarily assigned results. With this operation, cleaner paths are created.
+* Finally, to capture different views of each proposal, they augmented mask prediction with tiny fully-connected (fc) layers, which possess complementary properties to FCN originally used by Mask R-CNN. By fusing predictions from these two views, information diversity increases and masks with better quality are produced. 
+
+The first two components are shared by both object detection and instance segmentation, leading to much enhanced performance of both tasks
+
+### Framework
+
+The framework is illustrated in figure above. Path augmentation and aggregation is conducted for improving performance. A bottom-up path is augmented to make low-layer information easier to propagate. adaptive feature pooling is designed to allow each proposal to access information from all levels for prediction. A complementary path is added to the mask-prediction branch. This new structure leads to decent performance. Similar to FPN, the improvement is independent of the CNN structure.
+
+#### Bottom-up Path Augmentation
+
+**Motivation** - The insightful point from earlier works is that neurons in high layers strongly respond to entire objects while other neurons are more likely to be activated by local texture and patterns manifests the necessity of augmenting a top-down path to propagate semantically strong features and enhance all features with reasonable classification capability in FPN. PANet framework further enhances the localization capability of the entire feature hierarchy by propagating strong responses of low-level patterns based on the fact that high response to edges or instance parts is a strong indicator to accurately localize instances. PANet path is built with clean lateral connections from the low level to top ones. Therefore, there is a “shortcut” (dashed green line in figure above), which consists of less than 10 layers, across these levels. In comparison, the CNN trunk in FPN gives a long path (dashed red line) passing through even 100+ layers from low layers to the topmost one. 
+
+**Augmented Bottom-up Structure** - PANet framework first accomplishes bottom-up path augmentation. Authors followed FPN to define that layers producing feature maps with the same spatial size are in the same network stage. Each feature level corresponds to one stage. ResNet is used as the basic structure and ${P_2, P_3, P_4, P_5}$ denote feature levels generated by FPN. The augmented path starts from the lowest level $P_2$ and gradually approaches $P_5$ as shown in figure above. From $P_2$ to $P_5$, the spatial size is gradually down-sampled with factor 2. Authors use ${N_2, N_3, N_4, N_5}$ to denote newly generated feature maps corresponding to ${P_2, P_3, P_4, P_5}$. Note that $N_2$ is simply $P_2$, without any processing. The building block of PFANet is shown below:
+
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/ec075dfe-c9db-4999-8d1a-80c6e1287281" alt="PANet_block" height="350"/>
+</p>
+
+Each building block takes a higher resolution feature map $N_i$ and a coarser map $P_{i+1}$ through lateral connection and generates the new feature map $N_{i+1}$. Each feature map $N_i$ first goes through a $3 × 3$ convolutional layer with stride 2 to reduce the spatial size. Then each element of feature map $P_{i+1}$ and the down-sampled map are added through lateral connection. The fused feature map is then processed by another $3 × 3$ convolutional layer to generate $N_{i+1}$ for following sub-networks. This is an iterative process and terminates after approaching $P_5$. In these building blocks, we consistently use channel 256 of feature maps. All convolutional layers are followed by a ReLU. The feature grid for each proposal is then pooled from new feature maps, i.e., ${N_2, N_3, N_4, N_5}$.
+
+#### Adaptive Feature Pooling
+
+Adaptive Feature Pooling is a component of the PANet framework designed for instance segmentation. It involves pooling features from all levels of the feature hierarchy for each proposal and fusing them for prediction. It was added to PANet to address the limitations of traditional methods where proposals were assigned to different feature levels based on their size, which could lead to suboptimal results. By pooling features from all levels for each proposal, Adaptive Feature Pooling allows the network to access context information from multiple levels, leading to more accurate predictions. This approach ensures that both small proposals can access high-level features with rich context information, and large proposals can access low-level features with fine details and high localization accuracy. Ultimately, Adaptive Feature Pooling enhances the network's ability to make accurate predictions for instance segmentation tasks
+
+#### Fully Connected Fusion
+
+Fully-connected Fusion is a technique used in the PANet framework to improve mask prediction in instance segmentation. It involves adding a fully-connected branch to the mask prediction branch, which fuses predictions from both fully-connected layers and convolutional layers. It was added because fully-connected layers have different properties compared to convolutional layers. Fully-connected layers are location-sensitive and can adapt to different spatial locations, making them effective in predicting masks for instances. By fusing predictions from both fully-connected and convolutional layers, PANet aims to leverage the strengths of each type of layer to enhance mask prediction accuracy and differentiate between instances more effectively. The figure below shows how fully connected fusion works.
+
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/9fa8c975-9f08-46c6-92c9-1c9aaa60d1d9" alt="PANet_fc_fusion" height="350"/>
+</p>
 
 ## Mish
 2019 | [paper](https://arxiv.org/vc/arxiv/papers/1908/1908.08681v1.pdf) | _Mish: A Self Regularized Non-Monotonic Neural Activation Function_
@@ -515,12 +555,12 @@ YOLOv1 is a **single-stage** object detection model. Object detection is framed 
 
 ### How it works
 
-* YOLO divides the input image into an S × S grid. If the center of an object falls into a grid cell, that grid cell is responsible for detecting that object.
+* YOLO divides the input image into an $S × S$ grid. If the center of an object falls into a grid cell, that grid cell is responsible for detecting that object.
 * Each grid cell predicts B bounding boxes and confidence scores for those boxes. These confidence scores reflect how
-confident the model is that the box contains an object and also how accurate it thinks the box is that it predicts. The confidence score is defined as _Pr(Object) ∗ IoU(pred, gt)_. If no object exists in that cell, the confidence scores should be zero. Otherwise we want the confidence score to equal the intersection over union (IOU) between the predicted box and the ground truth.
-* Each bounding box consists of 5 predictions: _x_, _y_, _w_, _h_, and confidence. The _(x, y)_ coordinates represent the center of the box relative to the bounds of the grid cell. The width and height are predicted relative to the whole image. Finally the confidence prediction represents the IoU between the predicted box and any ground truth box.
-* Each grid cell also predicts _C_ conditional class probabilities, _Pr(Class_i|Object)_. These probabilities are conditioned on the grid cell containing an object. We only predict one set of class probabilities per grid cell, regardless of the number of boxes _B_.
-* predictions are encoded as an _S × S × (B ∗ 5 + C)_ tensor (_S_ - grid size, _B_ - number of bboxes, _C_ - number of classes). In paper: 7 × 7 × 30, that is _S = 7_, _B = 2_, _C = 20_ (PASCAL VOC has 20 labels)
+confident the model is that the box contains an object and also how accurate it thinks the box is that it predicts. The confidence score is defined as $Pr(Object) ∗ IoU(pred, gt)$. If no object exists in that cell, the confidence scores should be zero. Otherwise we want the confidence score to equal the intersection over union (IOU) between the predicted box and the ground truth.
+* Each bounding box consists of 5 predictions: $x, y, w, h$, and confidence. The $(x, y)$ coordinates represent the center of the box relative to the bounds of the grid cell. The width and height are predicted relative to the whole image. Finally the confidence prediction represents the IoU between the predicted box and any ground truth box.
+* Each grid cell also predicts $C$ conditional class probabilities, $Pr(Class_i|Object)$. These probabilities are conditioned on the grid cell containing an object. We only predict one set of class probabilities per grid cell, regardless of the number of boxes $B$.
+* predictions are encoded as an $S × S × (B ∗ 5 + C)$ tensor ($S$ - grid size, $B$ - number of bboxes, $C$ - number of classes). In paper: $7 × 7 × 30$, that is $S = 7, B = 2, C = 20$ (PASCAL VOC has 20 labels)
 
 <p align="center">
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/2304ce9a-56e2-450e-be12-6eb5294b561d" alt="yolo_how" width="500"/>
@@ -530,8 +570,8 @@ confident the model is that the box contains an object and also how accurate it 
 
 * The initial convolutional layers of the network extract features from the image while the fully connected layers predict the output probabilities and coordinates.
 * The network architecture is inspired by the GoogLeNet. It has 24 convolutional layers followed by 2 fully connected layers
-* Instead of the inception modules used by GoogLeNet, the _1 × 1_ conv reduction layers followed by _3 × 3_ convolutional layers are used
-* To avoid overfitting use dropout and extensive data augmentation. A dropout layer with _rate = 0.5_ after the first connected layer prevents co-adaptation between layers
+* Instead of the inception modules used by GoogLeNet, the $1 × 1$ conv reduction layers followed by $3 × 3$ convolutional layers are used
+* To avoid overfitting use dropout and extensive data augmentation. A dropout layer with $rate = 0.5$ after the first connected layer prevents co-adaptation between layers
 
 ### Loss function
 <p align="center">
