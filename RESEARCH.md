@@ -141,7 +141,7 @@ Those plugin modules and post-processing methods that only increase the inferenc
 ## SPP
 2015 | [paper](https://arxiv.org/pdf/1406.4729.pdf) | _Spatial Pyramid Pooling in Deep Convolutional Networks for Visual Recognition_
 
-Authors of the paper introduced a Spatial Pyramid Pooling (SPP) layer to remove the fixed-size constraint of the network. Specifically, added an SPP layer on top of the last convolutional layer. The SPP layer pools the features and generates fixed length outputs, which are then fed into the fullyconnected layers (or other classifiers). In other words, we perform some information “aggregation” at a deeper stage of the network hierarchy (between convolutional layers and fully-connected layers) to avoid the need for cropping or warping at the beginning
+Authors of the paper introduced a Spatial Pyramid Pooling (**SPP**) layer to remove the fixed-size constraint of the network. Specifically, added an SPP layer on top of the last convolutional layer. The SPP layer pools the features and generates fixed length outputs, which are then fed into the fullyconnected layers (or other classifiers). In other words, we perform some information “aggregation” at a deeper stage of the network hierarchy (between convolutional layers and fully-connected layers) to avoid the need for cropping or warping at the beginning
 
 <p align="center">
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/20e4130d-8b7d-40be-9e03-3de729989654" alt="SPP" height="350"/>
@@ -155,10 +155,14 @@ Spatial pyramid pooling (also knows as spatial pyramid matching or SPM), as an e
 
 SPP-net not only makes it possible to generate representations from arbitrarily sized images/windows for testing, but also allows us to feed images with varying sizes or scales during training. Training with variable-size images increases scale-invariance and reduces over-fitting. 
 
+> **_NOTE:_** Most of the YOLO approaches uses only the idea of modified **SPP block** (e.g. SPPF in YOLOv5) - applying _max-pooling_ operations with different kernel sizes (with padding) and then concatenating the results to form a single feature map, which is passed to next blocks.
+
+
+
 ## FPN
 2017 | [paper](https://arxiv.org/pdf/1612.03144.pdf) | _Feature Pyramid Networks for Object Detection_
 
-Authors of the paper exploited the inherent multi-scale, pyramidal hierarchy of deep convolutional networks to construct feature pyramids with marginal extra cost. A top-down architecture with lateral connections is developed for building high-level semantic feature maps at all scales. This architecture, called a Feature Pyramid Network (FPN), shows significant improvement as a generic feature extractor in several applications. 
+Authors of the paper exploited the inherent multi-scale, pyramidal hierarchy of deep convolutional networks to construct feature pyramids with marginal extra cost. A top-down architecture with lateral connections is developed for building high-level semantic feature maps at all scales. This architecture, called a Feature Pyramid Network (**FPN**), shows significant improvement as a generic feature extractor in several applications. 
 
 Pyramid approaches comparison:
 <p align="center">
@@ -177,8 +181,7 @@ FPN compared to [similar](https://arxiv.org/pdf/1603.08695) approach:
 </p>
 
 
-
-* **Bottom-up pathway** - the feedforward computation of the backbone ConvNet, which computes a feature hierarchy consisting of feature maps at several scales with a scaling step of 2. There are often many layers producing output maps of the same size - these layers are in the same network stage. For the feature pyramid, one pyramid level is defined for each stage. The output of the last layer of each stage is chosen as the reference set of feature maps, which will be enriched to create the pyramid. This choice is natural since the deepest layer of each stage should have the strongest features. Specifically, for ResNets the feature activations output by each stage’s last residual block are used. The output of these last residual blocks are denoted as _{C2, C3, C4, C5}_ for _conv2_, _conv3_, _conv4_, and _conv5_ outputs, with corresponding strides of _{4, 8, 16, 32}_ pixels with respect to the input image. The _conv1_ is not included into the pyramid due to its large memory footprint.
+* **Bottom-up pathway** - the feedforward computation of the backbone ConvNet, which computes a feature hierarchy consisting of feature maps at several scales with a scaling step of $2$. There are often many layers producing output maps of the same size - these layers are in the same network stage. For the feature pyramid, one pyramid level is defined for each stage. The output of the last layer of each stage is chosen as the reference set of feature maps, which will be enriched to create the pyramid. This choice is natural since the deepest layer of each stage should have the strongest features. Specifically, for ResNets the feature activations output by each stage’s last residual block are used. The output of these last residual blocks are denoted as ${C_2, C_3, C_4, C_5}$ for _conv2_, _conv3_, _conv4_, and _conv5_ outputs, with corresponding strides of ${4, 8, 16, 32}$ pixels with respect to the input image. The _conv1_ is not included into the pyramid due to its large memory footprint.
 
 * **Top-down pathway and lateral connections** - it hallucinates higher resolution features by upsampling spatially coarser, but semantically stronger, feature maps from higher pyramid levels. These features are then enhanced with features from the bottom-up pathway via lateral connections. Each lateral connection merges feature maps of the same spatial size from the bottom-up pathway and the top-down pathway. The bottom-up feature map is of lower-level semantics, but its activations are more accurately localized as it was subsampled fewer times. The building block shown below constructs the top-down feature maps.
 
@@ -186,22 +189,24 @@ FPN compared to [similar](https://arxiv.org/pdf/1603.08695) approach:
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/c20d0886-7ea0-4e47-89ef-3655d6e8e5df" alt="FPN_block" height="350"/>
 </p>
 
-With a coarser-resolution feature map, the spatial resolution is upsampled by a factor of 2 (using nearest neighbor upsampling for simplicity). The upsampled map is then merged with the corresponding bottom-up map (which undergoes a _1 × 1_ convolutional layer to reduce channel dimensions) by element-wise addition. This process is iterated until the finest resolution map is generated. Iteration is started by simply attaching a _1×1_ convolutional layer on _C5_ to produce the coarsest resolution map. Finally, a _3×3_ convolution is appended on each merged map to generate the final feature map, which is to reduce the aliasing effect of upsampling. This final set of feature maps is called _{P2, P3, P4, P5}_, corresponding to _{C2, C3, C4, C5}_ that are respectively of the same spatial sizes. Because all levels of the pyramid use shared classifiers/regressors as in a traditional featurized image pyramid, the feature dimension (numbers of channels, denoted as _d_) is fixed in all the feature maps. _d = 256_ in this paper and thus all extra convolutional layers have 256-channel outputs. There are no non-linearities in these extra layers, which has been empirically found to have minor impacts. The more sophisticated blocks (e.g., using multi-layer residual blocks as the connections) have been tested and observed marginally better results.
-* 
+With a coarser-resolution feature map, the spatial resolution is upsampled by a factor of $2$ (using nearest neighbor upsampling for simplicity). The upsampled map is then merged with the corresponding bottom-up map (which undergoes a $1 × 1$ convolutional layer to reduce channel dimensions) by element-wise addition. This process is iterated until the finest resolution map is generated. Iteration is started by simply attaching a $1 × 1$ convolutional layer on $C_5$ to produce the coarsest resolution map. Finally, a $3 × 3$ convolution is appended on each merged map to generate the final feature map, which is to reduce the aliasing effect of upsampling. This final set of feature maps is called ${P_2, P_3, P_4, P_5}$, corresponding to ${C_2, C_3, C_4, C_5}$ that are respectively of the same spatial sizes. Because all levels of the pyramid use shared classifiers/regressors as in a traditional featurized image pyramid, the feature dimension (numbers of channels, denoted as $d$) is fixed in all the feature maps. $d = 256$ in this paper and thus all extra convolutional layers have 256-channel outputs. There are no non-linearities in these extra layers, which has been empirically found to have minor impacts. The more sophisticated blocks (e.g., using multi-layer residual blocks as the connections) have been tested and observed marginally better results.
+
+> **_NOTE:_** Most of the YOLO approaches uses the idea of connecting the backbone path (**Bottom-up pathway**) with the neck path **Top-down pathway** by the use of the **lateral connections**. The FPN is further improved to PAN and finally to BiFPN neck configurations.
+
 
 ## Soft NMS
 2017 | [paper](https://arxiv.org/pdf/1704.04503.pdf) | _Improving Object Detection With One Line of Code_
 
-Non-maximum suppression (NMS) is an integral part of the object detection pipeline. First, it sorts all detection boxes on the basis of their scores. The detection box _M_ with the maximum score is selected and all other detection boxes with a significant overlap (using a pre-defined threshold) with _M_ are suppressed. This process is recursively applied on the remaining boxes. As per the design of the algorithm, if an object lies within the predefined overlap threshold, it leads to a miss. 
+Non-maximum suppression (**NMS**) is an integral part of the object detection pipeline. First, it sorts all detection boxes on the basis of their scores. The detection box $M$ with the maximum score is selected and all other detection boxes with a significant overlap (using a pre-defined threshold) with $M$ are suppressed. This process is recursively applied on the remaining boxes. As per the design of the algorithm, if an object lies within the predefined overlap threshold, it leads to a miss. 
 
-Authors proposed an improved version of NMS, that is a _Soft-NMS_, an algorithm which decays the detection scores of all other objects as a continuous function of their overlap with _M_. Hence, no object is eliminated in this process.
+Authors proposed an improved version of NMS, that is a _**Soft-NMS**_, an algorithm which decays the detection scores of all other objects as a continuous function of their overlap with _M_. Hence, no object is eliminated in this process.
 
 During the analysis of old NMS, authors wanted the improved metric to take the following conditions into account:
 * Score of neighboring detections should be decreased to an extent that they have a smaller likelihood of increasing the false positive rate, while being above obvious false positives in the ranked list of detections.
 * Removing neighboring detections altogether with a low NMS threshold would be sub-optimal and would increase the miss-rate when evaluation is performed at high overlap thresholds.
 * Average precision measured over a range of overlap thresholds would drop when a high NMS threshold is used
 
-It would be ideal if the penalty function was continuous, otherwise it could lead to abrupt changes to the ranked list of detections. A continuous penalty function should have no penalty when there is no overlap and very high penalty at a high overlap. Also, when the overlap is low, it should increase the penalty gradually, as _M_ should not affect the scores of boxes which have a very low overlap with it. However, when overlap of a box _bi_ with _M_ becomes close to one, _bi_ should be significantly penalized. Taking this into consideration, authors proposed a Gaussian penalty function:
+It would be ideal if the penalty function was continuous, otherwise it could lead to abrupt changes to the ranked list of detections. A continuous penalty function should have no penalty when there is no overlap and very high penalty at a high overlap. Also, when the overlap is low, it should increase the penalty gradually, as $M$ should not affect the scores of boxes which have a very low overlap with it. However, when overlap of a box $b_i$ with $M$ becomes close to one, $b_i$ should be significantly penalized. Taking this into consideration, authors proposed a Gaussian penalty function:
 
 <p align="center">
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/24ac7cb8-9152-49b3-9127-b13b03f98bf7" alt="soft_NMS_eq" height="60"/>
@@ -211,33 +216,37 @@ It would be ideal if the penalty function was continuous, otherwise it could lea
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/db925ea6-ff65-4af1-9be3-023f1b4f5a0f" alt="soft_NMS_algo" height="350"/>
 </p>
 
-
 This update rule (top) is applied in each iteration and scores of all remaining detection boxes are updated
 
+> **_NOTE:_** Some of the YOLO approaches use the idea of **Soft-NMS** for post processing. Soft-NMS is improved later with the use of DIoU.
 
 ## Cosine Annealing
 2017 | [paper](https://arxiv.org/pdf/1608.03983.pdf) | _SGDR: Stochastic Gradient Descent with Warm Restarts_
 
 Cosine Annealing with warm restarts is a type of learning rate schedule that has the effect of starting with a large learning rate that is relatively rapidly decreased to a minimum value before being increased rapidly again. The resetting of the learning rate acts like a simulated restart of the learning process and the re-use of good weights as the starting point of the restart is referred to as a "warm restart" in contrast to a "cold restart" where a new set of small random numbers may be used as a starting point.
 
-Authors of the work considered one of the simplest warm restart approaches. They simulated a new warm-started run / restart of SGD once _Ti_ epochs are performed, where _i_ is the index of the run. Importantly, the restarts are not performed from scratch but emulated by increasing the learning rate _ηt_ while the old value of xt is used as an initial solution. The amount of this increase controls to which extent the previously acquired information (e.g., momentum) is used. Within the _i_-th run, the learning rate is decayed with a cosine annealing for each batch as follows:
+Authors of the work considered one of the simplest warm restart approaches. They simulated a new warm-started run / restart of SGD once $T_i$ epochs are performed, where $i$ is the index of the run. Importantly, the restarts are not performed from scratch but emulated by increasing the learning rate $η_t$ while the old value of $x_t$ is used as an initial solution. The amount of this increase controls to which extent the previously acquired information (e.g., momentum) is used. Within the $i$-th run, the learning rate is decayed with a cosine annealing for each batch as follows:
 
 <p align="center">
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/a9c1d5c7-2912-451c-bd63-5b0006052bd8" alt="cosine_annealing_eq" height="70"/>
 </p>
 
-where _ηi\_min_ and _ηi\_max_ are ranges for the learning rate, and _Tcur_ accounts for how many epochs have been performed since the last restart. Since _Tcur_ is updated at each batch iteration _t_, it can take discredited values such as _0.1_, _0.2_, etc. Thus, _ηt = _ηi\_max_ when _t = 0_ and _Tcur = 0_. Once _Tcur = Ti_, the cos function will output _−1_ and thus _ηt = _ηi\_min_. The decrease of the learning rate is shown below (left - without restart, right - with restart every ~2k iterations).
+where $η^i_{min}$ and $η^i_{max}$ are ranges for the learning rate, and $T_{cur}$ accounts for how many epochs have been performed since the last restart. Since $T_{cur}$ is updated at each batch iteration $t$, it can take discredited values such as $0.1$, $0.2$, etc. Thus, $η_t = η^i_{max}$ when $t = 0$ and $T_{cur} = 0$. Once $T_{cur} = T_i$, the cos function will output $−1$ and thus $η_t = η^i_{min}$. The decrease of the learning rate is shown below (left - without restart, right - with restart every ~2k iterations).
 
 <p align="center">
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/2d2c4971-fd4a-4ab6-a6f8-bc068b60c624" alt="cosine_annealing" height="350"/>
 </p>
+
+> **_NOTE:_** Some of the YOLO approaches use the idea of **Cosine Annealing** (without warm restarts) for learning rate scheduling.
+
+
 
 ## DropBlock
 2018 | [paper](https://arxiv.org/pdf/1810.12890.pdf) | _DropBlock: A regularization method for convolutional networks_
 
 Although dropout is widely used as a regularization technique for fully connected layers, it is often less effective for convolutional layers (in most cases it was used at the FC layers of the conv networks). This lack of success of dropout for convolutional layers is perhaps due to the fact that activation units in convolutional layers are spatially correlated so information can still flow through convolutional networks despite dropout. Thus a structured form of dropout is needed to regularize convolutional networks. The main drawback of dropout is that it drops out features randomly. While this can be effective for fully connected layers, it is less effective for convolutional layers, where features are correlated spatially. When the features are correlated, even with dropout, information about the input can still be sent to the next layer, which causes the networks to overfit. This intuition suggests that a more structured form of dropout is needed to better regularize convolutional networks
 
-DropBlock is a structured form of dropout, that is particularly effective to regularize convolutional networks. In DropBlock, features in a block, i.e., a contiguous region of a feature map, are dropped together. As DropBlock discards features in a correlated area, the networks must look elsewhere for evidence to fit the data.
+**DropBlock** is a structured form of dropout, that is particularly effective to regularize convolutional networks. In DropBlock, features in a block, i.e., a contiguous region of a feature map, are dropped together. As DropBlock discards features in a correlated area, the networks must look elsewhere for evidence to fit the data.
 
 <p align="center">
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/d8718292-fb1e-44f8-9103-4034e1b73ade" alt="drop_block" height="350"/>
@@ -251,9 +260,11 @@ DropBlock is a simple method similar to dropout. Its main difference from dropou
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/eab7cb36-5aad-40bb-8b61-3d06a3e9744f" alt="drop_block_algo" height="450"/>
 </p>
 
-DropBlock has two main parameters which are _block_size_ and _γ_. _block_size_ is the size of the block to be dropped, and _γ_, controls how many activation units to drop. Authors experimented with a shared DropBlock mask across different feature channels or each feature channel with its DropBlock mask. The above Algorithm corresponds to the latter, which tends to work better in the experiments
+DropBlock has two main parameters which are $block\_size$ and $γ$. $block\_size$ is the size of the block to be dropped, and $γ$, controls how many activation units to drop. Authors experimented with a shared DropBlock mask across different feature channels or each feature channel with its DropBlock mask. The above Algorithm corresponds to the latter, which tends to work better in the experiments
 
 Applying DropbBlock in skip connections in addition to the convolution layers increases the accuracy. Also, gradually increasing number of dropped units during training leads to better accuracy and more robust to hyperparameter choices
+
+> **_NOTE:_** Some of the YOLO approaches (newer ones) use the idea of **DropBlock** for regularization purposes.
 
 
 ## MixUp
@@ -267,14 +278,13 @@ The contribution of _mixup_ paper is to propose a generic vicinal distribution:
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/fcfb7d1e-8fc7-4a49-a48c-5652314015c8" alt="mixup_hard_eq" height="60"/>
 </p>
 
-
-where _λ ∼ Beta(α, α)_, for _α ∈ (0, ∞)_. In a nutshell, sampling from the _mixup_ vicinal distribution produces virtual feature-target vectors:
+where $λ ∼ Beta(α, α)$, for $α ∈ (0, ∞)$. In a nutshell, sampling from the _mixup_ vicinal distribution produces virtual feature-target vectors:
 
 <p align="center">
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/5992a2fd-34a6-4565-aa5c-9687e1dee702" alt="mixup" height="90"/>
 </p>
 
-where _(xi, yi)_ and _(xj , yj)_ are two feature-target vectors drawn at random from the training data, and _λ ∈ [0, 1]_. The mixup hyper-parameter α controls the strength of interpolation between feature-target pairs, recovering the ERM (Empirical Risk Minimization) principle as _α → 0_.
+where $(x_i, y_i)$ and $(x_j , y_j)$ are two feature-target vectors drawn at random from the training data, and $λ ∈ [0, 1]$. The mixup hyper-parameter α controls the strength of interpolation between feature-target pairs, recovering the ERM (Empirical Risk Minimization) principle as $α → 0$.
 
 **What is mixup doing?** 
 
@@ -284,6 +294,9 @@ Mixup example:
 <p align="center">
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/6f5f48d7-74cd-4da0-b953-191a12521b0e" alt="mixup_example" height="350"/>
 </p>
+
+> **_NOTE:_** Most of the YOLO approaches (new ones) use **MixUp** as one of data augmentation techniques for regularization purposes.
+
 
 
 ## CBAM
@@ -326,7 +339,7 @@ The channel information of a feature map is aggregated by using two pooling oper
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/20b00305-c0af-42ea-9d5b-a449f2f7d825" alt="CBAM_spatial_att" height="80"/>
 </p>
 
-where _σ_ denotes the sigmoid function and $f$ $7 × 7$ represents a convolution operation with the filter size of $7 × 7$.
+where $σ$ denotes the sigmoid function and $f$ $7 × 7$ represents a convolution operation with the filter size of $7 × 7$.
 
 **Arrangement of attention modules** - given an input image, two attention modules, channel and spatial, compute complementary attention, focusing on **‘what’** and **‘where’** respectively. Considering this, two modules can be placed in a parallel or sequential manner. Authours have found that the sequential arrangement gives a better result than a parallel arrangement. For the arrangement of the sequential process, the experimental result shows that the channel-first order is slightly better than the spatial-first
 
@@ -335,6 +348,8 @@ Example of CBAM integrated with a ResBlock in ResNet:
 <p align="center">
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/5f286642-9e32-4823-8b21-2d8debe9c269" alt="resblock_CBAM" height="270"/>
 </p>
+
+> **_NOTE:_** Some of the new YOLO approaches use either **Channel-Attention** or **Spatial-Attention** to enhance feature maps representations.
 
 
 ## Focal Loss / RetinaNet
@@ -350,19 +365,19 @@ In R-CNN-like detectors, class imbalance is addressed by a two-stage cascade and
 
 In contrast, a one-stage detector must process a much larger set of candidate object locations regularly sampled across an image. In practice this often amounts to enumerating ∼100k locations that densely cover spatial positions, scales, and aspect ratios. While similar sampling heuristics may also be applied, they are inefficient as the training procedure is still dominated by easily classified background examples. This inefficiency is a classic problem in object detection that is typically addressed via techniques such as bootstrapping or hard example mining.
 
-Focal Loss proposed in this paper acts as a more effective alternative to previous approaches for dealing with class imbalance. The loss function is a dynamically scaled cross entropy loss, where the scaling factor decays to zero as confidence in the correct class increases (see above). Intuitively, this scaling factor can automatically down-weight the contribution of easy examples during training and rapidly focus the model on hard examples. Experiments show that the proposed Focal Loss enables to train a high-accuracy, one-stage detector that significantly outperforms the alternatives of training with the sampling heuristics or hard example mining, the previous SoTA techniques for training one-stage detectors. To demonstrate the effectiveness of the proposed focal loss, authors designed a simple one-stage object detector called _RetinaNet_, named for its dense sampling of object locations in an input image. Its design features an efficient in-network feature pyramid and use of anchor boxes. It draws on a variety of recent ideas from [SSD, DeepMultiBox, RPN, FPN].
+Focal Loss proposed in this paper acts as a more effective alternative to previous approaches for dealing with class imbalance. The loss function is a dynamically scaled cross entropy loss, where the scaling factor decays to zero as confidence in the correct class increases (see above). Intuitively, this scaling factor can automatically down-weight the contribution of easy examples during training and rapidly focus the model on hard examples. Experiments show that the proposed Focal Loss enables to train a high-accuracy, one-stage detector that significantly outperforms the alternatives of training with the sampling heuristics or hard example mining, the previous SoTA techniques for training one-stage detectors. To demonstrate the effectiveness of the proposed focal loss, authors designed a simple one-stage object detector called _RetinaNet_, named for its dense sampling of object locations in an input image. Its design features an efficient in-network feature pyramid and use of anchor boxes. It draws on a variety of recent ideas from SSD, RPN and FPN.
 
 The Focal Loss is designed to address the one-stage object detection scenario in which there is an extreme imbalance between foreground and background classes during training (e.g., 1:1000).
 
-More formally, authors added a modulating factor _(1 − pt)^γ_ to the cross entropy loss, with tunable focusing parameter _γ ≥ 0_ and defined the Focal Loss as:
+More formally, authors added a modulating factor $(1 − p_t)^γ$ to the cross entropy loss, with tunable focusing parameter $γ ≥ 0$ and defined the Focal Loss as:
 
 <p align="center">
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/2c67cbcc-6837-4135-8e66-0bf1a28aec7a" alt="focal_loss_eq" height="60"/>
 </p>
 
-The focal loss is visualized for several values of _γ ∈ [0, 5]_ in figure above. Authors noted two properties of the focal loss:
-* When an example is misclassified and _pt_ is small, the modulating factor is near 1 and the loss is unaffected. As _pt → 1_, the factor goes to _0_ and the loss for well-classified examples is down-weighted
-* The focusing parameter _γ_ smoothly adjusts the rate at which easy examples are down-weighted. When _γ = 0_, _FL_ is equivalent to _CE_, and as _γ_ is increased the effect of the modulating factor is likewise increased (found _γ = 2_ to work best in experiments). Intuitively, the modulating factor reduces the loss contribution from easy examples and extends the range in which an example receives low loss. For instance, with _γ = 2_, an example classified with _pt = 0.9_ would have _100×_ lower loss compared with _CE_ and with _pt ≈ 0.968_ it would have _1000×_ lower loss. This in turn increases the importance of correcting misclassified examples (whose loss is scaled down by at most _4×_ for _pt ≤ .5_ and _γ = 2_). In practice authors used an _α-balanced_ variant of the focal loss:
+The focal loss is visualized for several values of $γ ∈ [0, 5]$ in figure above. Authors noted two properties of the focal loss:
+* When an example is misclassified and _pt_ is small, the modulating factor is near 1 and the loss is unaffected. As $p_t → 1$, the factor goes to $0$ and the loss for well-classified examples is down-weighted
+* The focusing parameter $γ$ smoothly adjusts the rate at which easy examples are down-weighted. When $γ = 0$, _FL_ is equivalent to _CE_, and as $γ$ is increased the effect of the modulating factor is likewise increased (found $γ = 2$ to work best in experiments). Intuitively, the modulating factor reduces the loss contribution from easy examples and extends the range in which an example receives low loss. For instance, with $γ = 2$, an example classified with $p_t = 0.9$ would have $100×$ lower loss compared with _CE_ and with $pt ≈ 0.968$ it would have $1000×$ lower loss. This in turn increases the importance of correcting misclassified examples (whose loss is scaled down by at most $4×$ for $p_t ≤ .5$ and $γ = 2$). In practice authors used an _α-balanced_ variant of the focal loss:
 
 <p align="center">
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/372b592a-7464-40ac-96d0-1004801da292" alt="focal_loss_alpha_eq" height="60"/>
@@ -376,6 +391,8 @@ Another huge contribution of the paper is the RetinaNet architecture shown below
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/0b044e91-ea60-4801-a6be-d74f8bc999b5" alt="retina_net" height="400"/>
 </p>
 
+> **_NOTE:_** Some of the YOLO approaches check if using Focal Loss helps to achieve better results, but in most cases it does not. YOLO is already handling background examples via set of multipliers for loss calculation and/or picking bboxes for loss calculation. 
+
 
 ## DIoU
 2018 | [paper](https://arxiv.org/pdf/1911.08287.pdf) | _Distance-IoU Loss: Faster and Better Learning for Bounding Box Regression_
@@ -387,7 +404,7 @@ Intersection over Union (IoU) is the most popular metric for object detection:
 </p>
 
 where $B_{gt} = (x^{gt}, y^{gt}, w^{gt}, h^{gt})$ is the ground-truth, and
-$B = (x, y, w, h)$ is the predicted box. Conventionally, $l_n$-norm (e.g., n = 1 or 2) loss is adopted on the coordinates of $B$ and $B_{gt}$ to measure the distance between bounding boxes. However, $l_n$-norm loss is not a suitable choice to obtain the optimal IoU metric. In earlier works, the IoU loss was suggested to be adopted for improving the IoU metric:
+$B = (x, y, w, h)$ is the predicted box. Conventionally, $l_n$-norm (e.g., $n = 1$ or $n = 2$) loss is adopted on the coordinates of $B$ and $B_{gt}$ to measure the distance between bounding boxes. However, $l_n$-norm loss is not a suitable choice to obtain the optimal IoU metric. In earlier works, the IoU loss was suggested to be adopted for improving the IoU metric:
 
 <p align="center">
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/eab21c19-7365-4626-adc2-755f5cf0087c" alt="iou_loss" height="60"/>
@@ -451,6 +468,8 @@ where $α$ is a positive trade-off parameter, and $v$ measures the consistency o
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/2e8976f5-3792-4cd1-a73b-db5b96fdcc78" alt="ciou_v" height="60"/>
 </p>
 
+> **_NOTE:_** Most of the new YOLO approaches use **DIoU** or **CIoU** as loss functions for bounding box regression.
+
 
 ## PAN
 2018 | [paper](https://arxiv.org/pdf/1803.01534v4.pdf) | _Path Aggregation Network for Instance Segmentation_
@@ -482,9 +501,14 @@ The framework is illustrated in figure above. Path augmentation and aggregation 
 
 <p align="center">
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/ec075dfe-c9db-4999-8d1a-80c6e1287281" alt="PANet_block" height="350"/>
-</p>
+</p> 
 
 Each building block takes a higher resolution feature map $N_i$ and a coarser map $P_{i+1}$ through lateral connection and generates the new feature map $N_{i+1}$. Each feature map $N_i$ first goes through a $3 × 3$ convolutional layer with stride 2 to reduce the spatial size. Then each element of feature map $P_{i+1}$ and the down-sampled map are added through lateral connection. The fused feature map is then processed by another $3 × 3$ convolutional layer to generate $N_{i+1}$ for following sub-networks. This is an iterative process and terminates after approaching $P_5$. In these building blocks, we consistently use channel 256 of feature maps. All convolutional layers are followed by a ReLU. The feature grid for each proposal is then pooled from new feature maps, i.e., ${N_2, N_3, N_4, N_5}$.
+
+Comparison of FPN and PAN:
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/2b674b4f-a54d-44b1-8cf9-ef1b6ec61da3" alt="PAN_vs_FPN" height="350"/>
+</p> 
 
 #### Adaptive Feature Pooling
 
@@ -497,6 +521,9 @@ Fully-connected Fusion is a technique used in the PANet framework to improve mas
 <p align="center">
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/9fa8c975-9f08-46c6-92c9-1c9aaa60d1d9" alt="PANet_fc_fusion" height="350"/>
 </p>
+
+> **_NOTE:_** Most of the new YOLO approaches make use of the **Bottom-up Path Augmentation** idea from PANet. It is improved to BiFPN in future work.
+
 
 ## Mish
 2019 | [paper](https://arxiv.org/vc/arxiv/papers/1908/1908.08681v1.pdf) | _Mish: A Self Regularized Non-Monotonic Neural Activation Function_
