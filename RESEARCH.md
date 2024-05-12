@@ -637,14 +637,48 @@ The figure below shows comparison of EFM with other feature pyramid fusion strat
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/c25f0349-4963-406d-8ace-bb3a8c4a63ab" alt="CSP_EFM" height="200"/>
 </p>
 
-> **_NOTE:_** Most of the new YOLO approaches (mostly from the same authors as CSP) use **CSP** to update the computational blocks.
+> **_NOTE:_** Most of the new YOLO approaches (mostly from the same authors as CSP) use **CSP** only to update the computational blocks.
 
 
 
 ## ATSS
 2020 | [paper](https://arxiv.org/pdf/1912.02424) | _Bridging the Gap Between Anchor-based and Anchor-free Detection via Adaptive Training Sample Selection_
-TODO
 
+In this paper, authors discuss the differences between anchor-based and anchor-free object detectors and point out that the essential difference (leading to performance gap) is related to how to define positive and negative training samples. If they adopt the same definition of positive and negative samples during training, there is no obvious difference in the final performance, no matter regressing from a box or a point. This shows that how to select positive and negative training samples is important for current object detectors. Then, they propose an Adaptive Training Sample Selection (ATSS) to automatically select positive and negative samples according to statistical characteristics of object. It significantly improves the performance of anchor-based and anchor-free detectors and bridges the gap between them.
+
+In recent years, object detection has been dominated by anchor-based detectors, which can be generally divided into one-stage methods and two-stage methods. Both of them first tile a large number of preset anchors on the image, then predict the category and refine the coordinates of these anchors by one or several times, finally output these refined anchors as detection results. Because two-stage methods refine anchors several times more than one-stage methods, the former one has more accurate results while the latter one has higher computational efficiency. SoTA results on common detection benchmarks are still held by anchor-based detectors. 
+
+Recent academic attention has been geared toward anchor-free detectors due to the emergence of FPN and Focal Loss. Anchor-free detectors directly find objects without preset anchors in two different ways. One way is to first locate several pre-defined or self-learned keypoints and then bound the spatial extent of objects. We call this type of anchor-free detectors as keypoint-based methods. Another way is to use the center point or region of objects to define positives and then predict the four distances from positives to the object boundary. We call this kind of anchor-free detectors as center-based methods. Keypoint-based methods follow the standard keypoint estimation pipeline that is different from anchor-based detectors. These anchor-free detectors are able to eliminate those hyperparameters related to anchors and have achieved similar performance with anchor-based detectors, making them more potential in terms of generalization ability
+
+After comprehensive experiments, authors indicate that the essential difference between one-stage anchor-based detectors and center-based anchor- free detectors is actually how to define positive and negative training samples, which is important for current object detection and deserves further study.
+
+**Adaptive Training Sample Selection**
+
+When training an object detector, we first need to define positive and negative samples for classification, and then use positive samples for regression. According to the previous analysis, the former one is crucial and the anchor-free detector FCOS improves this step. It introduces a new way to define positives and negatives, which achieves better performance than the traditional IoU-based strategy. Inspired by this, we delve into the most basic issue in object detection: _how to define positive and negative training samples_, and propose an Adaptive Training Sample Selection (ATSS). Compared with these traditional strategies, our method almost has no hyperparameters and is robust to different settings.
+
+Previous sample selection strategies have some sensitive hyperparameters, such as IoU thresholds in anchor-based detectors and scale ranges in anchor-free detectors. After these hyperparameters are set, all ground-truth boxes must select their positive samples based on the fixed rules, which are suitable for most objects, but some outer objects will be neglected. Thus, different settings of these hyperparameters will have very different results.
+
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/d4413259-fa3e-40d9-b9f1-aa2784135d45" alt="ATSS_algo" height="600"/>
+</p>
+
+ATSS method that automatically divides positive and negative samples according to statistical characteristics of object almost without any hyperpa- rameter. Algorithm 1 (above) describes how the proposed method works for an input image. For each ground-truth box $g$ on the image, first find out its candidate positive samples. As described in Line 3 to 6, on each pyramid level, select $k$ anchor boxes whose center are closest to the center of $g$ based on $L_2$ distance. Supposing there are $L$ feature pyramid levels, the ground-truth box $g$ will have $k × L$ candidate positive samples. After that, compute the IoU between these candidates and the ground-truth $g$ as $D_g$ in Line 7, whose mean and standard deviation are computed as $m_g$ and $v_g$ in Line 8 and Line 9. With these statistics, the IoU threshold for this ground-truth $g$ is obtained as $t_g = m_g + v_g$ in Line 10. Finally, select these candidates whose IoU are greater than or equal to the threshold $t_g$ as final positive samples in Line 11 to 15. Notably, authors also limit the positive samples’ center to the ground-truth box as shown in Line 12. Besides, if an anchor box is assigned to multiple ground-truth boxes, the one with the highest IoU will be selected. The rest are negative samples. Illustration of how ATSS works is shown below and some motivations behind ATSS method are explained as follows.
+
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/3237162d-f358-4f6a-a2c8-cfaeb1af5102" alt="ATSS" height="300"/>
+</p>
+
+* **Selecting candidates based on the center distance between anchor box and object** - for RetinaNet, the IoU is larger when the center of anchor box is closer to the center of object. For FCOS, the closer anchor point to the center of object will produce higher-quality detections. Thus, the closer anchor to the center of object is the better candidate
+
+* **Using the sum of mean and standard deviation as the IoU threshold** - the IoU mean $m_g$ of an object is a measure of the suitability of the preset anchors for this object. A high $m_g$ as shown in figure above (left) indicates it has high-quality candidates and the IoU threshold is supposed to be high. A low $m_g$ as shown in figure above (right) indicates that most of its candidates are low-quality and the IoU threshold should be low. Besides, the IoU standard deviation $v_g$ of an object is a measure of which layers are suitable to detect this object. A high $v_g$ as shown in above figure (left) means there is a pyramid level specifically suitable for this object, adding $v_g$ to $m_g$ obtains a high threshold to select positives only from that level. A low $v_g$ as shown in above figure (right) means that there are several pyramid levels suitable for this object, adding $v_g$ to $m_g$ obtains a low threshold to select appropriate positives from these levels. Using the sum of mean $m_g$ and standard deviation $v_g$ as the IoU threshold $t_g$ can adaptively select enough positives for each object from appropriate pyramid levels in accordance of statistical characteristics of object.
+
+* **Limiting the positive samples’ center to object** - the anchor with a center outside object is a poor candidate and will be predicted by the features outside the object, which is not conducive to training and should be excluded.
+
+* **Maintaining fairness between different objects** - according to the statistical theory, about 16% of samples are in the confidence interval $[m_g + v_g , 1]$ in theory. Although the IoU of candidates is not a standard normal distribution, the statistical results show that each object has about $0.2 ∗ kL$ positive samples, which is invariant to its scale, aspect ratio and location. In contrast, strategies of RetinaNet and FCOS tend to have much more positive samples for larger objects, leading to unfairness between different objects.
+
+* **Keeping almost hyperparameter-free** - ATSS method only has one hyperparameter $k$. Experiments from the paper prove that it is quite insensitive to the variations of $k$ and the proposed ATSS can be considered almost hyperparameter-free.
+
+> **_NOTE:_** TODO.
 
 
 ## EfficientDet
