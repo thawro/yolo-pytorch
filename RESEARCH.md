@@ -5,14 +5,17 @@
 | 2016 | YOLOv2, YOLO9000 | [paper](https://arxiv.org/pdf/1612.08242.pdf) | YOLO9000: Better, Faster, Stronger |
 | 2018 | YOLOv3 | [paper](https://arxiv.org/pdf/1804.02767.pdf), [video](https://www.youtube.com/watch?v=Grir6TZbc1M), [blog](https://blog.paperspace.com/how-to-implement-a-yolo-object-detector-in-pytorch/), [code](https://github.com/ultralytics/yolov3) | YOLOv3: An Incremental Improvement |
 | 2019 | Gaussian YOLO | [paper](https://arxiv.org/pdf/1904.04620) | Gaussian YOLOv3: An Accurate and Fast Object Detector Using Localization Uncertainty for Autonomous Driving |
-| 2020 | PP-YOLO | [paper](https://arxiv.org/pdf/1904.04620) | PP-YOLO: An Effective and Efficient Implementation of Object Detector |
+| 2020 | PP-YOLO | [paper](https://arxiv.org/pdf/2007.12099) | PP-YOLO: An Effective and Efficient Implementation of Object Detector |
 | 2020 | YOLOv4 | [paper](https://arxiv.org/pdf/2004.10934.pdf) , [blog](https://alexeyab84.medium.com/yolov4-the-most-accurate-real-time-neural-network-on-ms-coco-dataset-73adfd3602fe), [code_1](https://github.com/WongKinYiu/PyTorch_YOLOv4), [code_2](https://github.com/Tianxiaomo/pytorch-YOLOv4) | YOLOv4: Optimal Speed and Accuracy of Object Detection |
 | 2020 | YOLOv5 | [code](https://github.com/ultralytics/yolov5) | YOLOv5 |
 | 2021 | Scaled-YOLOv4 | [paper](https://arxiv.org/pdf/2011.08036.pdf) , [blog](https://alexeyab84.medium.com/scaled-yolo-v4-is-the-best-neural-network-for-object-detection-on-ms-coco-dataset-39dfa22fa982), [code](https://github.com/WongKinYiu/ScaledYOLOv4) | Scaled-YOLOv4: Scaling Cross Stage Partial Network |
 | 2021 | YOLOR | [paper](https://arxiv.org/pdf/2105.04206), [code](https://github.com/WongKinYiu/yolor) | You Only Learn One Representation: Unified Network for Multiple Tasks |
 | 2021 | YOLOX | [paper](https://arxiv.org/pdf/2107.08430.pdf) | YOLOX: Exceeding YOLO Series in 2021 |
+| 2022 | PP-YOLOE | [paper](http://arxiv.org/pdf/2203.16250v3) | _PP-YOLOE: An evolved version of YOLO_ |
+| 2022 | RTMDet | [paper](http://arxiv.org/pdf/2212.07784v2) | _RTMDet: An Empirical Study of Designing Real-Time Object Detectors_ |
 | 2022 | YOLOv7 | [paper](https://arxiv.org/pdf/2207.02696.pdf), [code](https://github.com/WongKinYiu/yolov7) | YOLOv7: Trainable bag-of-freebies sets new state-of-the-art for real-time object detectors |
 | 2022 | YOLOv6 | [paper](https://arxiv.org/abs/2209.02976), [code](https://github.com/meituan/YOLOv6) | YOLOv6: A Single-Stage Object Detection Framework for Industrial Applications |
+| 2023 | DAMA-YOLO | [paper](http://arxiv.org/pdf/2211.15444v4) | _DAMO-YOLO : A Report on Real-Time Object Detection Design_ |
 | 2023 | YOLOv6 v3.0 | [paper](https://arxiv.org/pdf/2301.05586.pdf) | YOLOv6 v3.0: A Full-Scale Reloading |
 | 2023 | Dynamic YOLOv7 | [paper](https://arxiv.org/pdf/2304.05552) | DynamicDet: A Unified Dynamic Architecture for Object Detection |
 | 2023 | Review | [paper](https://arxiv.org/pdf/2304.00501.pdf) | A comprehensive review of YOLO: from YOLOv1 and beyond |
@@ -965,7 +968,7 @@ TODO
 
 
 ## **PP-YOLO**
-2020 | [paper](https://arxiv.org/pdf/1904.04620) | _PP-YOLO: An Effective and Efficient Implementation of Object Detector_
+2020 | [paper](https://arxiv.org/pdf/2007.12099) | _PP-YOLO: An Effective and Efficient Implementation of Object Detector_
 TODO
 
 
@@ -1276,6 +1279,14 @@ TODO
 2021 | [paper](https://arxiv.org/pdf/2107.08430.pdf) | _YOLOX: Exceeding YOLO Series in 2021_
 TODO
 
+## **PP-YOLOE**
+2022 | [paper](http://arxiv.org/pdf/2203.16250v3) | _PP-YOLOE: An evolved version of YOLO_
+TODO 
+
+## **RTMDet**
+2022 | [paper](http://arxiv.org/pdf/2212.07784v2) | _RTMDet: An Empirical Study of Designing Real-Time Object Detectors_
+
+
 ## **YOLO v6**
 2022 | [paper](https://arxiv.org/abs/2209.02976) | _YOLOv6: A Single-Stage Object Detection Framework for Industrial Applications_
 TODO
@@ -1287,6 +1298,11 @@ TODO
 ## **YOLO v6.3**
 2023 | [paper](https://arxiv.org/pdf/2301.05586.pdf) | _YOLOv6 v3.0: A Full-Scale Reloading_
 TODO
+
+## **DAMA-YOLO**
+2023 | [paper](http://arxiv.org/pdf/2211.15444v4) | _DAMO-YOLO : A Report on Real-Time Object Detection Design_
+TODO
+
 
 ## **Dynamic YOLO** 
 2023 | [paper](https://arxiv.org/pdf/2304.05552) | _DynamicDet: A Unified Dynamic Architecture for Object Detection_
