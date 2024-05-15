@@ -34,11 +34,14 @@
 | 2018 | MixUp | [paper](http://arxiv.org/pdf/1710.09412) | X | MixUp: Beyond Empirical Risk Minimization |
 | 2018 | Focal Loss / RetinaNet | [paper](https://arxiv.org/pdf/1708.02002v2.pdf) | v4 | Focal Loss for Dense Object Detection |
 | 2018 | DIoU | [paper](https://arxiv.org/pdf/1911.08287.pdf) | v4 | Distance-IoU Loss: Faster and Better Learning for Bounding Box Regression |
+| 2018 | CoordConv | [paper](https://arxiv.org/pdf/1807.03247v2) | PP | An intriguing failing of convolutional neural networks and the CoordConv solution |
 | 2019 | Mish | [paper](https://arxiv.org/vc/arxiv/papers/1908/1908.08681v1.pdf) | v4 | Mish: A Self Regularized Non-Monotonic Neural Activation Function |
 | 2018 | PAN | [paper](https://arxiv.org/pdf/1803.01534v4.pdf) | v6 | Path Aggregation Network for Instance Segmentation |
 | 2019 | CSP | [paper](https://arxiv.org/pdf/1911.11929.pdf) | v6, v9  | CSPNet: A new backbone that can enhance learning capability of CNN |
 | 2020 | ATSS | [paper](https://arxiv.org/pdf/1912.02424) | v6.3 | Bridging the Gap Between Anchor-based and Anchor-free Detection via Adaptive Training Sample Selection |
 | 2020 | EfficientDet | [paper](https://arxiv.org/pdf/1911.09070) | v6.3 | EfficientDet: Scalable and Efficient Object Detection |
+| 2020 | IoU-Aware | [paper](https://arxiv.org/pdf/1912.05992) | PP | IoU-aware Single-stage Object Detector for Accurate Localization |
+| 2020 | Matrix-NMS | [paper](https://arxiv.org/pdf/2003.10152v3) | PP | SOLOv2: Dynamic and Fast Instance Segmentation |
 | 2021 | RepVGG | [paper](https://arxiv.org/pdf/2101.03697.pdf) | v6 | RepVGG: Making VGG-style ConvNets Great Again |
 | 2022 | ELAN | [paper](https://arxiv.org/pdf/2211.04800) | v9 | Designing Network Design Strategies Through Gradient Path Analysis |
 | 2023 | PRB-FPN | [paper](https://arxiv.org/pdf/2012.01724) | v6.3 | Parallel Residual Bi-Fusion Feature Pyramid Network For Accurate Single-Shot Object Detection |
@@ -531,6 +534,10 @@ Fully-connected Fusion is a technique used in the PANet framework to improve mas
 > **_NOTE:_** Most of the new YOLO approaches make use of the **Bottom-up Path Augmentation** idea from PANet. It is improved to BiFPN in future work.
 
 
+## CoordConv
+2018 | [paper](https://arxiv.org/pdf/1807.03247v2) | _An intriguing failing of convolutional neural networks and the CoordConv solution_
+TODO
+
 ## Mish
 2019 | [paper](https://arxiv.org/vc/arxiv/papers/1908/1908.08681v1.pdf) | _Mish: A Self Regularized Non-Monotonic Neural Activation Function_
 
@@ -755,6 +762,14 @@ Compound scaling is a method proposed in [EfficientNet](https://arxiv.org/pdf/19
 
 
 > **_NOTE:_** Most of the new YOLO approaches uses the BiFPN module and/or the feature pyramid weighting mechanism.
+
+## IoU-Aware
+2020 | [paper](https://arxiv.org/pdf/1912.05992) | _IoU-aware Single-stage Object Detector for Accurate Localization_
+TODO
+
+## Matrix-NMS
+2020 | [paper](https://arxiv.org/pdf/2003.10152v3) | _SOLOv2: Dynamic and Fast Instance Segmentation_
+TODO
 
 
 ## RepVGG
