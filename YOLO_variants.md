@@ -17,7 +17,7 @@
 | 2022 | 🔳 | [PP-YOLOE-R](#PP-YOLOE-R) | [paper](https://arxiv.org/pdf/2211.02386) | PP-YOLOE-R: An Efficient Anchor-Free Rotated Object Detector |
 | 2023 | 🔳 | [DAMA-YOLO](#DAMA-YOLO) | [paper](http://arxiv.org/pdf/2211.15444v4) | DAMO-YOLO : A Report on Real-Time Object Detection Design |
 | 2023 | 🔳 | [YOLOv6.3](#YOLOv6.3) | [paper](https://arxiv.org/pdf/2301.05586.pdf) | YOLOv6 v3.0: A Full-Scale Reloading |
-| 2023 | 🔳 | [Dynamic YOLOv7](#Dynamic-YOLOv7) | [paper](https://arxiv.org/pdf/2304.05552) | DynamicDet: A Unified Dynamic Architecture for Object Detection |
+| 2023 | 🔳 | [Dy-YOLOv7](#Dy-YOLOv7) | [paper](https://arxiv.org/pdf/2304.05552) | DynamicDet: A Unified Dynamic Architecture for Object Detection |
 | 2023 | 🔳 | [YOLO Review](#YOLO-Review) | [paper](https://arxiv.org/pdf/2304.00501.pdf) | A comprehensive review of YOLO: from YOLOv1 and beyond |
 | 2023 | 🔳 | [YOLOv8](#YOLOv8) | [code](https://github.com/ultralytics/ultralytics) | YOLOv8 |
 | 2024 | 🔳 | [YOLOv9](#YOLOv9) | [paper](https://arxiv.org/pdf/2402.13616), [code](https://github.com/WongKinYiu/yolov9) | YOLOv9: Learning What You Want to Learn Using Programmable Gradient Information |
@@ -651,7 +651,7 @@ TODO
 
 
 
-# Dynamic-YOLO
+# Dy-YOLOv7
 2023 | [paper](https://arxiv.org/pdf/2304.05552) | _DynamicDet: A Unified Dynamic Architecture for Object Detection_
 TODO
 
