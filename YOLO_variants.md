@@ -16,7 +16,7 @@
 | 2022 | 🔳 | [YOLOv6](#YOLOv6) | [paper](https://arxiv.org/pdf/2209.02976), [code](https://github.com/meituan/YOLOv6) | YOLOv6: A Single-Stage Object Detection Framework for Industrial Applications |
 | 2022 | 🔳 | [PP-YOLOE-R](#PP-YOLOE-R) | [paper](https://arxiv.org/pdf/2211.02386) | PP-YOLOE-R: An Efficient Anchor-Free Rotated Object Detector |
 | 2023 | 🔳 | [DAMA-YOLO](#DAMA-YOLO) | [paper](http://arxiv.org/pdf/2211.15444v4) | DAMO-YOLO : A Report on Real-Time Object Detection Design |
-| 2023 | 🔳 | [YOLOv6 v3.0](#YOLOv6-v3.0) | [paper](https://arxiv.org/pdf/2301.05586.pdf) | YOLOv6 v3.0: A Full-Scale Reloading |
+| 2023 | 🔳 | [YOLOv6.3](#YOLOv6.3) | [paper](https://arxiv.org/pdf/2301.05586.pdf) | YOLOv6 v3.0: A Full-Scale Reloading |
 | 2023 | 🔳 | [Dynamic YOLOv7](#Dynamic-YOLOv7) | [paper](https://arxiv.org/pdf/2304.05552) | DynamicDet: A Unified Dynamic Architecture for Object Detection |
 | 2023 | 🔳 | [YOLO Review](#YOLO-Review) | [paper](https://arxiv.org/pdf/2304.00501.pdf) | A comprehensive review of YOLO: from YOLOv1 and beyond |
 | 2023 | 🔳 | [YOLOv8](#YOLOv8) | [code](https://github.com/ultralytics/ultralytics) | YOLOv8 |
@@ -24,7 +24,7 @@
 
 
 
-# YOLO v1
+# YOLOv1
 2016 | [paper](https://arxiv.org/pdf/1506.02640.pdf) | _You Only Look Once: Unified, Real-Time Object Detection_
 
 YOLOv1 is a **single-stage** object detection model. Object detection is framed as a regression problem to spatially separated bounding boxes and associated class probabilities. A single neural network predicts bounding boxes and class probabilities directly from full images in one evaluation. Since the whole detection pipeline is a single network, it can be optimized end-to-end directly on detection performance.
@@ -84,7 +84,7 @@ is responsible for each object. One predictor is assigned to be “responsible�
 		* translations of up to 20% of the original image size
 		* randomly adjust the exposure and saturation of the image by up to a factor of 1.5 in the HSV color space
 
-# YOLO v2
+# YOLOv2
 2016 | [paper](https://arxiv.org/pdf/1612.08242.pdf) | _YOLO9000: Better, Faster, Stronger_
 
 YOLOv2 (or YOLO9000) is a single-stage real-time object detection model. It improves upon [_YOLOv1_](#yolo-v1) in several ways, including the use of Darknet-19 as a backbone, batch normalization, use of a high-resolution classifier, multi-scale training, the use of dimension clusters, fine-grained features and direct location prediction to predict bounding boxes, and more
@@ -123,7 +123,7 @@ learning rate of 0.001, dividing it by 10 at 60 and 90 epochs. The weight decay 
 
 
 
-# YOLO v3
+# YOLOv3
 2018 | [paper](https://arxiv.org/pdf/1804.02767.pdf) | _YOLOv3: An Incremental Improvement_
 _YOLOv3_ is a real-time, single-stage object detection model that builds on [_YOLOv2_](#yolo-v2) with several improvements. Improvements include the use of a new backbone network, Darknet-53 that utilises residual connections, as well as some improvements to the bbox prediction step, and use of three different scales from which to extract features. Ultralytics implementation can be found [here](https://github.com/ultralytics/yolov3).
 
@@ -279,7 +279,7 @@ where $α$ is set to 1.05 in this paper. This makes it easier for the model to p
 
 
 
-# YOLO v4
+# YOLOv4
 2020 | [paper](https://arxiv.org/pdf/2004.10934.pdf) | _YOLOv4: Optimal Speed and Accuracy of Object Detection_
 
 YOLOv4 addresses the need for real-time object detection systems that can achieve high accuracy while maintaining fast inference speeds and possibility to train the object detector on a single customer GPU. Authors of the paper put a great emphasis on analyzing and evaluating the possible training and architectural choices for object detector training and architecture. Two sets of concepts were evaluated separately, that is the Bag of Freebies ([**BoF**](#bag-of-freebies)) and Bag of Specials ([**BoS**](#bag-of-specials)). 
@@ -508,7 +508,7 @@ Sources: [[1](https://sh-tsang.medium.com/brief-review-yolov5-for-object-detecti
 
 
 
-# Scaled YOLO v4
+# Scaled YOLOv4
 2021 | [paper](https://arxiv.org/pdf/2011.08036.pdf) | _Scaled-YOLOv4: Scaling Cross Stage Partial Network_
 Scaled version of YOLOv4 built on top of the [YOLOv4](#yolo-v4). Authors have shown that the YOLOv4 object detection neural network based on the [CSP](#csp) approach, scales both up and down and is applicable to small and large networks while maintaining optimal speed and accuracy. They proposed a network scaling approach that modifies not only the depth, width, resolution, but also structure of the network.
 
@@ -598,13 +598,13 @@ There are different Losses in YOLOv3, YOLOv4 and Scaled-YOLOv4:
 
 
 
-# YOLO R
+# YOLOR
 2021 | [paper](https://arxiv.org/pdf/2105.04206) | _You Only Learn One Representation: Unified Network for Multiple Tasks_
 TODO
 
 
 
-# YOLO X
+# YOLOX
 2021 | [paper](https://arxiv.org/pdf/2107.08430.pdf) | _YOLOX: Exceeding YOLO Series in 2021_
 TODO
 
@@ -628,13 +628,13 @@ TODO
 
 
 
-# YOLO v7
+# YOLOv7
 2022 | [paper](https://arxiv.org/pdf/2207.02696.pdf) | _YOLOv7: Trainable bag-of-freebies sets new state-of-the-art for real-time object detectors_
 TODO
 
 
 
-# YOLO v6.3
+# YOLOv6.3
 2023 | [paper](https://arxiv.org/pdf/2301.05586.pdf) | _YOLOv6 v3.0: A Full-Scale Reloading_
 TODO
 
@@ -651,7 +651,7 @@ TODO
 
 
 
-# Dynamic YOLO
+# Dynamic-YOLO
 2023 | [paper](https://arxiv.org/pdf/2304.05552) | _DynamicDet: A Unified Dynamic Architecture for Object Detection_
 TODO
 
@@ -669,7 +669,7 @@ TODO
 
 
 
-# YOLO v9
+# YOLOv9
 2023 | [paper](https://arxiv.org/pdf/2402.13616) | _YOLOv9: Learning What You Want to Learn Using Programmable Gradient Information_
 TODO
 
