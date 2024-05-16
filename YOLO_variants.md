@@ -13,7 +13,7 @@
 | 2022 | 🔳 | [PP-YOLOE](#PP-YOLOE) | [paper](http://arxiv.org/pdf/2203.16250v3) | PP-YOLOE: An evolved version of YOLO |
 | 2022 | 🔳 | [RTMDet](#RTMDet) | [paper](http://arxiv.org/pdf/2212.07784v2) | RTMDet: An Empirical Study of Designing Real-Time Object Detectors |
 | 2022 | 🔳 | [YOLOv7](#YOLOv7) | [paper](https://arxiv.org/pdf/2207.02696.pdf), [code](https://github.com/WongKinYiu/yolov7) | YOLOv7: Trainable bag-of-freebies sets new state-of-the-art for real-time object detectors |
-| 2022 | 🔳 | [YOLOv6](#YOLOv6) | [paper](https://arxiv.org/abs/2209.02976), [code](https://github.com/meituan/YOLOv6) | YOLOv6: A Single-Stage Object Detection Framework for Industrial Applications |
+| 2022 | 🔳 | [YOLOv6](#YOLOv6) | [paper](https://arxiv.org/pdf/2209.02976), [code](https://github.com/meituan/YOLOv6) | YOLOv6: A Single-Stage Object Detection Framework for Industrial Applications |
 | 2022 | 🔳 | [PP-YOLOE-R](#PP-YOLOE-R) | [paper](https://arxiv.org/pdf/2211.02386) | PP-YOLOE-R: An Efficient Anchor-Free Rotated Object Detector |
 | 2023 | 🔳 | [DAMA-YOLO](#DAMA-YOLO) | [paper](http://arxiv.org/pdf/2211.15444v4) | DAMO-YOLO : A Report on Real-Time Object Detection Design |
 | 2023 | 🔳 | [YOLOv6 v3.0](#YOLOv6-v3.0) | [paper](https://arxiv.org/pdf/2301.05586.pdf) | YOLOv6 v3.0: A Full-Scale Reloading |
@@ -623,7 +623,7 @@ TODO
 
 
 # YOLO v6
-2022 | [paper](https://arxiv.org/abs/2209.02976) | _YOLOv6: A Single-Stage Object Detection Framework for Industrial Applications_
+2022 | [paper](https://arxiv.org/pdf/2209.02976) | _YOLOv6: A Single-Stage Object Detection Framework for Industrial Applications_
 TODO
 
 
