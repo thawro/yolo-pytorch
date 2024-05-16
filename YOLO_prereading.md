@@ -2,7 +2,7 @@
 
 | Year | Done | Approach | Link | Title |
 | :--- | :---: | :----- | :--- | :--- |
-| 2014 | 🔳 | [GoogLeNet/InceptionV1](#InceptionV1) | [paper](https://arxiv.org/pdf/1409.4842) | Going deeper with convolutions |
+| 2014 | 🔳 | [InceptionV1](#InceptionV1) | [paper](https://arxiv.org/pdf/1409.4842) | Going deeper with convolutions |
 | 2015 | 🔳 | [InceptionV2/V3](#InceptionV2/V3) | [paper](https://arxiv.org/pdf/1512.00567) | Rethinking the Inception Architecture for Computer Vision |
 | 2015 | 🔳 | [ResNet](#ResNet) | [paper](https://arxiv.org/pdf/1512.03385) | Deep Residual Learning for Image Recognition |
 | 2016 | 🔳 | [InceptionV4](#InceptionV4) | [paper](https://arxiv.org/pdf/1602.07261) | Inception-v4, Inception-ResNet and the Impact of Residual Connections on Learning  |
