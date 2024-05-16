@@ -321,7 +321,7 @@ TODO
 
 
 # GIoU
-2018 | [paper]([https://arxiv.org/pdf/1911.08287.pdf](https://arxiv.org/pdf/1902.09630)) | _Generalized Intersection over Union: A Metric and A Loss for Bounding Box Regression_
+2018 | [paper](https://arxiv.org/pdf/1902.09630) | _Generalized Intersection over Union: A Metric and A Loss for Bounding Box Regression_
 TODO
 
 
