@@ -7,7 +7,7 @@
 | 2017 | ✅ | [Soft NMS](#Soft-NMS) | [paper](https://arxiv.org/pdf/1704.04503.pdf) | v4 | Improving Object Detection With One Line of Code |
 | 2017 | ✅ | [Cosine Annealing](#Cosing-Annealing) | [paper](https://arxiv.org/pdf/1608.03983.pdf) | v4 | SGDR: Stochastic Gradient Descent with Warm Restarts |
 | 2017 | 🔳 | [SiLU](#SiLU) | [paper](https://arxiv.org/pdf/1702.03118v3) | X | Sigmoid-Weighted Linear Units for Neural Network Function Approximation in Reinforcement Learning |
-| 2017 | 🔳 | [Deformable Convolution](#Deformable-Convolution) | [paper](https://arxiv.org/pdf/1703.06211v3) | PP-v1, PP-v2 | Deformable Convolutional Networks |
+| 2017 | ✅ | [Deformable Convolution](#Deformable-Convolution) | [paper](https://arxiv.org/pdf/1703.06211v3) | PP-v1, PP-v2 | Deformable Convolutional Networks |
 | 2018 | ✅ | [DropBlock](#DropBlock) | [paper](https://arxiv.org/pdf/1810.12890.pdf) | v4, PP | DropBlock: A regularization method for convolutional networks |
 | 2018 | ✅ | [MixUp](#MixUp) | [paper](http://arxiv.org/pdf/1710.09412) | X, PP | MixUp: Beyond Empirical Risk Minimization |
 | 2018 | ✅ | [Focal Loss / RetinaNet](#FocalLoss) | [paper](https://arxiv.org/pdf/1708.02002v2.pdf) | v4 | Focal Loss for Dense Object Detection |
