@@ -3,39 +3,38 @@
 | Year | Done | Approach | Link | Used in | Title |
 | :--- | :---: | :---- | :--- | :--- | :---- |
 | 2015 | ✅ | [SPP](#SPP) | [paper](https://arxiv.org/pdf/1406.4729.pdf) | v4, v5, PP | Spatial Pyramid Pooling in Deep Convolutional Networks for Visual Recognition |
-| 2017 | 🔳 | ResNext | [paper](https://arxiv.org/pdf/1611.05431) | TODO | Aggregated Residual Transformations for Deep Neural Networks |
-| 2017 | ✅ | FPN | [paper](https://arxiv.org/pdf/1612.03144.pdf) | v4 | Feature Pyramid Networks for Object Detection |
-| 2017 | ✅ | Soft NMS | [paper](https://arxiv.org/pdf/1704.04503.pdf) | v4 | Improving Object Detection With One Line of Code |
-| 2017 | ✅ | Cosine Annealing | [paper](https://arxiv.org/pdf/1608.03983.pdf) | v4 | SGDR: Stochastic Gradient Descent with Warm Restarts |
-| 2017 | 🔳 | SiLU | [paper](https://arxiv.org/pdf/1702.03118v3) | X | Sigmoid-Weighted Linear Units for Neural Network Function Approximation in Reinforcement Learning |
-| 2017 | 🔳 | Deformable Convolution | [paper](https://arxiv.org/pdf/1703.06211v3) | PP-v1, PP-v2 | Deformable Convolutional Networks |
-| 2018 | ✅ | DropBlock | [paper](https://arxiv.org/pdf/1810.12890.pdf) | v4, PP | DropBlock: A regularization method for convolutional networks |
-| 2018 | ✅ | MixUp | [paper](http://arxiv.org/pdf/1710.09412) | X, PP | MixUp: Beyond Empirical Risk Minimization |
-| 2018 | ✅ | Focal Loss / RetinaNet | [paper](https://arxiv.org/pdf/1708.02002v2.pdf) | v4 | Focal Loss for Dense Object Detection |
-| 2018 | 🔳 | CoordConv | [paper](https://arxiv.org/pdf/1807.03247v2) | PP | An intriguing failing of convolutional neural networks and the CoordConv solution |
-| 2018 | 🔳 | Linear LR Scaling | [paper](https://arxiv.org/pdf/1706.02677) | X, PP-E | Accurate, Large Minibatch SGD: Training ImageNet in 1 Hour |
-| 2018 | ✅ | PAN | [paper](https://arxiv.org/pdf/1803.01534v4.pdf) | v6, X, PP | Path Aggregation Network for Instance Segmentation |
-| 2018 | 🔳 | GIoU | [paper](https://arxiv.org/pdf/1902.09630) | PP-E | Generalized Intersection over Union: A Metric and A Loss for Bounding Box Regression |
-| 2019 | ✅ | DIoU | [paper](https://arxiv.org/pdf/1911.08287.pdf) | v4, PP-E | Distance-IoU Loss: Faster and Better Learning for Bounding Box Regression |
-| 2019 | ✅ | Mish | [paper](https://arxiv.org/vc/arxiv/papers/1908/1908.08681v1.pdf) | v4, PP-v2 | Mish: A Self Regularized Non-Monotonic Neural Activation Function |
-| 2019 | 🔳 | Bag Of Freebies | [paper](https://arxiv.org/pdf/1902.04103) | X | Bag of Freebies for Training Object Detection Neural Networks |
-| 2019 | 🔳 | FCOS | [paper](https://arxiv.org/pdf/1904.01355) | X, PP-E | FCOS: Fully Convolutional One-Stage Object Detection |
-| 2019 | ✅ | Cross Stage Partial (CSP) | [paper](https://arxiv.org/pdf/1911.11929.pdf) | X, PP-v2, v6, v9 | CSPNet: A new backbone that can enhance learning capability of CNN |
-| 2020 | ✅ | ATSS | [paper](https://arxiv.org/pdf/1912.02424) | v6.3 | Bridging the Gap Between Anchor-based and Anchor-free Detection via Adaptive Training Sample Selection |
-| 2020 | 🔳 | Effective Squeeze and Excitation (ESE) | [paper](https://arxiv.org/pdf/1911.06667v6) | PP-E | CenterMask : Real-Time Anchor-Free Instance Segmentation |
-| 2020 | ✅ | EfficientDet | [paper](https://arxiv.org/pdf/1911.09070) | v6.3 | EfficientDet: Scalable and Efficient Object Detection |
-| 2020 | 🔳 | IoU-Aware | [paper](https://arxiv.org/pdf/1912.05992) | PP-v2, PP-E | IoU-aware Single-stage Object Detector for Accurate Localization |
-| 2020 | 🔳 | Distribution/Quality Focal Loss (DFL/QFL) | [paper](https://arxiv.org/pdf/2006.04388) | PP-E | Generalized Focal Loss: Learning Qualified and Distributed Bounding Boxes for Dense Object Detection |
-| 2020 | 🔳 | Matrix-NMS | [paper](https://arxiv.org/pdf/2003.10152v3) | PP-v1, PP-v2 | SOLOv2: Dynamic and Fast Instance Segmentation |
-| 2021 | 🔳 | NoNMS-YOLO | [paper](https://arxiv.org/pdf/2101.11782) | X | Object Detection Made Simpler by Eliminating Heuristic NMS |
-| 2021 | 🔳 | CopyPaste | [paper](https://arxiv.org/pdf/2012.07177) | X | Simple Copy-Paste is a Strong Data Augmentation Method for Instance Segmentation |
-| 2021 | 🔳 | OTA -> SimOTA | [paper](https://arxiv.org/pdf/2103.14259) | X | OTA: Optimal Transport Assignment for Object Detection |
-| 2021 | 🔳 | Varifocal Loss (VFL) | [paper](https://arxiv.org/pdf/2008.13367) | PP-E | VarifocalNet: An IoU-aware Dense Object Detector |
-| 2021 | 🔳 | Task Aligned Learning (TAL) | [paper](https://arxiv.org/pdf/2108.07755) | PP-E | TOOD: Task-aligned One-stage Object Detection |
-| 2021 | 🔳 | PP-PicoDet | [paper](https://arxiv.org/pdf/2111.00902) | PP-E | PP-PicoDet: A Better Real-Time Object Detector on Mobile Devices |
-| 2021 | ✅ | RepVGG | [paper](https://arxiv.org/pdf/2101.03697.pdf) | PP-E, v6 | RepVGG: Making VGG-style ConvNets Great Again |
-| 2022 | 🔳 | ELAN | [paper](https://arxiv.org/pdf/2211.04800) | v9 | Designing Network Design Strategies Through Gradient Path Analysis |
-| 2023 | 🔳 | PRB-FPN | [paper](https://arxiv.org/pdf/2012.01724) | v6.3 | Parallel Residual Bi-Fusion Feature Pyramid Network For Accurate Single-Shot Object Detection |
+| 2017 | ✅ | [FPN](#FPN) | [paper](https://arxiv.org/pdf/1612.03144.pdf) | v4 | Feature Pyramid Networks for Object Detection |
+| 2017 | ✅ | [Soft NMS](#Soft-NMS) | [paper](https://arxiv.org/pdf/1704.04503.pdf) | v4 | Improving Object Detection With One Line of Code |
+| 2017 | ✅ | [Cosine Annealing](#Cosing-Annealing) | [paper](https://arxiv.org/pdf/1608.03983.pdf) | v4 | SGDR: Stochastic Gradient Descent with Warm Restarts |
+| 2017 | 🔳 | [SiLU](#SiLU) | [paper](https://arxiv.org/pdf/1702.03118v3) | X | Sigmoid-Weighted Linear Units for Neural Network Function Approximation in Reinforcement Learning |
+| 2017 | 🔳 | [Deformable Convolution](#Deformable-Convolution) | [paper](https://arxiv.org/pdf/1703.06211v3) | PP-v1, PP-v2 | Deformable Convolutional Networks |
+| 2018 | ✅ | [DropBlock](#DropBlock) | [paper](https://arxiv.org/pdf/1810.12890.pdf) | v4, PP | DropBlock: A regularization method for convolutional networks |
+| 2018 | ✅ | [MixUp](#MixUp) | [paper](http://arxiv.org/pdf/1710.09412) | X, PP | MixUp: Beyond Empirical Risk Minimization |
+| 2018 | ✅ | [Focal Loss / RetinaNet](#FocalLoss) | [paper](https://arxiv.org/pdf/1708.02002v2.pdf) | v4 | Focal Loss for Dense Object Detection |
+| 2018 | 🔳 | [CoordConv](#CoordConv) | [paper](https://arxiv.org/pdf/1807.03247v2) | PP | An intriguing failing of convolutional neural networks and the CoordConv solution |
+| 2018 | 🔳 | [Linear LR Scaling](#Linear-LR-Scaling) | [paper](https://arxiv.org/pdf/1706.02677) | X, PP-E | Accurate, Large Minibatch SGD: Training ImageNet in 1 Hour |
+| 2018 | ✅ | [PAN](#PAN) | [paper](https://arxiv.org/pdf/1803.01534v4.pdf) | v6, X, PP | Path Aggregation Network for Instance Segmentation |
+| 2018 | 🔳 | [GIoU](#GIoU) | [paper](https://arxiv.org/pdf/1902.09630) | PP-E | Generalized Intersection over Union: A Metric and A Loss for Bounding Box Regression |
+| 2019 | ✅ | [DIoU](#DIoU) | [paper](https://arxiv.org/pdf/1911.08287.pdf) | v4, PP-E | Distance-IoU Loss: Faster and Better Learning for Bounding Box Regression |
+| 2019 | ✅ | [Mish](#Mish) | [paper](https://arxiv.org/vc/arxiv/papers/1908/1908.08681v1.pdf) | v4, PP-v2 | Mish: A Self Regularized Non-Monotonic Neural Activation Function |
+| 2019 | 🔳 | [Bag Of Freebies](#Bag-Of-Freebies) | [paper](https://arxiv.org/pdf/1902.04103) | X | Bag of Freebies for Training Object Detection Neural Networks |
+| 2019 | 🔳 | [FCOS](#FCOS) | [paper](https://arxiv.org/pdf/1904.01355) | X, PP-E | FCOS: Fully Convolutional One-Stage Object Detection |
+| 2019 | ✅ | [CSP](#CSP) | [paper](https://arxiv.org/pdf/1911.11929.pdf) | X, PP-v2, v6, v9 | CSPNet: A new backbone that can enhance learning capability of CNN |
+| 2020 | ✅ | [ATSS](#ATSS) | [paper](https://arxiv.org/pdf/1912.02424) | v6.3 | Bridging the Gap Between Anchor-based and Anchor-free Detection via Adaptive Training Sample Selection |
+| 2020 | 🔳 | [Effective Squeeze and Excitation](#Effective-Squeeze-And-Excitation) | [paper](https://arxiv.org/pdf/1911.06667v6) | PP-E | CenterMask : Real-Time Anchor-Free Instance Segmentation |
+| 2020 | ✅ | [EfficientDet](#EfficientDet) | [paper](https://arxiv.org/pdf/1911.09070) | v6.3 | EfficientDet: Scalable and Efficient Object Detection |
+| 2020 | 🔳 | [IoU-Aware](#IoU-Aware) | [paper](https://arxiv.org/pdf/1912.05992) | PP-v2, PP-E | IoU-aware Single-stage Object Detector for Accurate Localization |
+| 2020 | 🔳 | [Distribution/Quality Focal Loss (DFL/QFL)](#Distribution-Focal-Loss) | [paper](https://arxiv.org/pdf/2006.04388) | PP-E | Generalized Focal Loss: Learning Qualified and Distributed Bounding Boxes for Dense Object Detection |
+| 2020 | 🔳 | [Matrix-NMS](#Matrix-NMS) | [paper](https://arxiv.org/pdf/2003.10152v3) | PP-v1, PP-v2 | SOLOv2: Dynamic and Fast Instance Segmentation |
+| 2021 | 🔳 | [NoNMS-YOLO](#NoNMS-YOLO) | [paper](https://arxiv.org/pdf/2101.11782) | X | Object Detection Made Simpler by Eliminating Heuristic NMS |
+| 2021 | 🔳 | [CopyPaste](#CopyPaste) | [paper](https://arxiv.org/pdf/2012.07177) | X | Simple Copy-Paste is a Strong Data Augmentation Method for Instance Segmentation |
+| 2021 | 🔳 | [OTA](#OTA) | [paper](https://arxiv.org/pdf/2103.14259) | X | OTA: Optimal Transport Assignment for Object Detection |
+| 2021 | 🔳 | [Varifocal Loss](#Varifocal-Loss) | [paper](https://arxiv.org/pdf/2008.13367) | PP-E | VarifocalNet: An IoU-aware Dense Object Detector |
+| 2021 | 🔳 | [Task Aligned Learning](#Task-Aligned-Learning) | [paper](https://arxiv.org/pdf/2108.07755) | PP-E | TOOD: Task-aligned One-stage Object Detection |
+| 2021 | 🔳 | [PP-PicoDet](#PP-PicoDet) | [paper](https://arxiv.org/pdf/2111.00902) | PP-E | PP-PicoDet: A Better Real-Time Object Detector on Mobile Devices |
+| 2021 | ✅ | [RepVGG](#RepVGG) | [paper](https://arxiv.org/pdf/2101.03697.pdf) | PP-E, v6 | RepVGG: Making VGG-style ConvNets Great Again |
+| 2022 | 🔳 | [ELAN](#ELAN) | [paper](https://arxiv.org/pdf/2211.04800) | v9 | Designing Network Design Strategies Through Gradient Path Analysis |
+| 2023 | 🔳 | [PRB-FPN](#PRB-FPN) | [paper](https://arxiv.org/pdf/2012.01724) | v6.3 | Parallel Residual Bi-Fusion Feature Pyramid Network For Accurate Single-Shot Object Detection |
 
 
 # SPP
@@ -56,6 +55,7 @@ Spatial pyramid pooling (also knows as spatial pyramid matching or SPM), as an e
 SPP-net not only makes it possible to generate representations from arbitrarily sized images/windows for testing, but also allows us to feed images with varying sizes or scales during training. Training with variable-size images increases scale-invariance and reduces over-fitting. 
 
 > **_NOTE:_** Most of the YOLO approaches uses only the idea of modified **SPP block** (e.g. SPPF in YOLOv5) - applying _max-pooling_ operations with different kernel sizes (with padding) and then concatenating the results to form a single feature map, which is passed to next blocks.
+
 
 
 
@@ -139,6 +139,18 @@ where $η^i_{min}$ and $η^i_{max}$ are ranges for the learning rate, and $T_{cu
 </p>
 
 > **_NOTE:_** Some of the YOLO approaches use the idea of **Cosine Annealing** (without warm restarts) for learning rate scheduling.
+
+
+
+# SiLU
+2017 | [paper](https://arxiv.org/pdf/1702.03118v3) | _Sigmoid-Weighted Linear Units for Neural Network Function Approximation in Reinforcement Learning_
+TODO
+
+
+
+# Deformable Convolution
+2017 | [paper](https://arxiv.org/pdf/1703.06211v3) | _Deformable Convolutional Networks_
+TODO
 
 
 
@@ -253,7 +265,7 @@ Example of CBAM integrated with a ResBlock in ResNet:
 > **_NOTE:_** Some of the new YOLO approaches use either **Channel-Attention** or **Spatial-Attention** to enhance feature maps representations.
 
 
-# Focal Loss / RetinaNet
+# Focal Loss
 2018 | [paper](https://arxiv.org/pdf/1708.02002v2.pdf) | _Focal Loss for Dense Object Detection_
 
 In this paper, the authors addressed the challenge of low accuracy in one-stage object detectors compared to two-stage detectors. They identify the imbalance between foreground and background classes during training as the main issue. To mitigate this, they introduce Focal Loss, which prioritizes hard examples, leading to their proposed detector, RetinaNet, achieving both the speed of traditional one-stage detectors and surpassing the accuracy of all existing two-stage detectors
@@ -293,6 +305,24 @@ Another huge contribution of the paper is the RetinaNet architecture shown below
 </p>
 
 > **_NOTE:_** Some of the YOLO approaches check if using Focal Loss helps to achieve better results, but in most cases it does not. YOLO is already handling background examples via set of multipliers for loss calculation and/or picking bboxes for loss calculation. 
+
+
+
+# CoordConv
+2018 | [paper](https://arxiv.org/pdf/1807.03247v2) | _An intriguing failing of convolutional neural networks and the CoordConv solution_
+TODO
+
+
+
+# Linear LR Scaling
+2018 | [paper](https://arxiv.org/pdf/1706.02677) | _Accurate, Large Minibatch SGD: Training ImageNet in 1 Hour_
+TODO
+
+
+
+# GIoU
+2018 | [paper]([https://arxiv.org/pdf/1911.08287.pdf](https://arxiv.org/pdf/1902.09630)) | _Generalized Intersection over Union: A Metric and A Loss for Bounding Box Regression_
+TODO
 
 
 
@@ -472,6 +502,17 @@ The output landscape of 5 layer randomly initialized neural network was compared
 
 
 
+# Bag Of Freebies
+2019 | [paper](https://arxiv.org/pdf/1902.04103) | _Bag of Freebies for Training Object Detection Neural Networks_
+
+
+
+# FCOS
+2019 | [paper](https://arxiv.org/pdf/1904.01355) | _FCOS: Fully Convolutional One-Stage Object Detection_
+
+
+
+
 # CSP
 2019 | [paper](https://arxiv.org/pdf/1911.11929.pdf) | _CSPNet: A new backbone that can enhance learning capability of CNN_
 
@@ -588,6 +629,11 @@ ATSS method that automatically divides positive and negative samples according t
 > **_NOTE:_** TODO.
 
 
+# Effective Squeeze and Excitation
+2020 | [paper](https://arxiv.org/pdf/1911.06667v6) | _CenterMask : Real-Time Anchor-Free Instance Segmentation_
+TODO
+
+
 # EfficientDet
 2020 | [paper](https://arxiv.org/pdf/1911.09070) | _EfficientDet: Scalable and Efficient Object Detection_
 
@@ -668,9 +714,55 @@ TODO
 
 
 
+# Distribution Focal Loss
+2020 | [paper](https://arxiv.org/pdf/2006.04388) | _Generalized Focal Loss: Learning Qualified and Distributed Bounding Boxes for Dense Object Detection_
+TODO
+
+
+
 # Matrix-NMS
 2020 | [paper](https://arxiv.org/pdf/2003.10152v3) | _SOLOv2: Dynamic and Fast Instance Segmentation_
 TODO
+
+
+
+# NoNMS-YOLO
+2021 | [paper](https://arxiv.org/pdf/2101.11782) | _Object Detection Made Simpler by Eliminating Heuristic NMS_
+TODO
+
+
+
+# CopyPaste
+2021 | [paper](https://arxiv.org/pdf/2012.07177) | _Simple Copy-Paste is a Strong Data Augmentation Method for Instance Segmentation_
+TODO
+
+
+
+
+# OTA
+2021 | [paper](https://arxiv.org/pdf/2103.14259) | _OTA: Optimal Transport Assignment for Object Detection_
+TODO
+
+
+
+# Varifocal Loss
+2021 | [paper](https://arxiv.org/pdf/2008.13367) | _VarifocalNet: An IoU-aware Dense Object Detector_
+TODO
+
+
+
+
+# Task Aligned Learning
+2021 | [paper](https://arxiv.org/pdf/2108.07755) | _TOOD: Task-aligned One-stage Object Detection_
+TODO
+
+
+
+
+# TODO
+2021 | [paper](https://arxiv.org/pdf/2111.00902) | _PP-PicoDet: A Better Real-Time Object Detector on Mobile Devices_
+TODO
+
 
 
 
