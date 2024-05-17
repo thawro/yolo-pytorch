@@ -14,7 +14,7 @@
 | 2018 | ✅ | [CoordConv](#CoordConv) | [paper](https://arxiv.org/pdf/1807.03247v2) | PP | An intriguing failing of convolutional neural networks and the CoordConv solution |
 | 2018 | ✅ | [Linear LR Scaling](#Linear-LR-Scaling) | [paper](https://arxiv.org/pdf/1706.02677) | X, PP-E | Accurate, Large Minibatch SGD: Training ImageNet in 1 Hour |
 | 2018 | ✅ | [PAN](#PAN) | [paper](https://arxiv.org/pdf/1803.01534v4.pdf) | v6, X, PP | Path Aggregation Network for Instance Segmentation |
-| 2018 | 🔳 | [GIoU](#GIoU) | [paper](https://arxiv.org/pdf/1902.09630) | PP-E | Generalized Intersection over Union: A Metric and A Loss for Bounding Box Regression |
+| 2018 | ✅ | [GIoU](#GIoU) | [paper](https://arxiv.org/pdf/1902.09630) | PP-E | Generalized Intersection over Union: A Metric and A Loss for Bounding Box Regression |
 | 2019 | ✅ | [DIoU](#DIoU) | [paper](https://arxiv.org/pdf/1911.08287.pdf) | v4, PP-E | Distance-IoU Loss: Faster and Better Learning for Bounding Box Regression |
 | 2019 | ✅ | [Mish](#Mish) | [paper](https://arxiv.org/vc/arxiv/papers/1908/1908.08681v1.pdf) | v4, PP-v2 | Mish: A Self Regularized Non-Monotonic Neural Activation Function |
 | 2019 | 🔳 | [Bag Of Freebies](#Bag-Of-Freebies) | [paper](https://arxiv.org/pdf/1902.04103) | X | Bag of Freebies for Training Object Detection Neural Networks |
