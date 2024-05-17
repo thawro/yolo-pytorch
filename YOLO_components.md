@@ -405,9 +405,9 @@ $$ w_{t+k} = w_t - η \frac{1}{n} \sum_{j < k} \sum_{x ∈ B_j} ∇l(x, w_{t+j})
 On the other hand, taking a single step with the large minibatch $∪_j B_j$ of size $kn$ and learning rate $\hat{η}$ yields:
 
 
-$$ \hat{w}_{t+1} = w_t - \hat{η} \frac{1}{kn} \sum_{j < k} \sum_{x ∈ B_j} ∇l(x, w_{t}) $$
+$$ \hat{w_{t+1}} = w_t - \hat{η} \frac{1}{kn} \sum_{j < k} \sum_{x ∈ B_j} ∇l(x, w_{t}) $$
 
-As expected, the updates differ, and it is unlikely that $\hat{w}_{t+1} = w_{t+k}$. However, if we could assume $∇l(x, w_t) ≈ ∇l(x, w_{t+j})$ for $j < k$, then setting $\hat{η} = kη$ would yield $\hat{w}_{t+1} ≈ w_{t+k}$, and the updates from small and large minibatch SGD would be similar. Although this is a strong assumption, authors emphasize that if it were true the two updates are similar only if we set $\hat{η} = kη$.
+As expected, the updates differ, and it is unlikely that $\hat{w_{t+1}} = w_{t+k}$. However, if we could assume $∇l(x, w_t) ≈ ∇l(x, w_{t+j})$ for $j < k$, then setting $\hat{η} = kη$ would yield $\hat{w_{t+1}} ≈ w_{t+k}$, and the updates from small and large minibatch SGD would be similar. Although this is a strong assumption, authors emphasize that if it were true the two updates are similar only if we set $\hat{η} = kη$.
 
 The above interpretation gives intuition for one case where we may hope the linear scaling rule to apply. In the experiments with $\hat{η} = kη$ (and warmup), small and large minibatch SGD not only result in models with the same final accuracy, but also, the training curves match closely. The empirical results suggest that the above approximation might be valid in large-scale, real-world data.
 
