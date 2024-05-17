@@ -12,7 +12,7 @@
 | 2018 | ✅ | [MixUp](#MixUp) | [paper](http://arxiv.org/pdf/1710.09412) | X, PP | MixUp: Beyond Empirical Risk Minimization |
 | 2018 | ✅ | [Focal Loss / RetinaNet](#FocalLoss) | [paper](https://arxiv.org/pdf/1708.02002v2.pdf) | v4 | Focal Loss for Dense Object Detection |
 | 2018 | 🔳 | [CoordConv](#CoordConv) | [paper](https://arxiv.org/pdf/1807.03247v2) | PP | An intriguing failing of convolutional neural networks and the CoordConv solution |
-| 2018 | 🔳 | [Linear LR Scaling](#Linear-LR-Scaling) | [paper](https://arxiv.org/pdf/1706.02677) | X, PP-E | Accurate, Large Minibatch SGD: Training ImageNet in 1 Hour |
+| 2018 | ✅ | [Linear LR Scaling](#Linear-LR-Scaling) | [paper](https://arxiv.org/pdf/1706.02677) | X, PP-E | Accurate, Large Minibatch SGD: Training ImageNet in 1 Hour |
 | 2018 | ✅ | [PAN](#PAN) | [paper](https://arxiv.org/pdf/1803.01534v4.pdf) | v6, X, PP | Path Aggregation Network for Instance Segmentation |
 | 2018 | 🔳 | [GIoU](#GIoU) | [paper](https://arxiv.org/pdf/1902.09630) | PP-E | Generalized Intersection over Union: A Metric and A Loss for Bounding Box Regression |
 | 2019 | ✅ | [DIoU](#DIoU) | [paper](https://arxiv.org/pdf/1911.08287.pdf) | v4, PP-E | Distance-IoU Loss: Faster and Better Learning for Bounding Box Regression |
@@ -358,7 +358,32 @@ Another huge contribution of the paper is the RetinaNet architecture shown below
 
 # CoordConv
 2018 | [paper](https://arxiv.org/pdf/1807.03247v2) | _An intriguing failing of convolutional neural networks and the CoordConv solution_
-TODO
+
+In this paper authors show a striking counterexample to this intuition via the seemingly trivial coordinate transform problem, which simply requires learning a mapping between coordinates in $(x, y)$ _Cartesian space_ and coordinates in one-hot pixel space. Although convolutional networks would seem appropriate for this task, authors show that they fail spectacularly. They fix this problem with a solution called CoordConv, which works by giving convolution access to its own input coordinates through the use of extra coordinate channels. Without sacrificing the computational and parametric efficiency of ordinary convolution, CoordConv allows networks to learn either complete translation invariance or varying degrees of translation dependence, as required by the end task.
+
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/a61ccf9f-06f6-46f6-a79c-1f1ff3d976d0" alt="CoordConv" height="400"/>
+</p>
+
+The proposed CoordConv layer is a simple extension to the standard convolutional layer. Authors assume in the paper the case of two spatial dimensions, though operators in other dimensions follow trivially. Convolutional layers are used in a myriad of applications because they often work well, perhaps due to some combination of three factors:
+* they have relatively few learned parameters,
+* they are fast to compute on modern GPUs,
+* they learn a function that is translation invariant (a translated input produces a translated output).
+
+The CoordConv layer keeps the first two of these properties - few parameters and efficient computation — but allows the network to learn to keep or to discard the third—translation invariance - as is needed for the task being learned. It may appear that doing away with translation invariance will hamper networks’ abilities to learn generalizable functions. However, allocating a small amount of network capacity to model non-translation invariant aspects of a problem can enable far more trainable models that also generalize far better.
+
+The CoordConv layer can be implemented as a simple extension of standard convolution in which extra channels are instantiated and filled with (constant, untrained) coordinate information, after which they are concatenated channel-wise to the input representation and a standard convolutional layer is applied. Figure above depicts the operation where two coordinates, $i$ and $j$, are added. Concretely, the $i$ coordinate channel is an $h × w$ rank-1 matrix with its first row filled with 0’s, its second row with 1’s, its third with 2’s, etc. The $j$ coordinate channel is similar, but with columns filled in with constant values instead of rows. In all experiments, we apply a final linear scaling of both $i$ and $j$ coordinate values to make them fall in the range $[−1, 1]$. For convolution over two dimensions, two $(i, j)$ coordinates are sufficient to completely specify an input pixel, but if desired, further channels can be added as well to bias models toward learning particular solutions. In some of the experiments that follow, we have also used a third channel for an $r$ coordinate, where $r = \sqrt{(i − h/2)^2 + (j − w/2)^2$
+
+**Number of parameters** - ignoring bias parameters (which are not changed), a standard convolutional layer with square kernel size $k$ and with $c$ input channels and $c′$ output channels will contain $cc′k^2$ weights, whereas the corresponding CoordConv layer will contain $(c + d)c′k^2$ weights, where $d$ is the number of coordinate dimensions used (e.g. 2 or 3). The relative increase in parameters is small to moderate, depending on the original number of input channels. 
+
+
+> A CoordConv layer implemented via the channel concatenation discussed entails an increase of $dc′k^2$ weights. However, $if k > 1$, not all $k^2$ connections from coordinates to each output unit are necessary, as spatially neighboring coordinates do not provide new information. Thus, if one cares acutely about minimizing the number of parameters and operations, a $k × k$ _conv_ may be applied to the input data and a $1 × 1$ _conv_ to the coordinates, then the results added. In this paper authors have used the simpler, if marginally inefficient, channel concatenation version that applies a single convolution to both input data and coordinates.
+
+
+**Translation invariance** - CoordConv with weights connected to input coordinates set by initialization or learning to zero will be translation invariant and thus mathematically equivalent to ordinary convolution. If weights are nonzero, the function will contain some degree of translation dependence, the precise form of which will ideally depend on the task being solved. Similar to locally connected layers with unshared weights, CoordConv allows learned translation dependence, but by contrast it requires far fewer parameters: $(c + d)c′k^2$ vs. $hwcc′k^2$ for spatial input size $h × w$. Note that all CoordConv weights, even those to coordinates, are shared across all positions, so translation dependence comes only from the specification of coordinates; one consequence is that, as with ordinary convolution but unlike locally connected layers, the operation can be expanded outside the original spatial domain if the appropriate coordinates are extrapolated.
+
+
+
 
 
 
