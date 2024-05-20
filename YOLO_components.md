@@ -1135,7 +1135,7 @@ $$ p^\*_{yl} = \frac{y_r − y}{y_r − y_l} $$
 
 $$ p^\*_{yr} = \frac{y − y_l}{y_r − y_l} $$
 
-which also means that the estimation $\hat{y}$ perfectly matches the continuous label $y$, i.e., 
+which also means that the estimation $\hat{y}$ perfectly matches the continuous label $y$, i.e.
 
 $$ \hat{y} = y_l p^\*_{yl} + y_r p^\*_{yr} = y $$
 
