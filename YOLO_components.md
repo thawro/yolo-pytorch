@@ -15,8 +15,8 @@
 | 2018 | ✅ | [GIoU](#GIoU) | [paper](https://arxiv.org/pdf/1902.09630) | PP-E | Generalized Intersection over Union: A Metric and A Loss for Bounding Box Regression |
 | 2019 | ✅ | [DIoU](#DIoU) | [paper](https://arxiv.org/pdf/1911.08287.pdf) | v4, PP-E | Distance-IoU Loss: Faster and Better Learning for Bounding Box Regression |
 | 2019 | ✅ | [Mish](#Mish) | [paper](https://arxiv.org/vc/arxiv/papers/1908/1908.08681v1.pdf) | v4, PP-v2 | Mish: A Self Regularized Non-Monotonic Neural Activation Function |
-| 2019 | 🔳 | [Bag Of Freebies](#Bag-Of-Freebies) | [paper](https://arxiv.org/pdf/1902.04103) | X | Bag of Freebies for Training Object Detection Neural Networks |
-| 2019 | 🔳 | [FCOS](#FCOS) | [paper](https://arxiv.org/pdf/1904.01355) | X, PP-E | FCOS: Fully Convolutional One-Stage Object Detection |
+| 2019 | ✅ | [Bag Of Freebies](#Bag-Of-Freebies) | [paper](https://arxiv.org/pdf/1902.04103) | X | Bag of Freebies for Training Object Detection Neural Networks |
+| 2019 | ✅ | [FCOS](#FCOS) | [paper](https://arxiv.org/pdf/1904.01355) | X, PP-E | FCOS: Fully Convolutional One-Stage Object Detection |
 | 2019 | ✅ | [CSP](#CSP) | [paper](https://arxiv.org/pdf/1911.11929.pdf) | X, PP-v2, v6, v9 | CSPNet: A new backbone that can enhance learning capability of CNN |
 | 2020 | ✅ | [ATSS](#ATSS) | [paper](https://arxiv.org/pdf/1912.02424) | v6.3 | Bridging the Gap Between Anchor-based and Anchor-free Detection via Adaptive Training Sample Selection |
 | 2020 | 🔳 | [Effective Squeeze and Excitation](#Effective-Squeeze-And-Excitation) | [paper](https://arxiv.org/pdf/1911.06667v6) | PP-E | CenterMask : Real-Time Anchor-Free Instance Segmentation |
