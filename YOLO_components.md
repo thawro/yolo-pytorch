@@ -1127,11 +1127,15 @@ Note that QFL and DFL can be unified into a general form, which is called the **
 
 $$ GFL(p_{yl}, p_{yr}) = - |y - (y_l p_{yl}  + y_r p_{yr})|^β ((y_r - y) log(p_{yl}) + (y - y_l)log(p_{yr})) $$
 
-### Properties of GF
+### Properties of GFL
 
 $GFL(p_{yl} , p_{yr})$ reaches its global minimum with 
+
 $$ p^\*_{yl} = \frac{y_r − y}{y_r − y_l} $$
-$$ p^\*_{yr} = \frac{y − y_l}{y_r − y_l} $$, which also means that the estimation $\hat{y}$ perfectly matches the continuous label $y$, i.e., $\hat{y} = y_l p^\*_{yl} + y_r p^\*_{yr} = y$. Obviously, the original FL and the proposed QFL and DFL are all special cases of GFL. Note that GFL can be applied to any one-stage detectors. The modified detectors differ from the original detectors in two aspects:
+
+$$ p^\*_{yr} = \frac{y − y_l}{y_r − y_l} $$
+
+which also means that the estimation $\hat{y}$ perfectly matches the continuous label $y$, i.e., $\hat{y} = y_l p^\*_{yl} + y_r p^\*_{yr} = y$. Obviously, the original FL and the proposed QFL and DFL are all special cases of GFL. Note that GFL can be applied to any one-stage detectors. The modified detectors differ from the original detectors in two aspects:
 * during inference, we directly feed the classification score (joint representation with quality estimation) as NMS scores without the need of multiplying any individual quality prediction if there exists (e.g., centerness as in FCOS and ATSS)
 * the last layer of the regression branch for predicting each location of bounding boxes now has $n + 1$ outputs instead of 1 output, which brings negligible extra computing cost
 
