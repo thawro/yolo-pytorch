@@ -1123,7 +1123,7 @@ $$ \hat{y} = \sum_{j=0}^n P(y_j)y_j = S_i y_i + S_{i+1} y_{i+1} = \frac{y_{i+1} 
 
 ## Generalized Focal Loss (GFL)
 
-Note that QFL and DFL can be unified into a general form, which is called the **Generalized Focal Loss (GFL)** in the paper. Assume that a model estimates probabilities for two variables $y_l$, $y_r$ ($y_l < y_r$ ) as $p_{yl}$ , $p_{yr}$ ($p_{yl} ≥ 0$, $p_{yr} ≥ 0$, $p_{yl} + p_{yr} = 1$), with a final prediction of their linear combination being $\hat{y} = y_l p_{yl}  + y_r p_{yr}$ ($y_l ≤ \hat{y} ≤ y_r$ ). The corresponding continuous label $y$ for the prediction $\hat{y}$ also satisfies $y_l ≤ y ≤ y_r$ . Taking the absolute distance $|y − \hat{y}|^β$ ($β ≥ 0$) as modulating factor, the specific formulation of GFL can be written as:
+Note that QFL and DFL can be unified into a general form, which is called the **Generalized Focal Loss (GFL)** in the paper. Assume that a model estimates probabilities for two variables $y_l$, $y_r$ ( $y_l < y_r$ ) as $p_{yl}$ , $p_{yr}$ ( $p_{yl} ≥ 0$, $p_{yr} ≥ 0$, $p_{yl} + p_{yr} = 1$ ), with a final prediction of their linear combination being $\hat{y} = y_l p_{yl}  + y_r p_{yr}$ ( $y_l ≤ \hat{y} ≤ y_r$ ). The corresponding continuous label $y$ for the prediction $\hat{y}$ also satisfies $y_l ≤ y ≤ y_r$. Taking the absolute distance $|y − \hat{y}|^β$ ($β ≥ 0$) as modulating factor, the specific formulation of GFL can be written as:
 
 $$ GFL(p_{yl}, p_{yr}) = - |y - (y_l p_{yl}  + y_r p_{yr})|^β ((y_r - y) log(p_{yl}) + (y - y_l)log(p_{yr})) $$
 
@@ -1135,7 +1135,11 @@ $$ p^\*_{yl} = \frac{y_r − y}{y_r − y_l} $$
 
 $$ p^\*_{yr} = \frac{y − y_l}{y_r − y_l} $$
 
-which also means that the estimation $\hat{y}$ perfectly matches the continuous label $y$, i.e., $\hat{y} = y_l p^\*_{yl} + y_r p^\*_{yr} = y$. Obviously, the original FL and the proposed QFL and DFL are all special cases of GFL. Note that GFL can be applied to any one-stage detectors. The modified detectors differ from the original detectors in two aspects:
+which also means that the estimation $\hat{y}$ perfectly matches the continuous label $y$, i.e., 
+
+$$ \hat{y} = y_l p^\*_{yl} + y_r p^\*_{yr} = y $$
+
+Obviously, the original FL and the proposed QFL and DFL are all special cases of GFL. Note that GFL can be applied to any one-stage detectors. The modified detectors differ from the original detectors in two aspects:
 * during inference, we directly feed the classification score (joint representation with quality estimation) as NMS scores without the need of multiplying any individual quality prediction if there exists (e.g., centerness as in FCOS and ATSS)
 * the last layer of the regression branch for predicting each location of bounding boxes now has $n + 1$ outputs instead of 1 output, which brings negligible extra computing cost
 
