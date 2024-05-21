@@ -29,8 +29,8 @@
 | 2021 | 🔳 | [NoNMS-YOLO](components/NoNMS-YOLO.md) | [paper](https://arxiv.org/pdf/2101.11782) | X | Object Detection Made Simpler by Eliminating Heuristic NMS |
 | 2021 | ✅ | [CopyPaste](components/CopyPaste.md) | [paper](https://arxiv.org/pdf/2012.07177) | X | Simple Copy-Paste is a Strong Data Augmentation Method for Instance Segmentation |
 | 2021 | ✅ | [OTA](components/OTA.md) | [paper](https://arxiv.org/pdf/2103.14259) | X | OTA: Optimal Transport Assignment for Object Detection |
-| 2021 | 🔳 | [Varifocal Loss](components/VarifocalLoss.md) | [paper](https://arxiv.org/pdf/2008.13367) | PP-E | VarifocalNet: An IoU-aware Dense Object Detector |
-| 2021 | 🔳 | [Task Aligned Learning](components/TAL.md) | [paper](https://arxiv.org/pdf/2108.07755) | PP-E | TOOD: Task-aligned One-stage Object Detection |
+| 2021 | ✅ | [Varifocal Loss](components/VarifocalLoss.md) | [paper](https://arxiv.org/pdf/2008.13367) | PP-E | VarifocalNet: An IoU-aware Dense Object Detector |
+| 2021 | ✅ | [Task Aligned Learning](components/TAL.md) | [paper](https://arxiv.org/pdf/2108.07755) | PP-E | TOOD: Task-aligned One-stage Object Detection |
 | 2021 | 🔳 | [PP-PicoDet](components/PP-PicoDet.md) | [paper](https://arxiv.org/pdf/2111.00902) | PP-E | PP-PicoDet: A Better Real-Time Object Detector on Mobile Devices |
 | 2021 | ✅ | [RepVGG](components/RepVGG.md) | [paper](https://arxiv.org/pdf/2101.03697.pdf) | PP-E, v6 | RepVGG: Making VGG-style ConvNets Great Again |
 | 2022 | 🔳 | [ELAN](components/ELAN.md) | [paper](https://arxiv.org/pdf/2211.04800) | v9 | Designing Network Design Strategies Through Gradient Path Analysis |
