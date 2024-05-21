@@ -4,7 +4,9 @@
 
 Accurately ranking the vast number of candidate detections is crucial for dense object detectors to achieve high performance. Prior work uses the classification score or a combination of classification and predicted localization scores to rank candidates. However, neither option results in a reliable ranking, thus degrading detection performance. In this paper, authors propose to learn an **Iou-aware Classification Score (IACS)** as a joint representation of object presence confidence and localization accuracy. They show that dense object detectors can achieve a more accurate ranking of candidate detections based on the IACS. Authors design a new loss function, named **Varifocal Loss**, to train a dense object detector to predict the IACS, and propose a new star-shaped bounding box feature representation for IACS prediction and bounding box refinement. Combining these two new components and a bounding box refinement branch, they build an IoU-aware dense object detector based on the FCOS + ATSS architecture, that is called **VarifocalNet** or VFNet for short.
 
-vfl_star
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/32861675-29bc-4103-b6c5-01798c99c109" alt="vfl_star" height="350"/>
+</p>
 
 Generally, the classification score is used to rank the bounding box in NMS. However, this harms the detection performance, because the classification score is not always a good estimate of the bounding box localization accuracy and accurately localized detections with low classification scores may be mistakenly removed in NMS. To solve the problem, existing dense object detectors predict either an additional IoU score (IoU-Aware) or a centerness score (FCOS) as the localization accuracy estimation, and multiply them by the classification score to rank detections in NMS. These methods can alleviate the misalignment problem between the classification score and the object localization accuracy. However, they are sub-optimal because multiplying the two imperfect predictions may lead to a worse rank basis. Besides, adding an extra network branch to predict the localization score is not an elegant solution and incurs additional computation burden.
 
@@ -56,7 +58,9 @@ Authors further improve the object localization accuracy through a bounding box 
 
 ### VarifocalNet
 
-VFL_net
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/99abfbd2-c5f2-4314-9814-4222ce30f63f" alt="vfl_net" height="350"/>
+</p>
 
 Attaching the above three components to the FCOS network architecture and removing the original centerness branch, composes the VarifocalNet. Figure above illustrates the network architecture of the VFNet. The backbone and FPN network parts of the VFNet are the same as the FCOS. The difference lies in the head structure. The VFNet head consists of two subnetworks.
 
@@ -65,15 +69,13 @@ Attaching the above three components to the FCOS network architecture and removi
 
 ### Loss Function and Inference
 
-The training of our VFNet is supervised by the loss function:
+The training of the VFNet is supervised by the loss function:
 
-$$
-Loss =
+$$ Loss =
 \frac{1}{N_{pos}} \sum_i \sum_c VFL(p_{c, i}, q_{c, i}) +
-\frac{\lambda_0}{N_{pos}} \sum_i q_{c^\*, i} L_{bbox}(bbox'_i, bbox^\*_i) +
-\frac{\lambda_1}{N_{pos}} \sum_i q_{c^\*, i} L_{bbox}(bbox_i, bbox^\*_i)
-$$
+\frac{\lambda_0}{N_{pos}} \sum_i q_{c^\*, i} L_{bbox}(bbox_i', bbox_i^\*) +
+\frac{\lambda_1}{N_{pos}} \sum_i q_{c^\*, i} L_{bbox}(bbox_i, bbox_i^\*) $$
 
-where $p_{c,i}$ and $q_{c,i}$ denote the predicted and target IACS respectively for the class $c$ at the location $i$ on each level feature map of FPN. $L_{bbox}$ is the GIoU loss, and $bbox′_i$, $bbox_i$ and $bbox^\*_i$ represent the initial, refined and groundtruth bounding box respectively. Authors weight the $L_{bbox}$ with the training target $q_{c^\∗,i}$, which is the gt\_IoU for foreground points and 0 otherwise, following the FCOS. $λ_0$ and $λ_1$ are the balance weights for $L_{bbox}$ and are empirically set as $1.5$ and $2.0$ respectively in this paper. $N_{pos}$ is the number of foreground points and is used to normalize the total loss. As mentioned previously, authors employ the ATSS to define foreground and background points during training
+where $p_{c,i}$ and $q_{c,i}$ denote the predicted and target IACS respectively for the class $c$ at the location $i$ on each level feature map of FPN. $L_{bbox}$ is the GIoU loss, and $bbox_i'$, $bbox_i$ and $bbox_i^\*$ represent the initial, refined and groundtruth bounding box respectively. Authors weight the $L_{bbox}$ with the training target $q_{c^\∗, i}$, which is the gt\_IoU for foreground points and 0 otherwise, following the FCOS. $λ_0$ and $λ_1$ are the balance weights for $L_{bbox}$ and are empirically set as $1.5$ and $2.0$ respectively in this paper. $N_{pos}$ is the number of foreground points and is used to normalize the total loss. As mentioned previously, authors employ the ATSS to define foreground and background points during training
 
 **Inference** - the inference of the VFNet is straightforward. It involves simply forwarding an input image through the network and a NMS post-processing step for removing redundant detections.
