@@ -22,11 +22,15 @@ To address these limitations, we propose Task-aligned One-stage Object Detection
 
 **Overview** - Similar to recent one-stage detectors, the proposed TOOD has an overall pipeline of ‘backbone-FPN-head’. Moreover, by considering efficiency and simplicity, TOOD uses a single anchor per location (same as ATSS), where the ‘anchor’ means an anchor point for an anchor-free detector, or an anchor box for an anchor-based detector. As discussed, existing one-stage detectors have limitations of task misalignment between classification and localization, due to the divergence of two tasks which are often implemented using two separate head branches. In this work, authors propose to align the two tasks more explicitly using a designed **Task-aligned head (T-head)** with a new **Task Alignment Learning (TAL)**. As illustrated in figure below, **T-head** and **TAL** can work collaboratively to improve the alignment of two tasks. Specifically, T-head first makes predictions for the classification and localization on the FPN features. Then TAL computes task alignment signals based on a new task alignment metric which measures the degree of alignment between the two predictions. Lastly, T-head automatically adjusts its classification probabilities and localization predictions using learning signals computed from TAL during back propagation.
 
-TAL_overview
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/1367e0ec-bf73-4ba1-84f3-991826ef0c88" alt="TAL_overview" height="350"/>
+</p>
 
 ### Task-aligned Head
 
-TAL_comparison
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/8b249dc9-904b-42b4-80c3-f413d6dae2db" alt="TAL_comparison" height="350"/>
+</p>
 
 The goal is to design an efficient head structure to improve the conventional design of the head in one-stage detectors (as shown in figure above (a)). In this work, authors achieved this by considering two aspects: 
 
@@ -35,7 +39,9 @@ The goal is to design an efficient head structure to improve the conventional de
 
 The proposed T-head is shown in figure above (b), where it has a simple feature extractor with two Task-Aligned Predictors (TAP). To enhance the interaction between classification and localization, authors use a feature extractor to learn a stack of task-interactive features from multiple convolutional layers, as shown by the blue part in figure above (b). This design not only facilitates the task interaction, but also provides multi-level features with multi-scale effective receptive fields for the two tasks. Formally, let $X^{fpn} ∈ R^{H × W × C}$ denotes the FPN features, where $H$, $W$ and $C$ indicate height, width and the number of channels, respectively. The feature extractor uses $N$ consecutive conv layers with activation functions to compute the task-interactive features.
 
-TAL_features
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/edfd6ad7-8f1a-4bc6-b4c5-9ec4a3146045" alt="TAL_features" height="120"/>
+</p>
 
 where $conv_k$ and $δ$ refer to the $k$-th $conv$ layer and a ReLU function, respectively. Thus TAL extracts rich multi-scale features from the FPN features using a single branch in the head. Then, the computed task-interactive features will be fed into two TAP for aligning classification and localization.
 
@@ -106,16 +112,16 @@ where $s$ and $u$ denote a classification score and an IoU value, respectively. 
 
 Thus, authors adopt a simple instance-level normalization to adjust the scale of $\hat{t}$: the maximum of $\hat{t}$ is equal to the largest IoU value ($u$) within each instance. Then Binary Cross Entropy (BCE) computed on the positive anchors for the classification task can be rewritten as
 
-$$ L_{cls\_pos} = \sum_{i=1}^{N_{pos}} BCE(s_i, \hat{t}_i) $$
+$$ L_{clsPos} = \sum_{i=1}^{N_{pos}} BCE(s_i, \hat{t_i}) $$
 
 where $i$ denotes the $i$-th anchor from the $N_{pos}$ positive anchors corresponding to one instance. Authors employ a focal loss for classification to mitigate the imbalance between the negative and positive samples during training. The focal loss computed on the positive anchors can be reformulated by previous equation, and the final loss function for the classification task is defined as follows
 
-$$ L_{cls} = \sum_{i=1}^{N_{pos}} ∣\hat{t}_i − s_i ∣^γ BCE(s_i, \hat{t}_i) + \sum_{j=1}^{N_{neg}} s^γ_j BCE(s_j, 0) $$
+$$ L_{cls} = \sum_{i=1}^{N_{pos}} ∣\hat{t_i} − s_i∣^γ BCE(s_i, \hat{t_i}) + \sum_{j=1}^{N_{neg}} s^γ_j BCE(s_j, 0) $$
 
 where $j$ denotes the $j$-th anchor from the $N_{neg}$ negative anchors, and $γ$ is the focusing parameter.
 
 **Localization objective**. A bounding box predicted by a well-aligned anchor (i.e., having a large $t$) usually has both a large classification score with a precise localization, and such a bounding box is more likely to be preserved during NMS. In addition, $t$ can be applied for selecting high- quality bounding boxes by weighting the loss more carefully to improve the training. Learning from high-quality bounding boxes is beneficial to the performance of a model, while the low-quality ones often have a negative impact on the training by producing a large amount of less informative and redundant signals to update the model. In TAL case, authors apply the $t$ value for measuring the quality of a bounding box. Thus, improve the task alignment and regression precision by focusing on the well-aligned anchors (with a large $t$), while reducing the impact of the misaligned anchors (with a small $t$) during bounding box regression. Similar to the classification objective, they re-weight the loss of bounding box regression computed for each anchor based on $\hat{t}_i$, and a GIoU loss ($L_{GIoU}) can be reformulated as follows:
 
-$$ L_{reg} = \sum_{i=1}^{N_{pos}} \hat{t}_i L_{GIoU}(b_i, \overline{b_i}) $$
+$$ L_{reg} = \sum_{i=1}^{N_{pos}} \hat{t_i} L_{GIoU}(b_i, \overline{b_i}) $$
 
 where $b$ and $\overline{b}$ denote the predicted bounding boxes and the corresponding ground-truth boxes. The total training loss for TAL is the sum of $L_{cls}$ and $L_{reg}$.
