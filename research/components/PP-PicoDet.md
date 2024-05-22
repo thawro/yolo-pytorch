@@ -16,11 +16,17 @@ The problem is that lightweight anchor-free detectors usually cannot balance the
 
 Full PP-PicoDet architecture:
 
-pp_picodet_arch
+
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/43f7e8d1-48df-4ace-98d8-2c199ec725c4" alt="pp_picodet_arch" height="400"/>
+</p>
+
 
 ## Better Backbone
 
-pp_picodet_es_block
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/7a4f9e5d-4430-43f9-9679-a0801b46e3c5" alt="pp_picodet_es_block" height="400"/>
+</p>
 
 **Manually Designed Backbone**. ShuffleNetV2 is more robust than other networks on mobile devices. To further improve the performance of ShuffleNetV2, authors follow some methods of PP-LCNet to enhance the network structure and build a new backbone, namely **Enhanced ShuffleNet (ESNet)**. Figure above describes the ES Block of ESNet in detail. The SE module does a good job of weighting the network channels for better features. Therefore, the SE modules are added to all blocks. Like MobileNetV3, the activation functions for the two layers of the SE module are ReLU and H-Sigmoid, respectively. Channel shuffle provides the information exchange of ShuffleNetV2 channels, but it causes the loss of fusion features. To address this problem, authors add depthwise convolution and pointwise convolution to integrate different channel information when the stride is 2 (figure above (a)). GhostNet proposes a novel Ghost module that can generate more feature maps with fewer parameters to improve the network’s learning ability. PP-PicoDet adds the Ghost module in the blocks with stride set to 1 to further enhance the performance of our ESNet (figure above (b)).
 
