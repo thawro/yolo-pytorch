@@ -2,90 +2,23 @@
 
 | Year | Done | Approach | Link | Title |
 | :--- | :---: | :----- | :--- | :--- |
-| 2014 | 🔳 | [InceptionV1](#InceptionV1) | [paper](https://arxiv.org/pdf/1409.4842) | Going deeper with convolutions |
-| 2015 | 🔳 | [InceptionV2/V3](#InceptionV2/V3) | [paper](https://arxiv.org/pdf/1512.00567) | Rethinking the Inception Architecture for Computer Vision |
-| 2015 | 🔳 | [ResNet](#ResNet) | [paper](https://arxiv.org/pdf/1512.03385) | Deep Residual Learning for Image Recognition |
-| 2016 | 🔳 | [InceptionV4](#InceptionV4) | [paper](https://arxiv.org/pdf/1602.07261) | Inception-v4, Inception-ResNet and the Impact of Residual Connections on Learning  |
-| 2016 | 🔳 | [SqueezeNet](#SqueezeNet) | [paper](https://arxiv.org/pdf/1602.07360) | SqueezeNet: AlexNet-level accuracy with 50x fewer parameters and <0.5MB model size |
-| 2017 | 🔳 | [WideResNet](#WideResNet) | [paper](https://arxiv.org/pdf/1605.07146v4) | Wide Residual Networks |
-| 2017 | 🔳 | [ResNext](#ResNext) | [paper](https://arxiv.org/pdf/1611.05431) | Aggregated Residual Transformations for Deep Neural Networks |
-| 2017 | 🔳 | [MobileNetV1](#MobileNetV1) | [paper](https://arxiv.org/pdf/1704.04861) | MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications |
-| 2018 | 🔳 | [CBAM](#CBAM) | [paper](https://arxiv.org/pdf/1807.06521.pdf) | CBAM: Convolutional Block Attention Module |
-| 2018 | 🔳 | [DenseNet](#DenseNet) | [paper](https://arxiv.org/pdf/1608.06993v5) | Densely Connected Convolutional Networks |
-| 2019 | 🔳 | [MobileNetV2](#MobileNetV2) | [paper](https://arxiv.org/pdf/1801.04381) | MobileNetV2: Inverted Residuals and Linear Bottlenecks |
-| 2019 | 🔳 | [MobileNetV3](#MobileNetV3) | [paper](https://arxiv.org/pdf/1905.02244) | Searching for MobileNetV3 |
-| 2019 | 🔳 | [Squeeze and Excitation](#Squeeze-and-Excitation) | [paper](https://arxiv.org/pdf/1709.01507) | Squeeze-and-Excitation Networks |
-| 2020 | 🔳 | [EfficientNet](#EfficientNet) | [paper](https://arxiv.org/pdf/1905.11946v5.pdf) | EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks |
-
-
-
-# InceptionV1
-2014 | [paper](https://arxiv.org/pdf/1409.4842) | _Going deeper with convolutions_
-TODO
-
-
-# InceptionV2/V3
-2015 | [paper](https://arxiv.org/pdf/1512.00567) | _Rethinking the Inception Architecture for Computer Vision_
-TODO
-
-
-# ResNet
-2015 | [paper](https://arxiv.org/pdf/1512.03385) | _Deep Residual Learning for Image Recognition_
-TODO
-
-
-# InceptionV4
-2016 | [paper](https://arxiv.org/pdf/1602.07261) | _Inception-v4, Inception-ResNet and the Impact of Residual Connections on Learning_
-TODO
-
-
-# SqueezeNet
-2016 | [paper](https://arxiv.org/pdf/1602.07360) | _SqueezeNet: AlexNet-level accuracy with 50x fewer parameters and <0.5MB model size_
-TODO
-
-
-# WideResNet
-2017 | [paper](https://arxiv.org/pdf/1605.07146v4) | _Wide Residual Networks_
-TODO
-
-
-# ResNext
-2017 | [paper](https://arxiv.org/pdf/1611.05431) | _Aggregated Residual Transformations for Deep Neural Networks_
-TODO
-
-
-# MobileNetV1
-201 | [paper](https://arxiv.org/pdf/1704.04861) | _MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications_
-TODO
-
-
-# CBAM
-2018 | [paper](https://arxiv.org/pdf/1807.06521.pdf) | _CBAM: Convolutional Block Attention Module_
-TODO
-
-
-# DenseNet
-2018 | [paper](https://arxiv.org/pdf/1608.06993v5) | _Densely Connected Convolutional Networks_
-TODO
-
-
-# MobileNetV2
-2019 | [paper](https://arxiv.org/pdf/1801.04381) | _MobileNetV2: Inverted Residuals and Linear Bottlenecks_
-TODO
-
-
-# MobileNetV3
-2019 | [paper](https://arxiv.org/pdf/1905.02244) | _Searching for MobileNetV3_
-TODO
-
-
-# Squeeze and Excitation
-2019 | [paper](https://arxiv.org/pdf/1709.01507) | _Squeeze-and-Excitation Networks_
-TODO
-
-
-# EfficientNet
-2020 | [paper](https://arxiv.org/pdf/1905.11946v5.pdf) | _EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks_
-TODO
-
-
+| 2014 | 🔳 | [InceptionV1](prereadings/InceptionV1.md) | [paper](https://arxiv.org/pdf/1409.4842) | Going deeper with convolutions |
+| 2015 | 🔳 | [InceptionV2/V3](prereadings/InceptionV2_V3.md) | [paper](https://arxiv.org/pdf/1512.00567) | Rethinking the Inception Architecture for Computer Vision |
+| 2015 | 🔳 | [ResNet](prereadings/ResNet.md) | [paper](https://arxiv.org/pdf/1512.03385) | Deep Residual Learning for Image Recognition |
+| 2016 | 🔳 | [InceptionV4](prereadings/InceptionV4.md) | [paper](https://arxiv.org/pdf/1602.07261) | Inception-v4, Inception-ResNet and the Impact of Residual Connections on Learning  |
+| 2016 | 🔳 | [SqueezeNet](prereadings/SqueezeNet.md) | [paper](https://arxiv.org/pdf/1602.07360) | SqueezeNet: AlexNet-level accuracy with 50x fewer parameters and <0.5MB model size |
+| 2017 | 🔳 | [WideResNet](prereadings/WideResNet.md) | [paper](https://arxiv.org/pdf/1605.07146v4) | Wide Residual Networks |
+| 2017 | 🔳 | [ResNext](prereadings/ResNext.md) | [paper](https://arxiv.org/pdf/1611.05431) | Aggregated Residual Transformations for Deep Neural Networks |
+| 2017 | 🔳 | [MobileNetV1](prereadings/MobileNetV1.md) | [paper](https://arxiv.org/pdf/1704.04861) | MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications |
+| 2017 | 🔳 | [ShuffleNet](prereadings/ShuffleNet.md) | [paper]([TODO](https://arxiv.org/pdf/1707.01083)) | ShuffleNet: An Extremely Efficient Convolutional Neural Network for Mobile Devices |
+| 2018 | 🔳 | [CBAM](prereadings/CBAM.md) | [paper](https://arxiv.org/pdf/1807.06521.pdf) | CBAM: Convolutional Block Attention Module |
+| 2018 | 🔳 | [ShuffleNetV2](prereadings/ShuffleNetV2.md) | [paper](https://arxiv.org/pdf/1807.11164v1) | ShuffleNet V2: Practical Guidelines for Efficient CNN Architecture Design |
+| 2018 | 🔳 | [DenseNet](prereadings/DenseNet.md) | [paper](https://arxiv.org/pdf/1608.06993v5) | Densely Connected Convolutional Networks |
+| 2019 | 🔳 | [MobileNetV2](prereadings/MobileNetV2.md) | [paper](https://arxiv.org/pdf/1801.04381) | MobileNetV2: Inverted Residuals and Linear Bottlenecks |
+| 2019 | 🔳 | [MobileNetV3](prereadings/MobileNetV3.md) | [paper](https://arxiv.org/pdf/1905.02244) | Searching for MobileNetV3 |
+| 2019 | 🔳 | [Squeeze and Excitation](prereadings/SqueezeAndExcitation.md) | [paper](https://arxiv.org/pdf/1709.01507) | Squeeze-and-Excitation Networks |
+| 2019 | 🔳 | [VoVNet](prereadings/VoVNet.md) | [paper](https://arxiv.org/pdf/1904.09730v1) | An Energy and GPU-Computation Efficient Backbone Network for Real-Time Object Detection |
+| 2020 | 🔳 | [EfficientNet](prereadings/EfficientNet.md) | [paper](https://arxiv.org/pdf/1905.11946v5.pdf) | EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks |
+| 2020 | 🔳 | [GhostNet](prereadings/GhostNet.md) | [paper](https://arxiv.org/pdf/1911.11907) | GhostNet: More Features from Cheap Operations |
+| 2022 | 🔳 | [GhostNetV2](prereadings/GhostNetV2.md) | [paper](https://arxiv.org/pdf/2211.12905) | GhostNetV2: Enhance Cheap Operation with Long-Range Attention |
+| 2022 | 🔳 | [ConvNext](prereadings/ConvNext.md) | [paper](https://arxiv.org/pdf/2201.03545) | A ConvNet for the 2020s |
