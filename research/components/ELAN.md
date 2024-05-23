@@ -12,7 +12,9 @@ Designing a high-efficiency and high-quality expressive network architecture has
 
 ## Partial Residual Networks (PRN)
 
-elan_prn
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/5dff1f96-fcb9-4fb2-9d65-1968a98558f5" alt="elan_prn" height="150"/>
+</p>
 
 Partial Residual Network (PRN) was proposed by the same team in 2019, and its design concept belongs to the layer-level design strategy. In the design of PRN, the main concept is to **maximize the combination of gradients used to update the weights of each layer**. There are two main factors that affect the combination of gradients:
 
@@ -27,7 +29,9 @@ One thing to be noted is that when the gradient changes during the process of th
 
 ## Cross Stage Partial Networks
 
-elan_csp
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/29adbd29-831a-4baa-81ca-21128cfe3698" alt="elan_csp" height="350"/>
+</p>
 
 CSPNet was proposed by the same team in 2019, and it is a stage-level gradient path-based network. Like PRN, CSP-Net is based on the concept of maximizing gradient combinations. The difference between CSPNet and PRN is that the latter focuses on confirming the improvement of network learning ability by gradient combination from theoretical perspective, while the former is additionally designed for further architecture optimization for hardware inference speed. Therefore, when designing CSPNet, authors extend the architecture from layer-level to stage-level, and optimize the overall architecture. CSPNet mainly has the following two structures:
 
@@ -42,11 +46,15 @@ Since only part of the feature map enters the computational black for operation,
 
 **Gradient flow truncate operation**. In order to make the designed network architecture more powerful, authors further analyze the gradient flow used to update the CSPNet. Since shortcut connections are often used in computational blocks, we know that the gradient sources that provide the two paths are bound to overlap a lot. We know that when a feature map passes through a kernel function, it is equivalent to a spatial projection. Usually we can insert a transition layer at the end of both paths to truncate the duplicated gradient flow. Through the above steps, we can make the information learned from the two paths and adjacent stages have more obvious diversity. Authors designed three different combinations of duplicate gradient flow truncate operations, as shown in figure below. These operations can be matched with different architectures, such as computational blocks and down-sampling blocks to achieve better results.
 
-elan_csp_fusions
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/43cdaee1-a375-4560-877c-1ae20477fa7a" alt="elan_csp_fusions" height="350"/>
+</p>
 
 ## Efficient Layer Aggregation Networks
 
-elan_elan
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/647c29ef-52df-44e3-ac78-86e37015641b" alt="elan_elan" height="350"/>
+</p>
 
 The codes of Efficient Layer Aggregation Networks (ELAN) was released by the same team in July 2022. It falls into the category of the gradient path designed network at the network-level. The main purpose of designing ELAN is to solve the problem that the convergence of the deep model will gradually deteriorate when executing model scaling. Authors analyze the shortest gradient path and the longest gradient path through each layer in the overall network, thereby designing a layer aggregation architecture with efficient gradient propagation paths. ELAN is mainly composed of VoVNet combined with CSPNet, and optimizes the gradient length of the overall network with the structure of **_stack in computational block_**
 
