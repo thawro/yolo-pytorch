@@ -16,11 +16,9 @@ The problem is that lightweight anchor-free detectors usually cannot balance the
 
 Full PP-PicoDet architecture:
 
-
 <p align="center">
   <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/43f7e8d1-48df-4ace-98d8-2c199ec725c4" alt="pp_picodet_arch" height="400"/>
 </p>
-
 
 ## Better Backbone
 
