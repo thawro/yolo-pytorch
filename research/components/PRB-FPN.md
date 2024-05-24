@@ -11,9 +11,15 @@ This paper proposes the **Parallel Residual Bi-Fusion Feature Pyramid Network (P
 
 Authors propose a new Parallel Residual Bi-Fusion Feature Pyramid Network (PRB-FPN) with a parallel design and multiple improvements that can retain both deeper and shallower features for fast and accurate single-shot object detection. Different from other bi-fusion FPN structures such as PANet, NAS-FPN, and BiFPN, authors create a parallel bi-fusion structure to fuse three-layers of feature maps in parallel to generate three prediction maps at the same time (see figure 1 below). Without losing efficiency, these three-way prediction maps can retain more accurate semantic and localization information to better detect both tiny and large objects. In this parallel structure, authors introduce a new concatenation and re-organization (CORE) module for data fusion, where output features can be further purified to retain contextual information. A "residual" design is introduced (motivated from the spirit of ResNet) into the bi-fusion pipeline, which enables easy training and integration with a number of popular backbones. The proposed residual FP design outperforms other bi-directional methods. In comparison, methods based on traditional FPs can only learn un-referenced features, thus they are not suitable for detecting both large and small objects. The proposed residual FP retains semantic richer features in higher layers that can better detect small objects. A key novelty in this design is the adding of parallelization to the bi-fusion FPN architecture. This parallel design is more effective in feature representation, i.e. for capturing features to identify and localize objects in either small or large sizes without losing efficiency. In comparison, most existing bi-directional FP methods directly concatenate large feature maps in a memory-consuming way, which ends up with an even larger feature map. The proposed PRB-FPN is simple, efficient, and suitable for generic object detection for multiple object classes and sizes (small, mid, and large). PRB-FPN approach is generalizable in combining with mainstream backbones including Pelee and DarkNet53. It can run in real-time and is easily deployable to edge devices.
 
-prb_fpn_overview
-prb_fpn_detailed
-prb_fpn_re_core
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/5423b966-e7c4-4490-ae07-9f3dd3249cff" alt="prb_fpn_overview" height="300">
+</p>
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/ce607961-8f84-48c0-9d28-b0b4a25c8098" alt="prb_fpn_detailed" height="450">
+</p>
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/5e0810b3-f15a-4a43-a8e9-8327f66e50ae" alt="prb_fpn_re_core" height="400">
+</p>
 
 Figures above (1, 2, 3) depict the complete pipeline of our proposed network architecture. Details are provided in the following sessions.
 
