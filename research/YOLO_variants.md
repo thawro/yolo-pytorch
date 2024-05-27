@@ -12,8 +12,8 @@
 | 2021 | ✅ | [Scaled-YOLOv4](variants/YOLOv4-Scaled.md) | [paper](https://arxiv.org/pdf/2011.08036.pdf) , [blog](https://alexeyab84.medium.com/scaled-yolo-v4-is-the-best-neural-network-for-object-detection-on-ms-coco-dataset-39dfa22fa982), [code](https://github.com/WongKinYiu/ScaledYOLOv4) | Scaled-YOLOv4: Scaling Cross Stage Partial Network |
 | 2021 | 🔳 | [YOLOR](variants/YOLOR.md) | [paper](https://arxiv.org/pdf/2105.04206), [code](https://github.com/WongKinYiu/yolor) | You Only Learn One Representation: Unified Network for Multiple Tasks |
 | 2021 | 🔳 | [YOLOX](variants/YOLOX.md) | [paper](https://arxiv.org/pdf/2107.08430.pdf) | YOLOX: Exceeding YOLO Series in 2021 |
-| 2021 | 🔳 | [PP-YOLOv2](variants/PP-YOLOv2.md) | [paper](https://arxiv.org/pdf/2104.10419) | PP-YOLOv2: A Practical Object Detector |
-| 2022 | 🔳 | [PP-YOLOE](variants/PP-YOLOE.md) | [paper](http://arxiv.org/pdf/2203.16250v3) | PP-YOLOE: An evolved version of YOLO |
+| 2021 | ✅ | [PP-YOLOv2](variants/PP-YOLOv2.md) | [paper](https://arxiv.org/pdf/2104.10419) | PP-YOLOv2: A Practical Object Detector |
+| 2022 | ✅ | [PP-YOLOE](variants/PP-YOLOE.md) | [paper](http://arxiv.org/pdf/2203.16250v3) | PP-YOLOE: An evolved version of YOLO |
 | 2022 | 🔳 | [RTMDet](variants/RTMDet.md) | [paper](http://arxiv.org/pdf/2212.07784v2) | RTMDet: An Empirical Study of Designing Real-Time Object Detectors |
 | 2022 | 🔳 | [YOLOv7](variants/YOLOv7.md) | [paper](https://arxiv.org/pdf/2207.02696.pdf), [code](https://github.com/WongKinYiu/yolov7) | YOLOv7: Trainable bag-of-freebies sets new state-of-the-art for real-time object detectors |
 | 2022 | 🔳 | [YOLOv6](variants/YOLOv6.md) | [paper](https://arxiv.org/pdf/2209.02976), [code](https://github.com/meituan/YOLOv6) | YOLOv6: A Single-Stage Object Detection Framework for Industrial Applications |
