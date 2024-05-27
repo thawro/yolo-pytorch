@@ -21,7 +21,9 @@ as _Deformable Conv_, _SSLD_, _CoordConv_, _DropBlock_, _SPP_ and so on. The arc
 
 ## Selection of Refinements
 
-pp-yolov2
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/d5fb6028-9f61-4f14-9709-cd06af2227dd" alt="pp_yolo_v2" height="450"/>
+</p>
 
 **Path Aggregation Network** - detecting objects at differ ent scales is a fundamental challenge in object detection. In practice, a detection neck is developed for building high-level semantic feature maps at all scales. In PP-YOLO, FPN is adopted to compose bottom-up paths. Recently, several FPN variants have been proposed to enhance the ability of pyramid representation. For example, BiFPN, PAN, RFP and so on. PP-YOLOv2 follows the design of PAN to aggregate the top-down information. The detailed structure of PAN is shown in figure above.
 
