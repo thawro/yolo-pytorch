@@ -26,10 +26,14 @@ The baseline adopts the architecture of DarkNet53 backbone and an SPP layer, ref
 
 ### Decoupled head
 
-yolox_head
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/e3fd9560-a03b-4ba7-ba3a-90897330bb83" alt="yolox_head" height="400"/>
+</p>
 
-yolox_head_converge
-yolox_head_metrics
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/b07d4fbb-818d-45a0-87c7-2a3eb99d6646" alt="yolox_head_converge" height="300"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/20cfed1d-3f72-455b-849c-b1abd576db7a" alt="yolox_head_metrics" height="150"/>
+</p>
 
 In object detection, the conflict between classification and regression tasks is a well-known problem. Thus the decoupled head for classification and localization is widely used in the most of one-stage and two-stage detectors. However, as YOLO series’ backbones and feature pyramids (e.g., FPN, PAN) continuously evolve, their detection heads remain coupled as shown in the above figure. Two analytical experiments indicate that the coupled detection head may harm the performance.
 
