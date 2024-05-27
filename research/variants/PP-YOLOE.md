@@ -19,7 +19,9 @@ The overall architecture of PP-YOLOv2 contains:
 
 ## Improvement of PP-YOLOE
 
-pp_yolo_e
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/f0e4c598-9f64-4c34-8c9b-f377d4d16843" alt="pp_yolo_e" height="350"/>
+</p>
 
 ### Anchor-free
 
@@ -27,7 +29,9 @@ As mentioned above, PP-YOLOv2 assigns ground truths in an anchor-based manner. H
 
 ### Backbone and Neck
 
-pp_yolo_e_RepResBlock
+<p align="center">
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/46d349c1-123b-4e2f-aba4-0003508f71ff" alt="pp_yolo_e_RepResBlock" height="300"/>
+</p>
 
 Residual connections and dense connections have been widely used in modern convolutional neural network. Residual connections introduce shortcut to relieve gradient vanishing problem and can be also regarded as a model ensemble approach. Dense connections aggregate intermediate features with diverse receptive fields, showing good performance on the object detection task. CSPNet utilizes cross stage dense connections to lower computation burden without the loss of precision, which is popular among effective object detectors such as YOLOv5, YOLOX. VoVNet and subsequent TreeNet also show superior performance in object detection and instance segmentation. Inspired by these works, PP-YOLOE proposed a novel **RepResBlock** by combining the residual connections and dense connections, which is used in the backbone and neck.
 Originating from TreeBlock, the RepResBlock is shown in figure 2b during the training phase and 2c during the inference phase. Firstly, authors simplify the original TreeBlock (figure 2a). Then, they replace the concatenation operation with element-wise add operation (figure 2b), because of the approximation of these two operations to some extent shown in RMNet. Thus, during the inference phase, it is possible to re-parameterize RepResBlock to a basic residual block (figure 2c) used by ResNet-34 in a RepVGG style. 
