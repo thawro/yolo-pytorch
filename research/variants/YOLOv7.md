@@ -11,18 +11,16 @@ In this paper, authors present some of the new issues have discovered and devise
 
 ## Extended efficient layer aggregation networks (E-ELAN)
 
-E_ELAN
 <p align="center">
-  <img src="" alt="" height="450"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/2b7131c0-46e2-4ed3-9ba2-25cf9000db63" alt="yolov7_e_elan" height="450"/>
 </p>
 
 Extended-ELAN (E-ELAN) is based on ELAN and its main architecture is shown in above figure (d). Regardless of the gradient path length and the stacking number of computational blocks in large-scale ELAN, it has reached a stable state. If more computational blocks are stacked unlimitedly, this stable state may be destroyed, and the parameter utilization rate will decrease. The proposed E-ELAN uses expand, shuffle and merge cardinality to achieve the ability to continuously enhance the learning ability of the network without destroying the original gradient path. In terms of architecture, E-ELAN only changes the architecture in computational block, while the architecture of transition layer is completely unchanged. The proposed strategy is to use group convolution to expand the channel and cardinality of computational blocks. Authors apply the same group parameter and channel multiplier to all the computational blocks of a computational layer. Then, the feature map calculated by each computational block will be shuffled into $g$ groups according to the set group parameter $g$, and then concatenate them together. At this time, the number of channels in each group of feature map will be the same as the number of channels in the original architecture. Finally, we add $g$ groups of feature maps to perform merge cardinality. In addition to maintaining the original ELAN design architecture, E-ELAN can also guide different groups of computational blocks to learn more diverse features.
 
 ## Model scaling for concatenation-based models
 
-yolo_v7_scaling
 <p align="center">
-  <img src="" alt="" height="300"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/c5e57285-6fff-40f4-956e-1aca94970514" alt="yolov7_scaling" height="300"/>
 </p>
 
 The main purpose of model scaling is to adjust some attributes of the model and generate models of different scales to meet the needs of different inference speeds. For example the scaling model of EfficientNet considers the width, depth, and resolution. As for the scaled-YOLOv4, its scaling model is to adjust the number of stages. In other works, authors analyzed the influence of vanilla convolution and group convolution on the amount of parameter and computation when performing width and depth scaling, and used this to design the corresponding model scaling method. The above methods are mainly used in architectures such as PlainNet or ResNet. When these architectures are in executing scaling up or scaling down, the in-degree and out-degree of each layer will not change, so we can independently analyze the impact of each scaling factor on the amount of parameters and computation. However, if these methods are applied to the concatenation-based architecture, we will find that when scaling up or scaling down is performed on depth, the in-degree of a translation layer which is immediately after a concatenation-based computational block will decrease or increase, as shown in figure above (a) and (b). It can be inferred from the above phenomenon that we cannot analyze different scaling factors separately for a concatenation-based model but must be considered together. Take scaling-up depth as an example, such an action will cause a ratio change between the input channel and output channel of a transition layer, which may lead to a decrease in the hardware usage of the model. Therefore, authors proposed the corresponding compound model scaling method for a concatenation-based model. When scaling the depth factor of a computational block, we must also calculate the change of the output channel of that block. Then, we will perform width factor scaling with the same amount of change on the transition layers. The result is shown in figure above (c). The proposed compound scaling method can maintain the properties that the model had at the initial design and maintains the optimal structure.
@@ -31,9 +29,8 @@ The main purpose of model scaling is to adjust some attributes of the model and 
 
 ### Planned re-parameterized convolution
 
-yolov7_reparametrized
 <p align="center">
-  <img src="" alt="" height="500"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/891174a1-ed0a-401d-a417-50425ae22943" alt="yolov7_reparametrized" height="500"/>
 </p>
 
 Although RepConv (from RepVGG) has achieved excellent performance on the VGG, when it is directly applied to ResNet, DenseNet and other architectures, its accuracy will be significantly reduced. Authors use gradient flow propagation paths to analyze how re-parameterized convolution should be combined with different network. They also designed planned re-parameterized convolution accordingly.
@@ -42,9 +39,8 @@ RepConv actually combines $3 × 3$ convolution, $1 × 1$ convolution, and identi
 
 ### Coarse for auxiliary and fine for lead loss
 
-yolov7_head
 <p align="center">
-  <img src="" alt="" height="300"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/5bb53591-ca89-48a1-b7d4-353666d3829e" alt="yolov7_head" height="300"/>
 </p>
 
 Deep supervision is a technique that is often used in training deep networks. Its main concept is to add extra auxiliary head in the middle layers of the network, and the shallow network weights with assistant loss as the guide. Even for architectures such as ResNet and DenseNet which usually converge well, deep supervision can still significantly improve the performance of the model on many tasks. Figure above (a) and (b) show, respectively, the object detector architecture “without” and “with” deep supervision. In this paper, authors call the head responsible for the final output as the **_lead head_**, and the head used to assist training is called **_auxiliary head_**.
