@@ -12,10 +12,11 @@ In this report, authors empirically observed several important factors that moti
 The renovated design of YOLOv6 consists of the following components: **_network design_**, **_label assignment_**, **_loss function_**, **_data augmentation_**, **_industry-handy improvements_**, and **_quantization and deployment_**
 
 YOLOv6
+<p align="center">
+  <img src="" alt="" height="300"/>
+</p>
 
 ## Network Design
-
-YOLOv6
 
 A one-stage object detector is generally composed of the following parts: a **_backbone_**, a **_neck_** and a **_head_**:
 
@@ -30,6 +31,9 @@ In YOLOv6, based on the principle of hardware-friendly network design, authors p
 **Head**: Authors simplify the decoupled head to make it more efficient, called Efficient Decoupled Head.
 
 yolov6_RepBlock
+<p align="center">
+  <img src="" alt="" height="350"/>
+</p>
 
 ### Backbone
 
@@ -119,6 +123,9 @@ For industrial deployment, it has been common practice to adopt quantization to 
 ### Reparameterizing Optimizer
 
 yolov6_quantization_weights
+<p align="center">
+  <img src="" alt="" height="300"/>
+</p>
 
 RepOptimizer proposes gradient re-parameterization at each optimization step. This technique also well solves the quantization problem of reparameterization-based models. Authors hence reconstruct the re-parameterization blocks of YOLOv6 in this fashion and train it with RepOptimizer to obtain PTQ-friendly weights. The distribution of feature map is largely narrowed (see figure above (bottom)), which greatly benefits the quantization process.
 
@@ -129,5 +136,8 @@ Authors further improve the PTQ performance by partially converting quantization
 ### Quantization-aware Training with Channel-wise Distillation
 
 yolov6_channel_wise_distilation
+<p align="center">
+  <img src="" alt="" height="350"/>
+</p>
 
 In case PTQ is insufficient, authors propose to involve Quantization-Aware Training (QAT) to boost quantization performance. To resolve the problem of the inconsistency of fake quantizers during training and inference, it is necessary to build QAT upon the RepOptimizer. Besides, channel-wise distillation is adapted within the YOLOv6 framework, shown in figure above. This is also a self-distillation approach where the teacher network is the student itself in FP32-precision.
