@@ -11,9 +11,8 @@ In this report, authors empirically observed several important factors that moti
 
 The renovated design of YOLOv6 consists of the following components: **_network design_**, **_label assignment_**, **_loss function_**, **_data augmentation_**, **_industry-handy improvements_**, and **_quantization and deployment_**
 
-YOLOv6
 <p align="center">
-  <img src="" alt="" height="300"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/ae8e89ce-fc10-45e2-81b3-8db319c75f8b" alt="yolov6" height="300"/>
 </p>
 
 ## Network Design
@@ -30,16 +29,15 @@ In YOLOv6, based on the principle of hardware-friendly network design, authors p
 **Neck**: The neck of YOLOv6 adopts PAN topology following YOLOv4 and YOLOv5. Authors enhance the neck with RepBlocks or CSPStackRep Blocks to have Rep- PAN.\
 **Head**: Authors simplify the decoupled head to make it more efficient, called Efficient Decoupled Head.
 
-yolov6_RepBlock
 <p align="center">
-  <img src="" alt="" height="350"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/2f87b131-3693-44bf-8a0c-72d556d7c882" alt="yolov6_RepBlock" height="350"/>
 </p>
 
 ### Backbone
 
-As mentioned above, the design of the backbone network has a great impact on the effectiveness and efficiency of the detection model. Previously, it has been shown that multi-branch networks can often achieve better classification performance than single-path ones, but often it comes with the reduction of the parallelism and results in an increase of inference latency. On the contrary, plain single-path networks like VGG take the advantages of high parallelism and less memory footprint, leading to higher inference efficiency. Lately in RepVGG, a structural re-parameterization method is proposed to decouple the training-time multi-branch topology with an inference-time plain architecture to achieve a better speed-accuracy trade-off.\
+As mentioned above, the design of the backbone network has a great impact on the effectiveness and efficiency of the detection model. Previously, it has been shown that multi-branch networks can often achieve better classification performance than single-path ones, but often it comes with the reduction of the parallelism and results in an increase of inference latency. On the contrary, plain single-path networks like VGG take the advantages of high parallelism and less memory footprint, leading to higher inference efficiency. Lately in RepVGG, a structural re-parameterization method is proposed to decouple the training-time multi-branch topology with an inference-time plain architecture to achieve a better speed-accuracy trade-off.
 
-Inspired by the above works, authors design an efficient re-parameterizable backbone denoted as **_EfficientRep_**. For small models, the main component of the backbone is _Rep-Block_ during the training phase, as shown in figure above (a). And each _RepBlock_ is converted to stacks of $3 × 3$ convolu- tional layers (denoted as _RepConv_) with ReLU activation functions during the inference phase, as shown in (b). Typically a $3 × 3$ convolution is highly optimized on mainstream GPUs and CPUs and it enjoys higher computational density. Consequently, _EfficientRep_ Backbone sufficiently utilizes the computing power of the hardware, resulting in a significant decrease in inference latency while enhancing the representation ability in the meantime.\
+Inspired by the above works, authors design an efficient re-parameterizable backbone denoted as **_EfficientRep_**. For small models, the main component of the backbone is _Rep-Block_ during the training phase, as shown in figure above (a). And each _RepBlock_ is converted to stacks of $3 × 3$ convolu- tional layers (denoted as _RepConv_) with ReLU activation functions during the inference phase, as shown in (b). Typically a $3 × 3$ convolution is highly optimized on mainstream GPUs and CPUs and it enjoys higher computational density. Consequently, _EfficientRep_ Backbone sufficiently utilizes the computing power of the hardware, resulting in a significant decrease in inference latency while enhancing the representation ability in the meantime.
 
 However, authors notice that with the model capacity further expanded, the computation cost and the number of parameters in the single-path plain network grow exponentially. To achieve a better trade-off between the computation burden and accuracy, they revise a **_CSPStackRep_** Block to build the backbone of medium and large networks. As shown in (c), _CSPStackRep_ Block is composed of three $1 × 1$ convolution layers and a stack of sub-blocks consisting of two _RepVGG_ blocks or _RepConv_ (at training or inference respectively) with a residual connection. Besides, a cross stage partial (_CSP_) connection is adopted to boost performance without excessive computation cost. Compared with _CSPRepResStage_ (from PP-YOLOE), it comes with a more succinct outlook and considers the balance between accuracy and speed.
 
@@ -122,9 +120,8 @@ For industrial deployment, it has been common practice to adopt quantization to 
 
 ### Reparameterizing Optimizer
 
-yolov6_quantization_weights
 <p align="center">
-  <img src="" alt="" height="300"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/73c57b9c-8ba8-4e48-9596-125ad8707f76" alt="yolov6_quantization_weights" height="300"/>
 </p>
 
 RepOptimizer proposes gradient re-parameterization at each optimization step. This technique also well solves the quantization problem of reparameterization-based models. Authors hence reconstruct the re-parameterization blocks of YOLOv6 in this fashion and train it with RepOptimizer to obtain PTQ-friendly weights. The distribution of feature map is largely narrowed (see figure above (bottom)), which greatly benefits the quantization process.
@@ -135,9 +132,8 @@ Authors further improve the PTQ performance by partially converting quantization
 
 ### Quantization-aware Training with Channel-wise Distillation
 
-yolov6_channel_wise_distilation
 <p align="center">
-  <img src="" alt="" height="350"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/5d493d36-5e0e-457d-9fda-ba2fa367f388" alt="yolov6_channel_wise_distilation" height="350"/>
 </p>
 
 In case PTQ is insufficient, authors propose to involve Quantization-Aware Training (QAT) to boost quantization performance. To resolve the problem of the inconsistency of fake quantizers during training and inference, it is necessary to build QAT upon the RepOptimizer. Besides, channel-wise distillation is adapted within the YOLOv6 framework, shown in figure above. This is also a self-distillation approach where the teacher network is the student itself in FP32-precision.
