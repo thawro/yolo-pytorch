@@ -15,9 +15,8 @@ The macro architecture of RTMDet is a typical one-stage object detector (see fig
 3. Exploring soft labels in dynamic label assignment strategies and a better combination of data augmentations and optimization strategies to improve the model accuracy
 4. Extending RTMDet to instance segmentation and rotated object detection tasks with few modifications
 
-rtmdet_overview
 <p align="center">
-  <img src="" alt="" height="300"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/c69aa5da-49e6-4cd1-abef-260d675cee20" alt="rtmdet_overview" height="300"/>
 </p>
 
 **Macro architecture**. Authors decompose the macro architecture of a one-stage object detector into the **_backbone_**, **_neck_**, and **_head_**, as shown in figure above. Recent advances of YOLO series typically adopt CSPDarkNet as the backbone architecture, which contains four stages and each stage is stacked with several basic building blocks (figure below (a)). The neck takes the multi-scale feature pyramid from the backbone and uses the same basic building blocks as the backbone with bottom-up and top-down feature propogation to enhance the pyramid feature map. Finally, the detection head predicts object bounding boxes and their categories based on the feature map of each scale. Such an architecture generally applies to general and rotated objects, and can be extended for instance segmentation by the kernel and mask feature generation heads (from [paper](https://arxiv.org/pdf/2003.05664)).
@@ -28,9 +27,8 @@ To fully exploit the potential of the macro architecture, authors first study mo
 
 ### Basic building block
 
-rtmdet_building_blocks
 <p align="center">
-  <img src="" alt="" height="300"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/da9bfaff-d5e9-4d7e-b1e8-3fe17dc00add" alt="rtmdet_building_blocks" height="300"/>
 </p>
 
 A large effective receptive field in the backbone is beneficial for dense prediction tasks like object detection and segmentation as it helps to capture and model the image context more comprehensively. However, previous attempts (e.g., dilated convolution and non-local blocks) are computationally expensive, limiting their practical use in real-time object detection. Recent studies revisit the use of large-kernel convolutions, showing that one can enlarge the receptive field with a reasonable computational cost through _depth-wise convolution_. Inspired by these findings, RTMDet introduces $5 × 5$ _depth-wise convolutions_ in the basic building block of CSPDarkNet to increase the effective receptive fields (figure above (b)). This approach allows for more comprehensive contextual modeling and significantly improves accuracy.
@@ -90,9 +88,8 @@ To reduce the side effects of "noisy" samples by strong data augmentations, YOLO
 
 ### Instance segmentation
 
-rtmdet_instance
 <p align="center">
-  <img src="" alt="" height="400"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/6c0c177e-c39f-4f49-bf73-8dfe793f2dad" alt="rtmdet_instance" height="400"/>
 </p>
 
 RTMDet can be used for instance segmentation with a simple modification, denoted as RTMDet-Ins. As illustrated in figure above, based on RTMDet, an additional branch is added, consisting of a kernel prediction head and a mask feature head, similar to [CondInst](https://arxiv.org/pdf/2003.05664). The mask feature head comprises 4 convolution layers that extract mask features with 8 channels from multi-level features. The kernel prediction head predicts a 169-dimensional vector for each instance, which is decomposed into three dynamic convolution kernels to generate instance segmentation masks through interaction with the mask features and coordinate features. To further exploit the prior information inherent in the mask annotations, authors use the mass center of the masks when calculating the soft region prior in the dynamic label assignment instead of the box center. RTMDet-Ins uses [Dice Loss](https://arxiv.org/pdf/1606.04797) as the supervision for the instance masks following typical conventions.
