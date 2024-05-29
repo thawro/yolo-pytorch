@@ -14,9 +14,9 @@
 | 2021 | ✅ | [YOLOX](variants/YOLOX.md) | [paper](https://arxiv.org/pdf/2107.08430.pdf) | YOLOX: Exceeding YOLO Series in 2021 |
 | 2021 | ✅ | [PP-YOLOv2](variants/PP-YOLOv2.md) | [paper](https://arxiv.org/pdf/2104.10419) | PP-YOLOv2: A Practical Object Detector |
 | 2022 | ✅ | [PP-YOLOE](variants/PP-YOLOE.md) | [paper](http://arxiv.org/pdf/2203.16250v3) | PP-YOLOE: An evolved version of YOLO |
+| 2022 | ✅ | [YOLOv7](variants/YOLOv7.md) | [paper](https://arxiv.org/pdf/2207.02696.pdf), [code](https://github.com/WongKinYiu/yolov7) | YOLOv7: Trainable bag-of-freebies sets new state-of-the-art for real-time object detectors |
+| 2022 | ✅ | [YOLOv6](variants/YOLOv6.md) | [paper](https://arxiv.org/pdf/2209.02976), [code](https://github.com/meituan/YOLOv6) | YOLOv6: A Single-Stage Object Detection Framework for Industrial Applications |
 | 2022 | 🔳 | [RTMDet](variants/RTMDet.md) | [paper](http://arxiv.org/pdf/2212.07784v2) | RTMDet: An Empirical Study of Designing Real-Time Object Detectors |
-| 2022 | 🔳 | [YOLOv7](variants/YOLOv7.md) | [paper](https://arxiv.org/pdf/2207.02696.pdf), [code](https://github.com/WongKinYiu/yolov7) | YOLOv7: Trainable bag-of-freebies sets new state-of-the-art for real-time object detectors |
-| 2022 | 🔳 | [YOLOv6](variants/YOLOv6.md) | [paper](https://arxiv.org/pdf/2209.02976), [code](https://github.com/meituan/YOLOv6) | YOLOv6: A Single-Stage Object Detection Framework for Industrial Applications |
 | 2022 | 🔳 | [PP-YOLOE-R](variants/PP-YOLOE-R.md) | [paper](https://arxiv.org/pdf/2211.02386) | PP-YOLOE-R: An Efficient Anchor-Free Rotated Object Detector |
 | 2022 | 🔳 | [YOLO-Pose](variants/YOLO-Pose.md) | [paper](https://arxiv.org/pdf/2204.06806) | YOLO-Pose: Enhancing YOLO for Multi Person Pose Estimation Using Object Keypoint Similarity Loss |
 | 2023 | 🔳 | [DAMA-YOLO](variants/DAMA-YOLO.md) | [paper](http://arxiv.org/pdf/2211.15444v4) | DAMO-YOLO : A Report on Real-Time Object Detection Design |
