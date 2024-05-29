@@ -16,6 +16,9 @@ The macro architecture of RTMDet is a typical one-stage object detector (see fig
 4. Extending RTMDet to instance segmentation and rotated object detection tasks with few modifications
 
 rtmdet_overview
+<p align="center">
+  <img src="" alt="" height="300"/>
+</p>
 
 **Macro architecture**. Authors decompose the macro architecture of a one-stage object detector into the **_backbone_**, **_neck_**, and **_head_**, as shown in figure above. Recent advances of YOLO series typically adopt CSPDarkNet as the backbone architecture, which contains four stages and each stage is stacked with several basic building blocks (figure below (a)). The neck takes the multi-scale feature pyramid from the backbone and uses the same basic building blocks as the backbone with bottom-up and top-down feature propogation to enhance the pyramid feature map. Finally, the detection head predicts object bounding boxes and their categories based on the feature map of each scale. Such an architecture generally applies to general and rotated objects, and can be extended for instance segmentation by the kernel and mask feature generation heads (from [paper](https://arxiv.org/pdf/2003.05664)).
 
@@ -26,6 +29,9 @@ To fully exploit the potential of the macro architecture, authors first study mo
 ### Basic building block
 
 rtmdet_building_blocks
+<p align="center">
+  <img src="" alt="" height="300"/>
+</p>
 
 A large effective receptive field in the backbone is beneficial for dense prediction tasks like object detection and segmentation as it helps to capture and model the image context more comprehensively. However, previous attempts (e.g., dilated convolution and non-local blocks) are computationally expensive, limiting their practical use in real-time object detection. Recent studies revisit the use of large-kernel convolutions, showing that one can enlarge the receptive field with a reasonable computational cost through _depth-wise convolution_. Inspired by these findings, RTMDet introduces $5 × 5$ _depth-wise convolutions_ in the basic building block of CSPDarkNet to increase the effective receptive fields (figure above (b)). This approach allows for more comprehensive contextual modeling and significantly improves accuracy.
 
@@ -44,8 +50,6 @@ Multi-scale feature pyramid is essential for object detection to detect objects 
 Real-time object detectors typically utilize separate detection heads for different feature scales to enhance the model capacity for higher performance, instead of sharing a detection head across multiple scales. Authors of RTMDet compared different design choices and choose to share parameters of heads across scales but incorporate different _Batch Normalization_ (BN) layers to reduce the parameter amount of the head while maintaining accuracy. BN is also more efficient than other normalization layers such as _Group Normalization_ because in inference it directly uses the statistics calculated in training.
 
 ## Training Strategy
-
-TODO
 
 ### Label assignment and losses
 
@@ -87,6 +91,9 @@ To reduce the side effects of "noisy" samples by strong data augmentations, YOLO
 ### Instance segmentation
 
 rtmdet_instance
+<p align="center">
+  <img src="" alt="" height="400"/>
+</p>
 
 RTMDet can be used for instance segmentation with a simple modification, denoted as RTMDet-Ins. As illustrated in figure above, based on RTMDet, an additional branch is added, consisting of a kernel prediction head and a mask feature head, similar to [CondInst](https://arxiv.org/pdf/2003.05664). The mask feature head comprises 4 convolution layers that extract mask features with 8 channels from multi-level features. The kernel prediction head predicts a 169-dimensional vector for each instance, which is decomposed into three dynamic convolution kernels to generate instance segmentation masks through interaction with the mask features and coordinate features. To further exploit the prior information inherent in the mask annotations, authors use the mass center of the masks when calculating the soft region prior in the dynamic label assignment instead of the box center. RTMDet-Ins uses [Dice Loss](https://arxiv.org/pdf/1606.04797) as the supervision for the instance masks following typical conventions.
 
