@@ -9,18 +9,14 @@ Compared with PP-YOLOE, the main changes of PP-YOLOE-R can be attributed to four
 3. Designed a decoupled angle prediction head and directly learn the General distribution of angle through DFL loss for a more accurate angle prediction
 4. A slight modification to the re-parameterization mechanism by adding a learnable gating unit to control the amount of information from the previous layer
 
-pp_yolo_e_r
-
 <p align="center">
-  <img src="" alt="" height="300"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/6e2268de-c965-464d-8c86-aadedcba541d" alt="pp_yolo_e_r" height="300"/>
 </p>
 
 As shown in figure above the overall architecture of PP-YOLOE-R is similar to that of PP-YOLOE. PP-YOLOE-R improves detection performance of rotated bounding boxes at the expense of relatively small amount of parameters and computation based on PP-YOLOE. The changes made for rotated bounding boxes are introduced in the following sections.
 
-pp_yolo_e_r_ablation
-
 <p align="center">
-  <img src="" alt="" height="300"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/1ee4d924-8184-44af-9dd1-40d63a173493" alt="pp_yolo_e_r_ablation" height="150"/>
 </p>
 
 ## Baseline
