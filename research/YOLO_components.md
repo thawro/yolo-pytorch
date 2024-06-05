@@ -47,9 +47,11 @@
 | 2021 | 🔳 | [Channel-Wise Distillation](components/ChannelWiseDistillation.md) | [paper](https://arxiv.org/pdf/2011.13256) | v6 | Channel-wise Knowledge Distillation for Dense Prediction |
 | 2021 | ✅ | [RepVGG](components/RepVGG.md) | [paper](https://arxiv.org/pdf/2101.03697.pdf) | PP-E, v6 | RepVGG: Making VGG-style ConvNets Great Again |
 | 2022 | ✅ | [ELAN](components/ELAN.md) | [paper](https://arxiv.org/pdf/2211.04800) | v9 | Designing Network Design Strategies Through Gradient Path Analysis |
+| 2021 | 🔳 | [MAE-NAS](components/MAE-NAS.md) | [paper](https://arxiv.org/pdf/2111.13336) | DAMO | MAE-DET: Revisiting Maximum Entropy Principle in Zero-Shot NAS for Efficient Object Detection |
 | 2022 | 🔳 | [ObjectBox](components/ObjectBox.md) | [paper](https://arxiv.org/pdf/2207.06985) | v6 | ObjectBox: From Centers to Boxes for Anchor-Free Object Detection |
 | 2022 | 🔳 | [SIoU](components/SIoU.md) | [paper](https://arxiv.org/pdf/2205.12740) | v6 | SIoU Loss: More Powerful Learning for Bounding Box Regression |
 | 2022 | 🔳 | [Poly loss](components/PolyLoss.md) | [paper](https://arxiv.org/pdf/2204.12511) | v6 | Polyloss a polynomial expansion perspec tive of classification loss functions |
 | 2022 | 🔳 | [Dual-Weighting Assignment](components/DualWeightingAssignment.md) | [paper](https://arxiv.org/pdf/2203.09730) | v6 | A Dual Weighting Label Assignment Scheme for Object Detection |
+| 2022 | 🔳 | [Generalized-FPN](components/GeneralizedFPN.md) | [paper](https://arxiv.org/pdf/2202.04256) | DAMO | GiraffeDet: A Heavy-Neck Paradigm for Object Detection |
 | 2023 | ✅ | [PRB-FPN](components/PRB-FPN.md) | [paper](https://arxiv.org/pdf/2012.01724) | v6.3 | Parallel Residual Bi-Fusion Feature Pyramid Network For Accurate Single-Shot Object Detection |
 | 2023 | 🔳 | [RepOptimizer](components/RepOptimizer.md) | [paper](https://arxiv.org/pdf/2205.15242) | v6 | Re-parameterizing your optimizers rather than architectures |

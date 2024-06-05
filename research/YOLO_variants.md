@@ -16,12 +16,12 @@
 | 2022 | ✅ | [PP-YOLOE](variants/PP-YOLOE.md) | [paper](http://arxiv.org/pdf/2203.16250v3) | PP-YOLOE: An evolved version of YOLO |
 | 2022 | ✅ | [YOLOv7](variants/YOLOv7.md) | [paper](https://arxiv.org/pdf/2207.02696.pdf), [code](https://github.com/WongKinYiu/yolov7) | YOLOv7: Trainable bag-of-freebies sets new state-of-the-art for real-time object detectors |
 | 2022 | ✅ | [YOLOv6](variants/YOLOv6.md) | [paper](https://arxiv.org/pdf/2209.02976), [code](https://github.com/meituan/YOLOv6) | YOLOv6: A Single-Stage Object Detection Framework for Industrial Applications |
-| 2022 | 🔳 | [RTMDet](variants/RTMDet.md) | [paper](http://arxiv.org/pdf/2212.07784v2) | RTMDet: An Empirical Study of Designing Real-Time Object Detectors |
-| 2022 | 🔳 | [PP-YOLOE-R](variants/PP-YOLOE-R.md) | [paper](https://arxiv.org/pdf/2211.02386) | PP-YOLOE-R: An Efficient Anchor-Free Rotated Object Detector |
-| 2022 | 🔳 | [YOLO-Pose](variants/YOLO-Pose.md) | [paper](https://arxiv.org/pdf/2204.06806) | YOLO-Pose: Enhancing YOLO for Multi Person Pose Estimation Using Object Keypoint Similarity Loss |
-| 2023 | 🔳 | [DAMA-YOLO](variants/DAMA-YOLO.md) | [paper](http://arxiv.org/pdf/2211.15444v4) | DAMO-YOLO : A Report on Real-Time Object Detection Design |
-| 2023 | 🔳 | [YOLOv6.3](variants/YOLOv6.3.md) | [paper](https://arxiv.org/pdf/2301.05586.pdf) | YOLOv6 v3.0: A Full-Scale Reloading |
-| 2023 | 🔳 | [Dy-YOLOv7](variants/Dy-YOLOv7.md) | [paper](https://arxiv.org/pdf/2304.05552) | DynamicDet: A Unified Dynamic Architecture for Object Detection |
+| 2022 | ✅ | [RTMDet](variants/RTMDet.md) | [paper](http://arxiv.org/pdf/2212.07784v2) | RTMDet: An Empirical Study of Designing Real-Time Object Detectors |
+| 2022 | ✅ | [PP-YOLOE-R](variants/PP-YOLOE-R.md) | [paper](https://arxiv.org/pdf/2211.02386) | PP-YOLOE-R: An Efficient Anchor-Free Rotated Object Detector |
+| 2022 | ✅ | [YOLO-Pose](variants/YOLO-Pose.md) | [paper](https://arxiv.org/pdf/2204.06806) | YOLO-Pose: Enhancing YOLO for Multi Person Pose Estimation Using Object Keypoint Similarity Loss |
+| 2023 | ✅ | [DAMO-YOLO](variants/DAMO-YOLO.md) | [paper](http://arxiv.org/pdf/2211.15444v4) | DAMO-YOLO : A Report on Real-Time Object Detection Design |
+| 2023 | ✅ | [YOLOv6.3](variants/YOLOv6.3.md) | [paper](https://arxiv.org/pdf/2301.05586.pdf) | YOLOv6 v3.0: A Full-Scale Reloading |
+| 2023 | ✅ | [Dy-YOLOv7](variants/Dy-YOLOv7.md) | [paper](https://arxiv.org/pdf/2304.05552) | DynamicDet: A Unified Dynamic Architecture for Object Detection |
 | 2023 | 🔳 | [YOLO Review](variants/Review.md) | [paper](https://arxiv.org/pdf/2304.00501.pdf) | A comprehensive review of YOLO: from YOLOv1 and beyond |
 | 2023 | 🔳 | [YOLOv8](variants/YOLOv8.md) | [code](https://github.com/ultralytics/ultralytics) | YOLOv8 |
 | 2023 | 🔳 | [Gold-YOLO](variants/Gold-YOLO.md) | [paper](https://arxiv.org/pdf/2309.11331) | Gold-YOLO: Efficient Object Detector via Gather-and-Distribute Mechanism |
