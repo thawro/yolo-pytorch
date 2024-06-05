@@ -15,10 +15,8 @@ To deal with the above difficulties, authors propose a dynamic framework to achi
 * Propose a dynamic architecture for object detection, named **_DynamicDet_**, which consists of two cascaded detectors and a router. This dynamic architecture can be easily adapted to mainstream detectors, e.g., Faster R-CNN and YOLO.
 * Propose an adaptive router to predict the difficulty scores of the images based on the multi-scale features, and achieve automatic decision-making. In addition, authors propose a hyperparameter-free optimization strategy and a variable-speed inference strategy for our dynamic architecture.
 
-dy_yolo
-
 <p align="center">
-  <img src="" alt="" height="300"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/f6ebb7e7-6500-4d14-8126-012aeafc4957" alt="dy_yolo" height="300"/>
 </p>
 
 ## Overall architecture
@@ -87,10 +85,8 @@ $$ \min_{Θ_R} ((1 − ϕ)(L_{det}^1 (x, y | Θ_1) - \frac{∆}{2}) + ϕ(L_{det}
 
 where $\frac{∆}{2}$ is used to reward the first detector and punish the second detector, respectively. Without this reward and penalty, the losses of the second detector are always smaller than the first detector. When the reward and penalty are conducted, their loss curves intersect and reveal the optimal curve. The training objective provides a means to optimize the adaptive router by introducing the following gradient through the difficulty score $ϕ$ to all parameters $Θ_R$ of the router as:
 
-dy_yolo_grad
-
 <p align="center">
-  <img src="" alt="" height="80"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/557ce750-259d-4844-8c11-0adf6981f590" alt="dy_yolo_grad" height="80"/>
 </p>
 
 To distinguish between "easy" and "hard" images better, authors expect the optimization direction of the router to be related to the difficulty of the image, i.e., the difference in loss between the two detectors. Obviously, the gradient at above equation enable such expectation.
