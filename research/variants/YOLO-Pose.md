@@ -22,10 +22,8 @@ YOLO-pose is a single shot approach like other bottom-up approaches. However, it
 
 ## Overview
 
-yolo_pose
-
 <p align="center">
-  <img src="" alt="" height="300"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/ac2e330f-2182-47f9-a93d-1c71edcb526e" alt="yolo_pose" height="450"/>
 </p>
 
 In order to showcase the full potential of YOLO-pose, authors had to select an architecture that is good at detecting humans. YOLOv5 is a leading detector in terms of accuracy and complexity. Hence, it was selected as the base. YOLOv5 mainly focuses on 80 class COCO object detection with the box head predicting 85 elements per anchor. They correspond to _bounding box_, _object score_, and _confidence score_ for 80 classes. Corresponding to each grid location, there are three anchors of different shapes.
@@ -83,8 +81,6 @@ All SoTA approaches for pose estimation rely on Test time augmentations (TTA) to
 
 Top-down approaches perform poorly under occlusion. One of the advantages of YOLO-Pose over top-down approaches is there is no constraint for the keypoints to be inside the predicted bounding box. Hence, if keypoints lie outside the bounding box because of occlusion, they can still be correctly recognized. Whereas, in top-down approaches, if the person detection is not correct, pose estimation will fail as well. Both these challenges of occlusion and incorrect box detection are mitigated to some extent in YOLO-pose approach as shown in figure below.
 
-yolo_pose_examples
-
 <p align="center">
-  <img src="" alt="" height="300"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/ef83edaf-a31d-4172-9623-44dd78709568" alt="yolo_pose_examples" height="500"/>
 </p>
