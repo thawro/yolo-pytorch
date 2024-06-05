@@ -12,10 +12,8 @@ In this paper authors renovate the network design and the training strategy. The
 
 * Involve a new self-distillation strategy to boost the performance of small models of YOLOv6, in which the heavier branch for DFL is taken as an enhanced auxiliary regression branch during training and is removed at inference to avoid the marked speed decline
 
-yolo_63
-
 <p align="center">
-  <img src="" alt="" height="300"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/b43cbce6-08c2-45c1-83a5-c6f1dfc07756" alt="yolo_63" height="300"/>
 </p>
 
 ## Network Design
@@ -28,10 +26,8 @@ Moreover, authors simplify the SPPF block (from YOLOv5) to have a CSP-like versi
 
 YOLOv6 is an anchor-free detector to pursue a higher inference speed. However, authors experimentally find that the anchor-based paradigm brings additional performance gains on YOLOv6-N under the same settings when compared with the anchor-free one. Moreover, anchor-based ATSS is adopted as the warm-up label as- signment strategy in the early versions of YOLOv6, which stabilizes the training. In light of this, authors propose **_Anchor-Aided Training (AAT)_**, in which the anchor-based auxiliary branches are introduced to combine the advantages of anchor-based and anchor-free paradigms. And they are applied both in the classification and the regression head. Figure below shows the detection head with the auxiliaries.
 
-yolo_63_head
-
 <p align="center">
-  <img src="" alt="" height="300"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/9fcfd96f-5505-443c-b38d-8e913536a33c" alt="yolo_63_head" height="400"/>
 </p>
 
 During the training stage, the auxiliary branches and the anchor-free branches learn from independent losses while signals are propagated altogether. Therefore, additional embedded guidance information from auxiliary branches is integrated into the main anchor-free heads. Worth mentioning that the auxiliary branches are removed at inference, which boosts the accuracy performance without decreasing speed.
