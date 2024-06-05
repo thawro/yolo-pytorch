@@ -16,18 +16,14 @@ In addition, the dynamic label assignment, such as OTA and TOOD, is widely accla
 
 At last, Knowledge Distillation (KD) has been proved effective in boosting small models by the larger model supervision. This tech does exactly fit the design of real-time object detection. Nevertheless, applying KD on YOLO series sometimes can not achieve significant improvements as hyperparameters are hard to optimize and features carry too much noise. In the DAMO-YOLO, authors first make distillation great again on models of all sizes, especially on small ones.
 
-dama_yolo
-
 <p align="center">
-  <img src="" alt="" height="300"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/4f65c757-f943-4d5e-b583-f15e6e0fd3db" alt="damo_yolo" height="500"/>
 </p>
 
 ## MAE-NAS Backbone
 
-dama_yolo_blocks
-
 <p align="center">
-  <img src="" alt="" height="300"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/91e0911b-f595-4738-a767-4a5b7e36b0a2" alt="damo_yolo_blocks" height="400"/>
 </p>
 
 Previously, in real-time scenarios, designers relied on the Flops-mAP curve as a simple means of assessing model performance. However, the relationship between a model’s flops and latency is not necessarily consistent. In order to enhance a model’s real-world performance in industrial deployment, DAMO-YOLO prioritized the latency-MAP curve in the design process. Based on this design principle, authors use MAE-NAS to obtain optimal networks under different latency budgets. MAE-NAS constructs an alternative proxy based on information theory to rank initialized networks without training. Therefore, the search process only takes a few hours, which is much lower than the training costs. Several basic search blocks are provided by MAE-NAS, such as Mob-block, Res-block and CSP-block, as shown in figure above. The Mob-block is a variant of MobileNetV3 block, the Res-block is derived from ResNet, and the CSP-block is derived from CSPNet.
