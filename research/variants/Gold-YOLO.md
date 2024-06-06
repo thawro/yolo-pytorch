@@ -11,16 +11,12 @@ In this paper, authors expand on the foundation of _TopFormer_’s theory, propo
 
 To further facilitate information flow, authors introduce a lightweight adjacent-layer fusion module which combines features from neighboring levels on a local scale. The Gold-YOLO architectures surpasses the existing YOLO series, effectively demonstrating the effectiveness of the proposed approach.
 
-gold_yolo
-
 <p align="center">
-  <img src="" alt="" height="300"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/8ae99d79-b146-4c6e-b485-0bc6da58314f" alt="gold_yolo" height="300"/>
 </p>
 
-gold_yolo_neck
-
 <p align="center">
-  <img src="" alt="" height="400"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/3364fef4-e90a-47c8-a0e1-73c74fb8996e" alt="gold_yolo_neck" height="400"/>
 </p>
 
 ## Preliminaries
@@ -41,79 +37,96 @@ In the implementation, the gather and distribute process correspond to three mod
     2. IFM fuses the aligned features to generate global information
 * Upon obtaining the fused global information from the gather process, the inject module distribute this information across each level and injects it using simple attention operations, subsequently enhancing the branch’s detection capability
 
-To enhance the model’s ability to detect objects of varying sizes, authors developed two branches: low-stage gather-and-distribute branch (**_Low-GD_**) and high-stage gather-and-distribute branch (**_High-GD_**). These branches extract and fuse large and small size feature maps, respectively. As shown in the first figure, the neck’s input comprises the feature maps $B_2, B_3, B_4, B_5$ extracted by the backbone, where $B_i ∈ R^{N × C_{B_i} × R_{B_i}}$ . The batch size is denoted by $N$ , the channels by $C$, and the dimensions by $R = H × W$ . Moreover, the dimensions of $R_{B_2}, R_{B_3}, R_{B_4}$, and $R_{B_5}$ are $R, \frac{R}{2}, \frac{R}{4}$, and $\frac{R}{8}$, respectively.
-
-gold_yolo_GD
+To enhance the model’s ability to detect objects of varying sizes, authors developed two branches: low-stage gather-and-distribute branch (**_Low-GD_**) and high-stage gather-and-distribute branch (**_High-GD_**). These branches extract and fuse large and small size feature maps, respectively. As shown in the first figure, the neck’s input comprises the feature maps $B2, B3, B4, B5$ extracted by the backbone, where $Bi ∈ R^{N × C_{Bi} × R_{Bi}}$ . The batch size is denoted by $N$ , the channels by $C$, and the dimensions by $R = H × W$ . Moreover, the dimensions of $R_{B2}, R_{B3}, R_{B4}$, and $R_{B5}$ are $R, \frac{R}{2}, \frac{R}{4}$, and $\frac{R}{8}$, respectively.
 
 <p align="center">
-  <img src="" alt="" height="300"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/a704e119-2595-40b6-89b0-44f5a7b1dd0d" alt="gold_yolo_GD" height="300"/>
 </p>
 
-gold_yolo_injection
-
 <p align="center">
-  <img src="" alt="" height="450"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/4ea88d62-8728-4707-8169-6e2edd5e4eb1" alt="gold_yolo_injection" height="450"/>
 </p>
 
 ## Low-stage gather-and-distribute branch
 
-In this branch, the output $B_2, B_3, B_4, B_5$ features from the backbone are selected for fusion to obtain high resolution features that retain small target information. The structure is shown in figure above.
+In this branch, the output $B2, B3, B4, B5$ features from the backbone are selected for fusion to obtain high resolution features that retain small target information. The structure is shown in figure above.
 
 ### Low-stage feature alignment module
 
-In low-stage feature alignment module (**_Low-FAM_**), authors employ the average pooling (_AvgPool_) operation to down-sample input features and achieve a unified size. By resizing the features to the smallest feature size of the group ($R_{B_4} = \frac{R}{4}$), authors obtain $F_{align}$. The Low-FAM technique ensures efficient aggregation of information while minimizing the computational complexity for subsequent processing through the transformer module. The target alignment size is chosen based on two conflicting considerations: (1) To retain more low-level information, larger feature sizes are preferable; however, (2) as the feature size increases, the computational latency of subsequent blocks also increases. To control the latency in the neck part, it is necessary to maintain a smaller feature size. Therefore, authors choose the $R_{B_4}$ as the target size of feature alignment to achieve a balance between speed and accuracy.
+In low-stage feature alignment module (**_Low-FAM_**), authors employ the average pooling (_AvgPool_) operation to down-sample input features and achieve a unified size. By resizing the features to the smallest feature size of the group ($R_{B4} = \frac{R}{4}$), authors obtain $F_{align}$. The Low-FAM technique ensures efficient aggregation of information while minimizing the computational complexity for subsequent processing through the transformer module. The target alignment size is chosen based on two conflicting considerations: (1) To retain more low-level information, larger feature sizes are preferable; however, (2) as the feature size increases, the computational latency of subsequent blocks also increases. To control the latency in the neck part, it is necessary to maintain a smaller feature size. Therefore, authors choose the $R_{B4}$ as the target size of feature alignment to achieve a balance between speed and accuracy.
 
 ### Low-stage information fusion module
 
-The low-stage information fusion module (**_Low-IFM_**) design comprises multi-layer reparameterized convolutional blocks (**_RepBlock_**) and a split operation. Specifically, RepBlock takes $F_{align}$ ($channel = sum(C_{B_2}, C_{B_3}, C_{B_4}, C_{B_5})$) as input and produces $F_{fuse}$ ($channel = C_{B_4} + C_{B_5}$). The middle channel is an adjustable value (e.g., 256) to accommodate varying model sizes. The features generated by the RepBlock are subsequently split in the channel dimension into $F_{inj\_P_3}$ and $F_{inj\_P_4}$, which are then fused with the different level’s feature. The formula is as follows:
+The low-stage information fusion module (**_Low-IFM_**) design comprises multi-layer reparameterized convolutional blocks (**_RepBlock_**) and a split operation. Specifically, RepBlock takes $F_{align}$, $channel = sum(C_{B2}, C_{B3}, C_{B4}, C_{B5})$ as input and produces $F_{fuse}$, $channel = C_{B4} + C_{B5}$. The middle channel is an adjustable value (e.g., 256) to accommodate varying model sizes. The features generated by the RepBlock are subsequently split in the channel dimension into $F_{inj\_P3}$ and $F_{inj\_P4}$, which are then fused with the different level’s feature. The formula is as follows:
 
-$$ F_{align} = Low\_FAM ([B_2, B_3, B_4, B_5]) $$
+```math
+F_{align} = Low\_FAM ([B2, B3, B4, B5])
+```
 
-$$ F_{fuse} = RepBlock (F_{align}) $$
+```math
+F_{fuse} = RepBlock (F_{align})
+```
 
-$$ F_{inj\_P_3}, F_{inj\_P_4} = Split(F_{fuse}) $$
+```math
+F_{inj\_P3}, F_{inj\_P4} = Split(F_{fuse})
+```
 
 ### Information injection module
 
-In order to inject global information more efficiently into the different levels, authors draw inspiration from the segmentation experience and employ attention operations to fuse the information, as illustrated in figure above. Specifically, authors input both local information (which refers to the feature of the current level) and global inject information (generated by IFM), denoted as $F_{local}$ and $F_{inj}$ , respectively. They use two different $Conv$s with $F_{inj}$ for calculation, resulting in $F_{global\_embed}$ and $F_{act}$. While $F_{local\_embed}$ is calculated with $F_{local}$ using $Conv$. The fused feature $F_{out}$ is then computed through attention. Due to the size differences between $F_{local}$ and $F_{global}$, authors employ _average pooling_ or _bilinear interpolation_ to scale $F_{global\_embed}$ and $F_{act}$ according to the size of $F_{inj}$ , ensuring proper alignment. At the end of each attention fusion, they add the RepBlock to further extract and fuse the information.
+In order to inject global information more efficiently into the different levels, authors draw inspiration from the segmentation experience and employ attention operations to fuse the information, as illustrated in figure above. Specifically, authors input both local information (which refers to the feature of the current level) and global inject information (generated by IFM), denoted as $F_{local}$ and $F_{inj}$ , respectively. They use two different Convs with $F_{inj}$ for calculation, resulting in $F_{global\_embed}$ and $F_{act}$. While $F_{local\_embed}$ is calculated with $F_{local}$ using $Conv$. The fused feature $F_{out}$ is then computed through attention. Due to the size differences between $F_{local}$ and $F_{global}$, authors employ _average pooling_ or _bilinear interpolation_ to scale $F_{global\_embed}$ and $F_{act}$ according to the size of $F_{inj}$ , ensuring proper alignment. At the end of each attention fusion, they add the RepBlock to further extract and fuse the information.
 
 ## High-stage gather-and-distribute branch
 
-The High-GD fuses the features {$P_3, P_4, P_5$} that are generated by the Low-GD, as shown in figure above.
+The High-GD fuses the features { $P3, P4, P5$ } that are generated by the Low-GD, as shown in figure above.
 
 ### High-stage feature alignment module
 
-The high-stage feature alignment module (**_High-FAM_**) consists of _avgpool_, which is utilized to reduce the dimension of input features to a uniform size. Specifically, when the size of the input feature is {$R_{P_3}, R_{P_4}, R_{P_5}$}, _avgpool_ reduces the feature size to the smallest size within the group of features ($R_{P_5} = \frac{R}{8}$). Since the transformer module extracts high-level information, the pooling operation facilitates information aggregation while decreasing the computational requirements for the subsequent step in the Transformer module.
+The high-stage feature alignment module (**_High-FAM_**) consists of _avgpool_, which is utilized to reduce the dimension of input features to a uniform size. Specifically, when the size of the input feature is { $R_{P3}, R_{P4}, R_{P5}$ }, _avgpool_ reduces the feature size to the smallest size within the group of features ($R_{P5} = \frac{R}{8}$). Since the transformer module extracts high-level information, the pooling operation facilitates information aggregation while decreasing the computational requirements for the subsequent step in the Transformer module.
 
 ### High-stage information fusion module
 
 The high-stage information fusion module (**_High-IFM_**) comprises the transformer block and a splitting operation, which involves a three-step process
 
 1. the $F_{align}$, derived from the High-FAM, are combined using the transformer block to obtain the $F_{fuse}$
-2. The $F_{fuse}$ channel is reduced to $sum(C_{P_4}, C_{P_5}$) via a $1 × 1$ _conv_ operation
-3. The $F_{fuse}$ is partitioned into $F_{inj\_N_4}$ and $F_{inj\_N_5}$ along the channel dimension through a splitting operation, which is subsequently employed for fusion with the current level feature.
+2. The $F_{fuse}$ channel is reduced to $sum(C_{P4}, C_{P5}$) via a $1 × 1$ _conv_ operation
+3. The $F_{fuse}$ is partitioned into $F_{inj\_N4}$ and $F_{inj\_N5}$ along the channel dimension through a splitting operation, which is subsequently employed for fusion with the current level feature.
 
 The formula is as follows:
 
-$$ F_{align} = High\_FAM ([P_3, P_4, P_5]) $$
 
-$$ F_{fuse} = Transformer(F_{align}) $$
+```math
+F_{align} = High\_FAM ([P3, P4, P5])
+```
 
-$$ F_{inj\_N_4}, F_{inj\_N_5} = Split(Conv_{1×1}(F_{fuse})) $$
+```math
+F_{fuse} = Transformer(F_{align})
+```
+
+```math
+F_{inj\_N4}, F_{inj\_N5} = Split(Conv_{1×1}(F_{fuse}))
+```
 
 The transformer fusion module in equations above comprises several stacked transformers, with the number of transformer blocks denoted by $L$. Each transformer block includes a _multi-head attention block_, a _Feed-Forward Network (FFN)_, and _residual connections_. To configure the multi-head attention block, authors adopt the same settings as LeViT, assigning head dimensions of keys $K$ and queries $Q$ to $D$ (e.g., 16) channels, and $V = 2D$ (e.g., 32) channels. In order to accelerate inference, authors substitute the velocity-unfriendly operator, _Layer Normalization_, with _Batch Normalization_ for each convolution, and replace all _GELU_ activations with _ReLU_. This minimizes the impact of the transformer module on the model’s speed. To establish the _Feed-Forward Network_, authors follow the methodologies presented in [paper_1](https://arxiv.org/pdf/2103.11816) and [paper_2](https://arxiv.org/pdf/2106.03650) for constructing the FFN block. To enhance the local connections of the transformer block, authors introduce a _depth-wise convolution_ layer between the two $1 x 1$ convolution layers. They also set the expansion factor of the FFN to 2, aiming to balance speed and computational cost.
 
 ### Information injection module
 
-The information injection module in High-GD is exactly the same as in Low-GD. In high stage, $F_{local}$ is equal to $P_i$, so the formula is as follows
+The information injection module in High-GD is exactly the same as in Low-GD. In high stage, $F_{local}$ is equal to $Pi$, so the formula is as follows
 
-$$ F{global\_act\_N_i} = resize(Sigmoid(Conv_{act}(F_{inj\_N_i}))) $$
+```math
+F_{global\_act\_Ni} = resize(Sigmoid(Conv_{act}(F_{inj\_Ni})))
+```
 
-$$ F{global\_embed\_N_i} = resize(Conv_{global\_embed\_N_i}(F_{inj\_N_i})) $$
+```math
+F_{global\_embed\_Ni} = resize(Conv_{global\_embed\_Ni}(F_{inj\_Ni}))
+```
 
-$$ F{att\_fuse\_N_i} = Conv_{local\_embed\_N_i}(P_i) ∗ F_{ing\_act\_N_i} + F_{global\_embed\_N_i} $$
+```math
+F_{att\_fuse\_Ni} = Conv_{local\_embed\_Ni}(Pi) ∗ F_{ing\_act\_Ni} + F_{global\_embed\_Ni}
+```
 
-$$ N_i = RepBlock(F_{att\_fuse\_N_i}) $$
+```math
+Ni = RepBlock(F_{att\_fuse\_Ni})
+```
 
 ## Enhanced cross-layer information flow
 
