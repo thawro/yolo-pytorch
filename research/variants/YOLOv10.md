@@ -16,9 +16,8 @@ During training, YOLOs usually leverage Task-Alignment Learning (TAL) to allocat
 
 ### Dual label assignments
 
-
 <p align="center">
-  <img src="" alt="yolo_v10_dual_label" height="300"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/250a1dc8-c348-49bc-ae7e-6774314b66f1" alt="yolo_v10_dual_label" height="300"/>
 </p>
 
 Unlike one-to-many assignment, one-to-one matching assigns only one prediction to each ground truth, avoiding the NMS post-processing. However, it leads to weak supervision, which causes suboptimal accuracy and convergence speed. Fortunately, this deficiency can be compensated by the one-to-many assignment. To achieve this, authors introduce dual label assignments for YOLOs to combine the best of both strategies. Specifically, as shown in above figure, authors incorporate another one-to-one head for YOLOs. It retains the identical structure and adopts the same optimization objectives as the original one-to-many branch but leverages the one-to-one matching to obtain label assignments. During training, two heads are jointly optimized with the model, allowing the backbone and neck to enjoy the rich supervision provided by the one-to-many assignment. During inference, YOLOv10 discards the one-to-many head and utilize the one-to-one head to make predictions. This enables YOLOs for the end-to-end deployment without incurring any additional inference cost. Besides, in the one-to-one matching, authors adopt the top one selection, which achieves the same performance as _Hungarian matching_ with less extra training time.
@@ -40,7 +39,7 @@ One can observe that the gap decreases as $t_{o2m,i}$ increases, i.e., $i$ ranks
 ## Holistic Efficiency-Accuracy Driven Model Design
 
 <p align="center">
-  <img src="" alt="yolo_v10_ranks_cib_psa" height="400"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/f48f60e4-64b5-4d28-a5a9-d63a7476ca38" alt="yolo_v10_ranks_cib_psa" height="400"/>
 </p>
 
 In addition to the post-processing, the model architectures of YOLOs also pose great challenges to the efficiency-accuracy trade-offs. Although previous works explore various design strategies the comprehensive inspection for various components in YOLOs is still lacking. Consequently, the model architecture exhibits non-negligible computational redundancy and constrained capability, which impedes its potential for achieving high efficiency and performance. Here, authors aim to holistically perform model designs for YOLOs from both efficiency and accuracy perspectives.
