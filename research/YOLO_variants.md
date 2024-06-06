@@ -28,4 +28,4 @@
 | 2023 | ✅ | [YOLO-MS](variants/YOLO-MS.md) | [paper](https://arxiv.org/pdf/2308.05480) | YOLO-MS: Rethinking Multi-Scale Representation Learning for Real-time Object Detection |
 | 2024 | 🔳 | [Yolo-World](variants/YOLO-World.md) | [paper](https://arxiv.org/pdf/2401.17270) | YOLO-World: Real-Time Open-Vocabulary Object Detection |
 | 2024 | 🔳 | [YOLOv9](variants/YOLOv9.md) | [paper](https://arxiv.org/pdf/2402.13616), [code](https://github.com/WongKinYiu/yolov9) | YOLOv9: Learning What You Want to Learn Using Programmable Gradient Information |
-| 2024 | 🔳 | [YOLOv10](variants/YOLOv10.md) | [paper](https://arxiv.org/pdf/2405.14458v1) | YOLOv10: Real-Time End-to-End Object Detection |
+| 2024 | ✅ | [YOLOv10](variants/YOLOv10.md) | [paper](https://arxiv.org/pdf/2405.14458v1) | YOLOv10: Real-Time End-to-End Object Detection |
