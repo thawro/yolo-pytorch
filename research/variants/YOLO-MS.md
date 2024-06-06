@@ -15,10 +15,8 @@ Based on the above design principles, authors present the real-time object detec
 
 ## Multi-Scale Building Block Design
 
-yolo_ms_blocks
-
 <p align="center">
-  <img src="" alt="" height="450"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/d164a668-fef0-43db-a0c4-2a991a0c6496" alt="yolo_ms_blocks" height="450"/>
 </p>
 
 CSP Block is a stage-level gradient path-based network that balances the gradient combinations and computational cost. It is a fundamental building block widely utilized in the YOLO series There are several variants having been proposed, including:
@@ -40,10 +38,8 @@ Following the formula, authors do not connect the inverted bottleneck layer to $
 
 ## Heterogeneous Kernel Selection Protocol
 
-yolo_ms_HKS
-
 <p align="center">
-  <img src="" alt="" height="550"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/10b04180-0aa6-4aa6-9f7c-3c4399d22555" alt="yolo_ms_HKS" height="550"/>
 </p>
 
 In addition to the design of building block, authors also delve into the usage of convolution from a macro perspective. Previous real-time object detectors adopt homogeneous _convolutions_ (i.e., _convolutions_ with the same kernel size) in different encoder stages but authors argue that this is not the optimal option for extracting multi-scale semantic information.
@@ -56,10 +52,8 @@ As presented in figure above, authors assign values of $k$ to $3, 5, 7$, and $9$
 
 As shown in table below, applying large-kernel convolutions to high-resolution features is computationally expensive. However, the proposed HKS protocol adopts large-kernel convolution on low-resolution features, thereby substantially reducing computational costs compared to only using large-kernel convolutions. In practice, authors empirically found that YOLO-MS with HKS protocol achieves nearly the same inference speed as that only using _depth-wise_ $3 × 3$ _convolutions_.
 
-yolo_ms_HKS_table
-
 <p align="center">
-  <img src="" alt="" height="250"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/e3410c53-80d3-4d72-b7f8-3a9ca67fbb9d" alt="yolo_ms_HKS_table" height="250"/>
 </p>
 
 ## Architecture
