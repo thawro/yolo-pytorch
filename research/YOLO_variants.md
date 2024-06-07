@@ -8,7 +8,7 @@
 | 2019 | ✅ | [Gaussian YOLO](variants/Gaussian-YOLO.md) | [paper](https://arxiv.org/pdf/1904.04620) | Gaussian YOLOv3: An Accurate and Fast Object Detector Using Localization Uncertainty for Autonomous Driving |
 | 2020 | ✅ | [PP-YOLO](variants/PP-YOLO.md) | [paper](https://arxiv.org/pdf/2007.12099) | PP-YOLO: An Effective and Efficient Implementation of Object Detector |
 | 2020 | ✅ | [YOLOv4](variants/YOLOv4.md) | [paper](https://arxiv.org/pdf/2004.10934.pdf) , [blog](https://alexeyab84.medium.com/yolov4-the-most-accurate-real-time-neural-network-on-ms-coco-dataset-73adfd3602fe), [code_1](https://github.com/WongKinYiu/PyTorch_YOLOv4), [code_2](https://github.com/Tianxiaomo/pytorch-YOLOv4) | YOLOv4: Optimal Speed and Accuracy of Object Detection |
-| 2020 | ✅ | [YOLOv5](variants/YOLOv5.md) | [code](https://github.com/ultralytics/yolov5) | YOLOv5 |
+| 2020 | ✅ | [YOLOv5](variants/YOLOv5.md) | [code](https://github.com/ultralytics/yolov5), [report](https://docs.ultralytics.com/yolov5/tutorials/architecture_description/) | YOLOv5 |
 | 2021 | ✅ | [Scaled-YOLOv4](variants/YOLOv4-Scaled.md) | [paper](https://arxiv.org/pdf/2011.08036.pdf) , [blog](https://alexeyab84.medium.com/scaled-yolo-v4-is-the-best-neural-network-for-object-detection-on-ms-coco-dataset-39dfa22fa982), [code](https://github.com/WongKinYiu/ScaledYOLOv4) | Scaled-YOLOv4: Scaling Cross Stage Partial Network |
 | 2021 | 🔳 | [YOLOR](variants/YOLOR.md) | [paper](https://arxiv.org/pdf/2105.04206), [code](https://github.com/WongKinYiu/yolor) | You Only Learn One Representation: Unified Network for Multiple Tasks |
 | 2021 | ✅ | [YOLOX](variants/YOLOX.md) | [paper](https://arxiv.org/pdf/2107.08430.pdf) | YOLOX: Exceeding YOLO Series in 2021 |
@@ -23,9 +23,10 @@
 | 2023 | ✅ | [YOLOv6.3](variants/YOLOv6.3.md) | [paper](https://arxiv.org/pdf/2301.05586.pdf) | YOLOv6 v3.0: A Full-Scale Reloading |
 | 2023 | ✅ | [Dy-YOLOv7](variants/Dy-YOLOv7.md) | [paper](https://arxiv.org/pdf/2304.05552) | DynamicDet: A Unified Dynamic Architecture for Object Detection |
 | 2023 | 🔳 | [YOLO Review](variants/Review.md) | [paper](https://arxiv.org/pdf/2304.00501.pdf) | A comprehensive review of YOLO: from YOLOv1 and beyond |
-| 2023 | 🔳 | [YOLOv8](variants/YOLOv8.md) | [code](https://github.com/ultralytics/ultralytics) | YOLOv8 |
+| 2023 | 🔳 | [YOLOv8](variants/YOLOv8.md) | [code](https://github.com/ultralytics/ultralytics), [report](https://yolov8.org/yolov8-architecture/) | YOLOv8 |
 | 2023 | ✅ | [Gold-YOLO](variants/Gold-YOLO.md) | [paper](https://arxiv.org/pdf/2309.11331) | Gold-YOLO: Efficient Object Detector via Gather-and-Distribute Mechanism |
 | 2023 | ✅ | [YOLO-MS](variants/YOLO-MS.md) | [paper](https://arxiv.org/pdf/2308.05480) | YOLO-MS: Rethinking Multi-Scale Representation Learning for Real-time Object Detection |
+| 2023 | 🔳 | [YOLO-NAS](variants/YOLO-NAS.md) | [report](https://deci.ai/blog/yolo-nas-object-detection-foundation-model/) | YOLO-NAS by Deci Achieves SOTA Performance on Object Detection Using Neural Architecture Search |
 | 2024 | 🔳 | [Yolo-World](variants/YOLO-World.md) | [paper](https://arxiv.org/pdf/2401.17270) | YOLO-World: Real-Time Open-Vocabulary Object Detection |
 | 2024 | 🔳 | [YOLOv9](variants/YOLOv9.md) | [paper](https://arxiv.org/pdf/2402.13616), [code](https://github.com/WongKinYiu/yolov9) | YOLOv9: Learning What You Want to Learn Using Programmable Gradient Information |
 | 2024 | ✅ | [YOLOv10](variants/YOLOv10.md) | [paper](https://arxiv.org/pdf/2405.14458v1) | YOLOv10: Real-Time End-to-End Object Detection |
