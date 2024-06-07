@@ -5,7 +5,7 @@
 YOLOv8 is the latest iteration of the You Only Look Once (YOLO) family of object detection models, known for their speed and accuracy. Developed by the Ultralytics team, YOLOv8 builds upon the success of its predecessors while introducing several key innovations that push the boundaries of real-time object detection.
 
 <p align="center">
-  <img src="" alt="yolo_v8" height="700"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/f293c08c-d5b7-4cd4-91fe-fe3e5bc0ba50" alt="yolo_v8" height="800"/>
 </p>
 
 ## Key innovations
@@ -17,7 +17,7 @@ YOLOv8 is an anchor-free model. This means it predicts directly the center of an
 ### New Convolutions
 
 <p align="center">
-  <img src="" alt="yolo_v8_c2f" height="300"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/836f9a07-6c1c-4c37-84de-dfc8fb62e0c4" alt="yolo_v8_c2f" height="350"/>
 </p>
 
 The stem's first $6 × 6$ _conv_ is replaced by a $3 × 3$, the main building block was changed, and **_C2f_** replaced **_C3_**. The module is summarized in the figure above, where $f$ is the number of features, $e$ is the expansion rate and $CBS$ is a block composed of a $Conv$, a $BatchNorm$ and a $SiLU$ layer. In C2f, all the outputs from the Bottleneck (fancy name for two $3 × 3$ _convs_ with residual connections) are concatenated. While in C3 only the output of the last Bottleneck was used.
