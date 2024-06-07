@@ -44,6 +44,7 @@ This sort of change is exemplary of the careful attention YOLO modeling has been
 * **Feature Fusion** - The C2f module effectively combines high-level semantic features with low-level spatial information, improving detection accuracy for small objects
 * **Bottlenecks and SPPF** - Bottlenecks in the CSPDarknet53 backbone reduce computational complexity while maintaining accuracy. Additionally, the **_Spatial Pyramid Pooling Fast (SPPF)_** layer captures features at multiple scales, further enhancing detection performance
 * **Mixed Precision Training** - Mixed precision training further enhances training speed and efficiency
+* **Decoupled Head** - The diagram above illustrates that the head no longer performs classification and regression together. Instead, it performs the tasks separately, which increases model performanc
 
 ## Architecture
 
