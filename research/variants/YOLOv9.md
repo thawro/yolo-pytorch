@@ -8,7 +8,7 @@ Authors proposed the concept of **_Programmable Gradient Information (PGI)_** to
 In addition, a new lightweight network architecture – **_Generalized Efficient Layer Aggregation Network (GELAN)_**, based on gradient path planning is designed. GELAN’s architecture confirms that PGI has gained superior results on lightweight models. Authors verified the proposed GELAN and PGI on MS COCO dataset based object detection. The results show that GELAN (which uses only conventional convolution operators) achieves better parameter utilization than the SoTA methods developed based on _depth-wise convolution_. PGI can be used for variety of models from lightweight to large. It can be used to obtain complete information, so that train-from-scratch models can achieve better results than SoTA models pre-trained using large datasets.
 
 <p align="center">
-  <img src="" alt="yolo_v9_gelan_comparison" height="300"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/ebc0f141-c3bf-4634-a52c-04151796f415" alt="yolo_v9_gelan_comparison" height="300"/>
 </p>
 
 In recent years, researchers in the field of deep learning have mainly focused on how to develop more powerful system architectures and learning methods, such as _CNNs_, _Transformers_, _Perceivers_, and _Mambas_. In addition, some researchers have tried to develop more general objective functions, such as _loss function_, _label assignment_ and _auxiliary supervision_. The above studies all try to precisely find the mapping between input and target tasks. However, most past approaches have ignored that input data may have a non-negligible amount of information loss during the feedforward process. This loss of information can lead to biased gradient flows, which are subsequently used to update the model. The above problems can result in deep networks to establish incorrect associa- tions between targets and inputs, causing the trained model to produce incorrect predictions.
@@ -56,7 +56,7 @@ Addressing information loss is particularly vital for lightweight models, which 
 ## Programmable Gradient Information
 
 <p align="center">
-  <img src="" alt="yolo_v9_PIG" height="500"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/3ebf74ce-0c08-4784-90ff-7dbcaea583b9" alt="yolo_v9_PGI" height="500"/>
 </p>
 
 In order to solve the aforementioned problems, authors propose a new auxiliary supervision framework called **_Programmable Gradient Information (PGI)_**, as shown in figure above (d). PGI mainly includes three components, namely:
@@ -84,7 +84,7 @@ The concept of multi-level auxiliary information is to insert an integration net
 ## Generalized-ELAN (GELAN)
 
 <p align="center">
-  <img src="" alt="yolo_v9_gelan" height="350"/>
+  <img src="https://github.com/thawro/yolo-pytorch/assets/50373360/a4307f9e-ff35-47f1-8b45-3973e03a7a65" alt="yolo_v9_gelan" height="350"/>
 </p>
 
 By combining two neural network architectures, _CSPNet_ and _ELAN_, which are designed with gradient path planning, authors designed **Generalized Efficient Layer Aggregation Network (GELAN)** that takes into account lighweight, inference speed, and accuracy. Its overall architecture is shown in figure above. Authors generalized the capability of ELAN, which originally only used stacking of convolutional layers, to a new architecture that can use **any** computational blocks.
