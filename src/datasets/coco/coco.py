@@ -17,6 +17,8 @@ from src.base.datasets import BaseImageDataset
 from src.datasets.coco.utils import (
     COCO_KPT_LABELS,
     COCO_KPT_LIMBS,
+    COCO_OBJ_LABELS,
+    coco91_to_coco80_labels,
     coco_polygons_to_mask,
     coco_rle_to_seg,
     mask_to_polygons,
@@ -27,120 +29,22 @@ from src.utils.files import load_yaml, save_yaml
 from src.utils.image import get_color, make_grid, put_txt, stack_horizontally
 from src.utils.utils import get_rank
 
-
-def get_coco_joints(annots: list[dict]):
-    num_people = len(annots)
-    num_kpts = 17
-    joints = np.zeros((num_people, num_kpts, 3))
-    for i, obj in enumerate(annots):
-        joints[i] = np.array(obj["keypoints"]).reshape([-1, 3])
-    return joints
-
-
-class HeatmapGenerator:
-    """
-    source: https://github.com/HRNet/HigherHRNet-Human-Pose-Estimation/blob/master/lib/dataset/target_generators/target_generators.py
-    """
-
-    def __init__(self, num_kpts: int, size: int, sigma: float = 2):
-        self.num_kpts = num_kpts
-        self.size = size
-        self.h, self.w = size, size
-        if sigma < 0:
-            sigma = size / 64
-        self.sigma = sigma
-        x = np.arange(0, 6 * sigma + 3, 1, float)
-        y = x[:, np.newaxis]
-        x0, y0 = 3 * sigma + 1, 3 * sigma + 1
-        self.gauss = np.exp(-((x - x0) ** 2 + (y - y0) ** 2) / (2 * sigma**2))
-
-    def __call__(
-        self,
-        joints: np.ndarray,
-        # max_h: int,
-        # max_w: int,
-    ) -> np.ndarray:
-        """
-        visibility: 0 - not labeled, 1 - labeled but not visible, 2 - labeled and visible
-        """
-        hms = np.zeros((self.num_kpts, self.h, self.w), dtype=np.float32)
-        for joint in joints:
-            for idx in range(self.num_kpts):
-                x, y, vis = joint[idx]
-                if vis <= 0 or x < 0 or y < 0 or x >= self.w or y >= self.h:
-                    continue
-
-                xmin = int(np.round(x - 3 * self.sigma - 1))
-                ymin = int(np.round(y - 3 * self.sigma - 1))
-                xmax = int(np.round(x + 3 * self.sigma + 2))
-                ymax = int(np.round(y + 3 * self.sigma + 2))
-
-                c, d = max(0, -xmin), min(xmax, self.w) - xmin
-                a, b = max(0, -ymin), min(ymax, self.h) - ymin
-
-                cc, dd = max(0, xmin), min(xmax, self.w)
-                aa, bb = max(0, ymin), min(ymax, self.h)
-                hms[idx, aa:bb, cc:dd] = np.maximum(hms[idx, aa:bb, cc:dd], self.gauss[a:b, c:d])
-        return hms
-
-
-class JointsGenerator:
-    def __init__(self, size: int = 512):
-        self.h, self.w = size, size
-
-    def __call__(self, joints: np.ndarray) -> np.ndarray:
-        for i in range(len(joints)):
-            for k, pt in enumerate(joints[i]):
-                x, y, vis = int(pt[0]), int(pt[1]), pt[2]
-                if vis > 0 and x >= 0 and y >= 0 and x < self.w and y < self.h:
-                    joints[i, k] = (x, y, 1)
-                else:
-                    joints[i, k] = (0, 0, 0)
-        visible_joints_mask = joints.sum(axis=(1, 2)) > 0
-        return joints[visible_joints_mask].astype(np.int32)
-
-
-def collate_fn(
-    batch: list[tuple[np.ndarray, list[np.ndarray], list[np.ndarray], list[list[np.ndarray]]]],
-) -> tuple[
-    Tensor,
-    list[Tensor],
-    list[Tensor],
-    list[list[np.ndarray]],
-]:
-    num_scales = len(batch[0][1])
-    images = torch.from_numpy(np.stack([item[0] for item in batch]))
-    heatmaps_tensor = []
-    masks_tensor = []
-    joints_scales = []
-    for i in range(num_scales):
-        _heatmaps = []
-        _masks = []
-        _joints = []
-        for sample in batch:
-            _heatmaps.append(sample[1][i])
-            _masks.append(sample[2][i])
-            _joints.append(sample[3][i])
-        heatmaps_tensor.append(torch.from_numpy(np.stack(_heatmaps)))
-        masks_tensor.append(torch.from_numpy(np.stack(_masks)))
-        joints_scales.append(_joints)
-    return images, heatmaps_tensor, masks_tensor, joints_scales
+_tasks = Literal["instances", "person_keypoints"]
 
 
 def get_crowd_mask(annot: list, img_h: int, img_w: int) -> np.ndarray:
     m = np.zeros((img_h, img_w))
     for obj in annot:
+        rles = []
         if obj["iscrowd"]:
             rle = pycocotools.mask.frPyObjects(obj["segmentation"], img_h, img_w)
+            rles.append(rle)
+        elif "num_keypoints" in obj and obj["num_keypoints"] == 0:
+            rle = pycocotools.mask.frPyObjects(obj["segmentation"], img_h, img_w)
+            rles.extend(rle)
+        for rle in rles:
             m += pycocotools.mask.decode(rle)
-        elif obj["num_keypoints"] == 0:
-            rles = pycocotools.mask.frPyObjects(obj["segmentation"], img_h, img_w)
-            for rle in rles:
-                m += pycocotools.mask.decode(rle)
     return m < 0.5
-
-
-_tasks = Literal["instances", "person_keypoints"]
 
 
 class CocoDataset(BaseImageDataset):
@@ -148,6 +52,7 @@ class CocoDataset(BaseImageDataset):
     task: _tasks
     kpts_limbs = COCO_KPT_LIMBS
     kpts_labels = COCO_KPT_LABELS
+    objs_labels = COCO_OBJ_LABELS
 
     def __init__(
         self,
@@ -243,8 +148,11 @@ class CocoDataset(BaseImageDataset):
             np.save(mask_filepath, mask)
             save_yaml(annot, annot_filepath)
 
-    def load_annot(self, idx: int) -> dict | list[dict]:
-        return load_yaml(self.annots_filepaths[idx])
+    def load_annot(self, idx: int) -> list[dict]:
+        annot = load_yaml(self.annots_filepaths[idx])
+        for idx in range(len(annot)):
+            annot[idx]["category_id"] = coco91_to_coco80_labels[annot[idx]["category_id"] - 1]
+        return annot
 
     def load_crowd_mask(self, idx: int) -> np.ndarray:
         return np.load(self.crowd_masks_filepaths[idx])
@@ -255,8 +163,7 @@ class CocoDataset(BaseImageDataset):
         return image, annot
 
     def get_raw_data_with_crowd_mask(self, idx: int) -> tuple[np.ndarray, list[dict], np.ndarray]:
-        image = self.load_image(idx)
-        annot = self.load_annot(idx)
+        image, annot = self.get_raw_data(idx)
         mask = np.load(self.crowd_masks_filepaths[idx])
         return image, annot, mask
 
@@ -294,7 +201,9 @@ class CocoDataset(BaseImageDataset):
         raw_img_transform = A.Compose(
             [
                 A.LongestMaxSize(max_size),
-                A.PadIfNeeded(max_size, max_size, border_mode=cv2.BORDER_CONSTANT),
+                A.PadIfNeeded(
+                    max_size, max_size, border_mode=cv2.BORDER_CONSTANT, value=(128, 128, 128)
+                ),
             ],
         )
         raw_image = raw_img_transform(image=raw_image)["image"]

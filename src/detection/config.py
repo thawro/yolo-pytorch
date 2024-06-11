@@ -12,13 +12,13 @@ from src.base.config import (
     TransformConfig,
 )
 from src.base.trainer import Trainer
-from src.datasets.coco import CocoDetectionDataset
+from src.detection.datasets.coco import CocoDetectionDataset
 from src.logger.pylogger import log
 
 from .architectures import YOLOv10
 from .datamodule import DetectionDataModule
 from .loss import DetectionLoss
-from .model import DetectionModel
+from .model import DetectionModel, InferenceDetectionModel
 from .module import DetectionModule
 from .trainer import DetectionTrainer
 from .transforms import DetectionTransform

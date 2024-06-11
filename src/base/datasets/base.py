@@ -56,7 +56,7 @@ class ExplorerDataset:
 
     def plot_examples(self, idxs: list[int], **kwargs) -> np.ndarray:
         samples_plots = [self.plot(idx, **kwargs) for idx in idxs]
-        grid = make_grid(samples_plots, nrows=len(samples_plots), pad=20)
+        grid = make_grid(samples_plots, nrows=len(samples_plots), pad=20, match_size=True)
         return grid
 
     def explore(self, idx: int = 0, callback: ExploreCallback | None = None, **kwargs):

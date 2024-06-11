@@ -5,14 +5,12 @@ from torchvision.transforms import functional as F
 
 from src.base.transforms import ComposeTransform
 
-COCO_FLIP_INDEX = [0, 2, 1, 4, 3, 6, 5, 8, 7, 10, 9, 12, 11, 14, 13, 16, 15]
-
 
 class ToTensor(object):
     def __call__(
-        self, image: np.ndarray, boxes: list[np.ndarray]
+        self, image: np.ndarray, boxes_xywh: list[np.ndarray]
     ) -> tuple[torch.Tensor, list[np.ndarray]]:
-        return F.to_tensor(image), boxes
+        return F.to_tensor(image), boxes_xywh
 
 
 class Normalize(object):
@@ -21,17 +19,19 @@ class Normalize(object):
         self.std = std
 
     def __call__(
-        self, image: torch.Tensor, boxes: list[np.ndarray]
+        self, image: torch.Tensor, boxes_xywh: list[np.ndarray]
     ) -> tuple[torch.Tensor, list[np.ndarray]]:
         image = F.normalize(image, mean=self.mean, std=self.std)
-        return image, boxes
+        return image, boxes_xywh
 
 
 class ComposeDetectionTransform(ComposeTransform):
-    def __call__(self, image: np.ndarray, boxes: list) -> tuple[torch.Tensor | np.ndarray, list]:
+    def __call__(
+        self, image: np.ndarray, boxes_xywh: list
+    ) -> tuple[torch.Tensor | np.ndarray, list]:
         for transform in self.transforms:
-            image, boxes = transform(image, boxes)
-        return image, boxes
+            image, boxes_xywh = transform(image, boxes_xywh)
+        return image, boxes_xywh
 
 
 class DetectionTransform:
