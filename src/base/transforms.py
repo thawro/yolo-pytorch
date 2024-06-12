@@ -110,6 +110,18 @@ def resize_align_multi_scale(
     return image_resized, center, scale
 
 
+class ImageTransform:
+    def __init__(
+        self,
+        size: int | tuple[int, int],
+        mean: list[float] = [0.485, 0.456, 0.406],
+        std: list[float] = [0.229, 0.224, 0.225],
+    ):
+        self.size = size
+        self.mean = mean
+        self.std = std
+
+
 class ComposeTransform:
     def __init__(self, transforms: list[Callable]):
         self.transforms = transforms

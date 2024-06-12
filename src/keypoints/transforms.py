@@ -6,7 +6,7 @@ import numpy as np
 import torch
 from torchvision.transforms import functional as F
 
-from src.base.transforms.base import ImageTransform
+from src.base.transforms import ImageTransform
 
 COCO_FLIP_INDEX = [0, 2, 1, 4, 3, 6, 5, 8, 7, 10, 9, 12, 11, 14, 13, 16, 15]
 
@@ -122,9 +122,8 @@ class RandomAffineTransform(object):
         joints = np.array(joints)
         shape = joints.shape
         joints = joints.reshape(-1, 2)
-        return np.dot(np.concatenate((joints, joints[:, 0:1] * 0 + 1), axis=1), mat.T).reshape(
-            shape
-        )
+        _joints = np.concatenate((joints, joints[:, 0:1] * 0 + 1), axis=1)
+        return np.dot(_joints, mat.T).reshape(shape)
 
     def __call__(
         self, image: np.ndarray, mask_list: list[np.ndarray], joints_list: list[np.ndarray]

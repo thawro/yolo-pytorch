@@ -119,6 +119,26 @@ def put_txt(
     return image
 
 
+def put_txt_in_rect(
+    image: np.ndarray,
+    label: str,
+    font,
+    font_scale,
+    thickness,
+    point: tuple[int, int],
+    rect_color,
+    txt_color: tuple[int, int, int] = (255, 255, 255),
+) -> np.ndarray:
+    x, y = point
+    (w, h), _ = cv2.getTextSize(label, font, font_scale, thickness)
+    image = cv2.rectangle(image, (x, y - h - 5), (x + w, y), rect_color, -1)
+    image = cv2.putText(
+        image, label, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, font_scale, txt_color, thickness
+    )
+    return image
+    # cv2.putText(image, label, (x, y + height), font, font_scale, color, thickness)
+
+
 def matplot_figure_to_array(fig: Figure) -> np.ndarray:
     fig.canvas.draw()
     data = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)

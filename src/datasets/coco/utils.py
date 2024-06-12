@@ -261,3 +261,15 @@ def coco_rle_seg_to_mask(segmentation: dict[str, list[int]]) -> _mask:
 def coco_rle_to_seg(segmentation: dict[str, list[int]]) -> _coco_polygons | _polygons:
     mask = coco_rle_seg_to_mask(segmentation)
     return mask_to_polygons(mask)
+
+
+def segment2box(segment: np.ndarray, height: int, width: int) -> np.ndarray:
+    x, y = segment.T  # segment xy
+    inside = (x >= 0) & (y >= 0) & (x <= width) & (y <= height)
+    x = x[inside]
+    y = y[inside]
+    return (
+        np.array([x.min(), y.min(), x.max(), y.max()], dtype=segment.dtype)
+        if any(x)
+        else np.zeros(4, dtype=segment.dtype)
+    )  # xyxy

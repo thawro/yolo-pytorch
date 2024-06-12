@@ -1,28 +1,16 @@
-import random
 from pathlib import Path
 
 import cv2
 import numpy as np
-import pycocotools
 import torch
 from PIL import Image
 from torch import Tensor
 
 from src.base.transforms import inverse_preprocessing
-from src.datasets.coco import CocoDataset
+from src.datasets.coco import CocoDataset, get_coco_joints
 from src.keypoints.transforms import ComposeKeypointsTransform, KeypointsTransform
 from src.keypoints.visualization import plot_connections, plot_heatmaps
-from src.logger.pylogger import log
-from src.utils.image import get_color, make_grid, put_txt, stack_horizontally
-
-
-def get_coco_joints(annots: list[dict]):
-    num_people = len(annots)
-    num_kpts = 17
-    joints = np.zeros((num_people, num_kpts, 3))
-    for i, obj in enumerate(annots):
-        joints[i] = np.array(obj["keypoints"]).reshape([-1, 3])
-    return joints
+from src.utils.image import make_grid, put_txt, stack_horizontally
 
 
 class HeatmapGenerator:
@@ -115,20 +103,9 @@ def collate_fn(
     return images, heatmaps_tensor, masks_tensor, joints_scales
 
 
-def get_crowd_mask(annot: list, img_h: int, img_w: int) -> np.ndarray:
-    m = np.zeros((img_h, img_w))
-    for obj in annot:
-        if obj["iscrowd"]:
-            rle = pycocotools.mask.frPyObjects(obj["segmentation"], img_h, img_w)
-            m += pycocotools.mask.decode(rle)
-        elif obj["num_keypoints"] == 0:
-            rles = pycocotools.mask.frPyObjects(obj["segmentation"], img_h, img_w)
-            for rle in rles:
-                m += pycocotools.mask.decode(rle)
-    return m < 0.5
-
-
 class CocoKeypointsDataset(CocoDataset):
+    task = "person_keypoints"
+
     def __init__(
         self,
         root: str,
@@ -192,7 +169,7 @@ class CocoKeypointsDataset(CocoDataset):
             if stage_idx == 1:
                 for i in range(len(kpts_heatmaps)):
                     put_txt(
-                        kpts_heatmaps[i], [self.kpts_limbs[i]], alpha=0.8, font_scale=font_scale
+                        kpts_heatmaps[i], [self.kpts_labels[i]], alpha=0.8, font_scale=font_scale
                     )
                 put_txt(crowd_mask, ["Crowd Mask"], alpha=1, font_scale=font_scale)
             put_txt(image, labels, alpha=0.8, font_scale=font_scale)
@@ -217,14 +194,10 @@ class CocoKeypointsDataset(CocoDataset):
         list[np.ndarray],
         list[np.ndarray],
     ]:
-        if random.random() < self.mosaic_probability:
-            img, annot, mask = self.get_raw_mosaiced_data(idx, use_keypoints=True)
-        else:
-            img, annot, mask = self.get_raw_data_with_crowd_mask(idx)
-
-        annots = [obj for obj in annot if obj["iscrowd"] == 0 or obj["num_keypoints"] > 0]
-        joints = get_coco_joints(annots)
-        mask_list = [mask.copy() for _ in range(self.num_scales)]
+        img, crowd_mask, annot = self.get_raw_or_mosaiced_data(idx)
+        annot.filter_by(iscrowd=0, num_keypoints=1)
+        joints = get_coco_joints(annot)
+        mask_list = [crowd_mask.copy() for _ in range(self.num_scales)]
         joints_list = [joints.copy() for _ in range(self.num_scales)]
         if self.transform is not None:
             img, mask_list, joints_list = self.transform(img, mask_list, joints_list)
@@ -303,7 +276,7 @@ if __name__ == "__main__":
     transform = KeypointsTransform(out_size, hm_resolutions, min_scale=0.25, max_scale=1.25)
     # ds = CocoKeypointsDataset("data/COCO/raw", "val2017", transform.inference, out_size, hm_resolutions)
     ds = CocoKeypointsDataset(
-        "data/COCO/raw",
+        "data/COCO",
         "train2017",
         transform.train,
         out_size,

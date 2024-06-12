@@ -4,47 +4,25 @@ import random
 from pathlib import Path
 from typing import Callable, Literal
 
-import albumentations as A
 import cv2
 import numpy as np
-import pycocotools
-import torch
 from pycocotools.coco import COCO
-from torch import Tensor
 from tqdm.auto import tqdm
 
 from src.base.datasets import BaseImageDataset
+from src.datasets.coco.sample import CocoAnnotation, CocoSample
 from src.datasets.coco.utils import (
     COCO_KPT_LABELS,
     COCO_KPT_LIMBS,
     COCO_OBJ_LABELS,
-    coco91_to_coco80_labels,
     coco_polygons_to_mask,
-    coco_rle_to_seg,
     mask_to_polygons,
 )
-from src.keypoints.visualization import plot_connections, plot_heatmaps
 from src.logger.pylogger import log
 from src.utils.files import load_yaml, save_yaml
-from src.utils.image import get_color, make_grid, put_txt, stack_horizontally
 from src.utils.utils import get_rank
 
 _tasks = Literal["instances", "person_keypoints"]
-
-
-def get_crowd_mask(annot: list, img_h: int, img_w: int) -> np.ndarray:
-    m = np.zeros((img_h, img_w))
-    for obj in annot:
-        rles = []
-        if obj["iscrowd"]:
-            rle = pycocotools.mask.frPyObjects(obj["segmentation"], img_h, img_w)
-            rles.append(rle)
-        elif "num_keypoints" in obj and obj["num_keypoints"] == 0:
-            rle = pycocotools.mask.frPyObjects(obj["segmentation"], img_h, img_w)
-            rles.extend(rle)
-        for rle in rles:
-            m += pycocotools.mask.decode(rle)
-    return m < 0.5
 
 
 class CocoDataset(BaseImageDataset):
@@ -59,20 +37,20 @@ class CocoDataset(BaseImageDataset):
         root: str,
         split: str,
         transform: Callable | None = None,
-        out_size: int = 512,
+        size: int = 512,
         mosaic_probability: float = 0,
     ):
         self.root = root
         self.split = split
         self.is_train = "train" in split
         self.transform = transform
-        self.out_size = out_size
+        self.size = size
         self.mosaic_probability = mosaic_probability
         self.task_split = f"{self.task}_{self.split}"
 
         self.images_dir = f"{self.root}/images/{self.split}"
         self.annots_dir = f"{self.root}/annotations/{self.task_split}"
-        self.crowd_masks_dir = f"{self.root}/crowd_masks/{self.task_split}"
+        self.crowd_masks_dir = f"{self.root}/crowd_masks/{self.split}"
         self._set_paths()
 
     def _set_paths(self):
@@ -84,7 +62,9 @@ class CocoDataset(BaseImageDataset):
             for path in annots_filepaths
         ]
         crowd_masks_filepaths = [
-            path.replace(".yaml", ".npy").replace("annotations/", "masks/")
+            path.replace(".yaml", ".npy")
+            .replace("annotations/", "crowd_masks/")
+            .replace(f"{self.task}_", "")
             for path in annots_filepaths
         ]
         self.annots_filepaths = np.array(annots_filepaths, dtype=np.str_)
@@ -143,87 +123,47 @@ class CocoDataset(BaseImageDataset):
             img_filepath = f"{self.root}/images/{self.split}/{img_info['file_name']}"
             filename = Path(img_filepath).stem
             annot_filepath = f"{self.annots_dir}/{filename}.yaml"
-            mask_filepath = f"{self.crowd_masks_dir}/{filename}.npy"
-            mask = get_crowd_mask(annot, img_info["height"], img_info["width"])
-            np.save(mask_filepath, mask)
-            save_yaml(annot, annot_filepath)
+            crowd_mask_filepath = f"{self.crowd_masks_dir}/{filename}.npy"
+            meta = {
+                "height": img_info["height"],
+                "width": img_info["width"],
+                "annot_filepath": annot_filepath,
+                "image_filepath": img_filepath,
+                "crowd_mask_filepath": crowd_mask_filepath,
+            }
+            annot_to_save = {"objects": annot, "meta": meta}
+            save_yaml(annot_to_save, annot_filepath)
+            annot = CocoAnnotation.from_coco_annot(annot)
+            crowd_mask = annot.get_crowd_mask(img_info["height"], img_info["width"])
+            np.save(crowd_mask_filepath, crowd_mask)
 
-    def load_annot(self, idx: int) -> list[dict]:
-        annot = load_yaml(self.annots_filepaths[idx])
-        for idx in range(len(annot)):
-            annot[idx]["category_id"] = coco91_to_coco80_labels[annot[idx]["category_id"] - 1]
+    def load_annot(self, idx: int) -> CocoAnnotation:
+        annot = CocoAnnotation.from_yaml(self.annots_filepaths[idx])
         return annot
 
     def load_crowd_mask(self, idx: int) -> np.ndarray:
         return np.load(self.crowd_masks_filepaths[idx])
 
-    def get_raw_data(self, idx: int) -> tuple[np.ndarray, list[dict]]:
+    def get_raw_sample(self, idx: int) -> CocoSample:
         image = self.load_image(idx)
         annot = self.load_annot(idx)
-        return image, annot
+        crowd_mask = self.load_crowd_mask(idx)
+        sample = CocoSample(image, annot, crowd_mask)
+        return sample
 
-    def get_raw_data_with_crowd_mask(self, idx: int) -> tuple[np.ndarray, list[dict], np.ndarray]:
-        image, annot = self.get_raw_data(idx)
-        mask = np.load(self.crowd_masks_filepaths[idx])
-        return image, annot, mask
+    def get_raw_or_mosaic_sample(self, idx: int) -> CocoSample:
+        sample_mosaic = random.random() < self.mosaic_probability
+        get_data = self.get_raw_mosaic_sample if sample_mosaic else self.get_raw_sample
+        return get_data(idx)
 
-    def plot_raw(
-        self,
-        idx: int,
-        max_size: int,
-        use_segmentation: bool = False,
-        use_keypoints: bool = False,
-    ) -> np.ndarray:
-        raw_image, raw_annot = self.get_raw_data(idx)
-        if use_keypoints:
-            raw_joints = get_coco_joints(raw_annot)
-            kpts = raw_joints[..., :2]
-            visibility = raw_joints[..., 2]
-            raw_image = plot_connections(raw_image.copy(), kpts, visibility, self.limbs, thr=0.5)
-            overlay = raw_image.copy()
-
-        if use_segmentation:
-            for i, obj in enumerate(raw_annot):
-                seg = obj["segmentation"]
-                if isinstance(seg, dict):  # RLE annotation
-                    seg = coco_rle_to_seg(seg)
-                c = get_color(i).tolist()
-                for poly_seg in seg:
-                    poly_seg = np.array(poly_seg).reshape(-1, 2).astype(np.int32)
-                    overlay = cv2.fillPoly(overlay, [poly_seg], color=c)
-                    overlay = cv2.drawContours(overlay, [poly_seg], -1, color=c, thickness=1)
-
-            alpha = 0.4  # Transparency factor.
-            raw_image = cv2.addWeighted(overlay, alpha, raw_image, 1 - alpha, 0)
-
-        raw_h, raw_w = raw_image.shape[:2]
-
-        raw_img_transform = A.Compose(
-            [
-                A.LongestMaxSize(max_size),
-                A.PadIfNeeded(
-                    max_size, max_size, border_mode=cv2.BORDER_CONSTANT, value=(128, 128, 128)
-                ),
-            ],
-        )
-        raw_image = raw_img_transform(image=raw_image)["image"]
-        put_txt(raw_image, ["Raw Image", f"Shape: {raw_h} x {raw_w}"])
-        return raw_image
-
-    def get_raw_mosaiced_data(
-        self,
-        idx: int,
-        use_segmentation: bool = False,
-        use_keypoints: bool = False,
-        use_crowd_mask: bool = False,
-    ) -> tuple[np.ndarray, list[dict], np.ndarray]:
-        out_size = self.out_size * 2
+    def get_raw_mosaic_sample(self, idx: int) -> CocoSample:
+        out_size = self.size * 2
         img_size = out_size // 2
         idxs = [idx] + [random.randint(0, len(self) - 1) for _ in range(3)]
 
         mosaic_annot = []
         mosaic_img = np.zeros([out_size, out_size, 3], dtype=np.uint8)
-        mosaic_mask = np.empty([out_size, out_size], dtype=np.bool_)
+        mosaic_crowd_mask = np.empty([out_size, out_size], dtype=np.bool_)
 
         new_h, new_w = img_size, img_size
 
@@ -239,12 +179,9 @@ class CocoDataset(BaseImageDataset):
             else:
                 s_y, s_x = new_h, new_w
 
-            if use_crowd_mask:
-                img, annot, mask = self.get_raw_data_with_crowd_mask(idx)
-                new_mask = cv2.resize((mask * 255).astype(np.uint8), (new_w, new_h)) > 0.5
-                mosaic_mask[s_y : s_y + new_h, s_x : s_x + new_w] = new_mask
-            else:
-                img, annot = self.get_raw_data(idx)
+            img, crowd_mask, annot = self.get_raw_data(idx)
+            new_crowd_mask = cv2.resize((crowd_mask * 255).astype(np.uint8), (new_w, new_h)) > 0.5
+            mosaic_crowd_mask[s_y : s_y + new_h, s_x : s_x + new_w] = new_crowd_mask
 
             img_h, img_w = img.shape[:2]
             new_img = cv2.resize(img, (new_w, new_h))
@@ -252,25 +189,24 @@ class CocoDataset(BaseImageDataset):
 
             scale_y, scale_x = new_h / img_h, new_w / img_w
             objects = []
-            for obj in annot:
-                bbox = obj["bbox"]
-                bbox[0] = int(bbox[0] * scale_x + s_x)
-                bbox[2] = int(bbox[2] * scale_x + s_x)
-                bbox[1] = int(bbox[1] * scale_y + s_y)
-                bbox[3] = int(bbox[3] * scale_y + s_y)
+            for obj in annot.objects:
+                box_xyxy = obj.box_xyxy
+                box_xyxy[0] = box_xyxy[0] * scale_x + s_x
+                box_xyxy[1] = box_xyxy[1] * scale_y + s_y
+                box_xyxy[2] = box_xyxy[2] * scale_x + s_x
+                box_xyxy[3] = box_xyxy[3] * scale_y + s_y
 
-                kpts, num_keypoints = None, None
-                if use_keypoints:
-                    kpts = np.array(obj["keypoints"]).reshape([-1, 3])
-                    num_keypoints = obj["num_keypoints"]
+                kpts = None
+                if obj.has_keypoints():
+                    kpts = np.array(obj.keypoints).reshape([-1, 3])
                     vis_mask = kpts[:, 2] <= 0
                     kpts[:, 0] = kpts[:, 0] * scale_x + s_x
                     kpts[:, 1] = kpts[:, 1] * scale_y + s_y
                     kpts[vis_mask] = kpts[vis_mask] * 0
 
                 segmentation = None
-                if use_segmentation:
-                    segmentation = obj["segmentation"]
+                if obj.has_segmentation():
+                    segmentation = obj.segmentation
                     if isinstance(segmentation, dict):
                         segmentation = mask_to_polygons(
                             coco_polygons_to_mask(segmentation, img_h, img_w)
@@ -282,17 +218,21 @@ class CocoDataset(BaseImageDataset):
                         segmentation[j] = seg.astype(np.int32).tolist()
 
                 objects.append(
-                    {
-                        "bbox": bbox,
-                        "iscrowd": obj["iscrowd"],
-                        "keypoints": kpts,
-                        "num_keypoints": num_keypoints,
-                        "segmentation": segmentation,
-                    }
+                    CocoObjectAnnotation(
+                        area=obj.area / 4,
+                        box_xyxy=box_xyxy,
+                        category_id=obj.category_id,
+                        id=obj.id,
+                        image_id=obj.image_id,
+                        iscrowd=obj.iscrowd,
+                        segmentation=segmentation,
+                        num_keypoints=obj.num_keypoints,
+                        keypoints=kpts,
+                    )
                 )
-
             mosaic_annot.extend(objects)
-        return mosaic_img, mosaic_annot, mosaic_mask
+        mosaic_annot = CocoAnnotation(mosaic_annot)
+        return mosaic_img, mosaic_crowd_mask, mosaic_annot
 
     def __len__(self) -> int:
         return len(self.annots_filepaths)
