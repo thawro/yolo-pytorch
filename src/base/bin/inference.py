@@ -2,7 +2,7 @@ from typing import Type
 
 from src.base.config import BaseConfig
 from src.logger.pylogger import log
-from src.utils.model import seed_everything
+from src.utils.training import seed_everything
 
 
 def prepare_inference_config(cfg_path: str, ConfigClass: Type[BaseConfig]) -> BaseConfig:

@@ -1,5 +1,7 @@
 import cv2
 import numpy as np
+import torch
+from torch import Tensor
 
 _xy_coords = tuple[int, int]
 _polygon = list[_xy_coords]
@@ -263,13 +265,40 @@ def coco_rle_to_seg(segmentation: dict[str, list[int]]) -> _coco_polygons | _pol
     return mask_to_polygons(mask)
 
 
-def segment2box(segment: np.ndarray, height: int, width: int) -> np.ndarray:
-    x, y = segment.T  # segment xy
-    inside = (x >= 0) & (y >= 0) & (x <= width) & (y <= height)
-    x = x[inside]
-    y = y[inside]
-    return (
-        np.array([x.min(), y.min(), x.max(), y.max()], dtype=segment.dtype)
-        if any(x)
-        else np.zeros(4, dtype=segment.dtype)
-    )  # xyxy
+# def segment2box(segment: np.ndarray, height: int, width: int) -> np.ndarray:
+#     x, y = segment.T  # segment xy
+#     inside = (x >= 0) & (y >= 0) & (x <= width) & (y <= height)
+#     x = x[inside]
+#     y = y[inside]
+#     return (
+#         np.array([x.min(), y.min(), x.max(), y.max()], dtype=segment.dtype)
+#         if any(x)
+#         else np.zeros(4, dtype=segment.dtype)
+#     )  # xyxy
+
+
+# def _empty_like(x: np.ndarray | Tensor) -> np.ndarray | Tensor:
+#     if isinstance(x, np.ndarray):
+#         return np.empty_like(x)
+#     else:
+#         return torch.empty_like(x)
+
+
+# def xyxy2xywh(boxes: np.ndarray | Tensor) -> np.ndarray | Tensor:
+#     boxes_ = _empty_like(boxes)
+#     xmin, ymin = boxes[..., 0], boxes[..., 1]
+#     xmax, ymax = boxes[..., 2], boxes[..., 3]
+#     boxes_[..., 0] = (xmin + xmax) / 2  # xc
+#     boxes_[..., 1] = (ymin + ymax) / 2  # yc
+#     boxes_[..., 2] = xmax - xmin  # w
+#     boxes_[..., 3] = ymax - ymin  # h
+#     return boxes_
+
+
+# def xywh2xyxy(boxes: np.ndarray | Tensor) -> np.ndarray | Tensor:
+#     boxes_ = _empty_like(boxes)
+#     xy = boxes[..., :2]  # centers
+#     wh = boxes[..., 2:] / 2  # half wh
+#     boxes_[..., :2] = xy - wh  # xmin, ymin
+#     boxes_[..., 2:] = xy + wh  # xmax, ymax
+#     return boxes_

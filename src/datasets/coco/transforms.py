@@ -1,30 +1,38 @@
 import math
 import random
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 import cv2
 import numpy as np
+import torch
 from torchvision.transforms import functional as F
 
+from src.annots.ops import segment2box
 from src.base.transforms import ComposeTransform
-from src.datasets.coco.coco import CocoSample
-from src.datasets.coco.utils import segment2box
+
+if TYPE_CHECKING:
+    from src.datasets.coco.sample import CocoSample
+
 
 BORDER_VALUE = (114, 114, 114)
+BORDER_TYPE = cv2.BORDER_CONSTANT
+
+
+class CocoTransform:
+    def __call__(self, sample: "CocoSample") -> "CocoSample":
+        raise NotImplementedError
 
 
 class ComposeCocoTransform(ComposeTransform):
-    def __call__(self, sample: CocoSample) -> CocoSample:
+    def __call__(self, sample: "CocoSample") -> "CocoSample":
         for transform in self.transforms:
             sample = transform(sample)
         return sample
 
 
 class ToTensor:
-    def __call__(self, sample: CocoSample) -> CocoSample:
+    def __call__(self, sample: "CocoSample") -> "CocoSample":
         sample.image = F.to_tensor(sample.image)
-        sample.transform.norm_scaler = 255
-        sample.transform.permute_channels = [1, 2, 0]  # [2, 0, 1]
         return sample
 
 
@@ -33,25 +41,33 @@ class Normalize:
         self.mean = mean
         self.std = std
 
-    def __call__(self, sample: CocoSample) -> CocoSample:
+    def __call__(self, sample: "CocoSample") -> "CocoSample":
         sample.image = F.normalize(sample.image, mean=self.mean, std=self.std)
-        sample.transform.norm_mean = self.mean
-        sample.transform.norm_std = self.std
         return sample
 
 
-class RandomHorizontalFlip:
-    def __init__(self, p: float = 0.5):
+class RandomFlip(CocoTransform):
+    def __init__(
+        self,
+        p: float = 0.5,
+        orientation: Literal["vertical", "horizontal"] = "horizontal",
+        flip_idx: list[int] | None = None,
+    ):
         self.p = p
+        self.flip_idx = flip_idx
+        self.orientation = orientation
 
-    def __call__(self, sample: CocoSample) -> CocoSample:
+    def __call__(self, sample: "CocoSample") -> "CocoSample":
         if random.random() >= self.p:
             return sample
-        sample.horizontal_flip()
+        if self.orientation == "horizontal":
+            sample.horizontal_flip(flip_idx=self.flip_idx)
+        else:
+            sample.vertical_flip(flip_idx=self.flip_idx)
         return sample
 
 
-class RandomAffine:
+class RandomAffine(CocoTransform):
     height: int
     width: int
     size: tuple[int, int]
@@ -60,29 +76,31 @@ class RandomAffine:
         self,
         degrees: int = 0,
         translate: float = 0.1,
-        scale: float = 0.5,
+        scale_min: float = 0.5,
+        scale_max: float = 2,
         shear: float = 0.0,
         perspective: float = 0.0,
     ):
         self.degrees = degrees
         self.translate = translate
-        self.scale = scale
+        self.scale_min = scale_min
+        self.scale_max = scale_max
         self.shear = shear
         self.perspective = perspective
         self.height = -1
         self.width = -1
 
-    def affine_transform(self, image: np.ndarray) -> tuple[np.ndarray, np.ndarray, float]:
-        # Center
+    def get_transform_matrix_and_scale(self) -> tuple[np.ndarray, float]:
         x_perspective = random.uniform(-self.perspective, self.perspective)
         y_perspective = random.uniform(-self.perspective, self.perspective)
         angle = random.uniform(-self.degrees, self.degrees)
-        scale = random.uniform(1 - self.scale, 1 + self.scale)
+        scale = random.uniform(self.scale_min, self.scale_max)
         x_shear = random.uniform(-self.shear, self.shear)
         y_shear = random.uniform(-self.shear, self.shear)
         x_translation = random.uniform(0.5 - self.translate, 0.5 + self.translate)
         y_translation = random.uniform(0.5 - self.translate, 0.5 + self.translate)
 
+        # Center
         C = np.eye(3, dtype=np.float32)
         C[0, 2] = -self.width / 2  # x translation (pixels)
         C[1, 2] = -self.height / 2  # y translation (pixels)
@@ -108,13 +126,16 @@ class RandomAffine:
 
         # Combined rotation matrix
         M = T @ S @ R @ P @ C  # order of operations (right to left) is IMPORTANT
-        # Affine image
+        return M, scale
 
+    def affine_transform(
+        self, image: np.ndarray, M: np.ndarray, border_value: tuple[int, int, int] = BORDER_VALUE
+    ) -> np.ndarray:
         if self.perspective:
-            image = cv2.warpPerspective(image, M, dsize=self.size, borderValue=BORDER_VALUE)
+            image = cv2.warpPerspective(image, M, dsize=self.size, borderValue=border_value)
         else:  # affine
-            image = cv2.warpAffine(image, M[:2], dsize=self.size, borderValue=BORDER_VALUE)
-        return image, M, scale
+            image = cv2.warpAffine(image, M[:2], dsize=self.size, borderValue=border_value)
+        return image
 
     def apply_boxes(self, boxes: np.ndarray, M: np.ndarray) -> np.ndarray:
         """
@@ -212,19 +233,11 @@ class RandomAffine:
         ar_thr=100,
         area_thr=0.1,
         eps=1e-16,
-    ):
+    ) -> np.ndarray:
         """
-        Compute box candidates based on a set of thresholds. This method compares the characteristics of the boxes
-        before and after augmentation to decide whether a box is a candidate for further processing.
-
-        Args:
-            wh_thr (float, optional): The width and height threshold in pixels. Default is 2.
-            ar_thr (float, optional): The aspect ratio threshold. Default is 100.
-            area_thr (float, optional): The area ratio threshold. Default is 0.1.
-            eps (float, optional): A small epsilon value to prevent division by zero. Default is 1e-16.
-
-        Returns:
-            (numpy.ndarray): A boolean array indicating which boxes are candidates based on the given thresholds.
+        wh_thr : The width and height threshold in pixels
+        ar_thr: The aspect ratio threshold
+        area_thr : The area ratio threshold
         """
 
         w1, h1 = old_boxes[:, 2] - old_boxes[:, 0], old_boxes[:, 3] - old_boxes[:, 1]
@@ -236,38 +249,44 @@ class RandomAffine:
         candidate_mask = size_mask & area_mask & ratio_mask
         return candidate_mask
 
-    def __call__(self, sample: CocoSample) -> CocoSample:
-        image = sample.image
+    def __call__(self, sample: "CocoSample") -> "CocoSample":
+        image: np.ndarray = sample.image
+        crowd_mask = sample.crowd_mask
+        boxes: np.ndarray = sample.boxes.data
+        segments = sample.segments.data
+        kpts = sample.kpts.data
+
         height, width = image.shape[:2]
         self.height, self.width = height, width
         self.size = (width, height)
-        boxes_xyxy = sample.boxes_xyxy
-        segments = sample.segments
-        kpts = sample.kpts
 
-        initial_boxes_xyxy = boxes_xyxy.copy()
+        initial_boxes = boxes.copy()
 
-        image, M, scale = self.affine_transform(image)
-        boxes_xyxy = self.apply_boxes(boxes_xyxy, M)
+        M, scale = self.get_transform_matrix_and_scale()
+        image = self.affine_transform(image, M)
+        if crowd_mask is not None:
+            crowd_mask = self.affine_transform(crowd_mask, M, border_value=(0, 0, 0))
+        boxes = self.apply_boxes(boxes, M)
 
         # Update boxes segmentation is available
         if segments is not None:
-            boxes_xyxy, segments = self.apply_segments(segments, M)
-            sample.segments = segments
+            boxes, segments = self.apply_segments(segments, M)
+            sample.segments.data = segments
 
         if kpts is not None:
             kpts = self.apply_keypoints(kpts, M)
-            sample.kpts = kpts
+            sample.kpts.data = kpts
 
-        sample.boxes_xyxy = boxes_xyxy
+        sample.boxes.data = boxes
         sample.image = image
+        sample.crowd_mask = crowd_mask
 
-        initial_boxes_xyxy[:, 0::2] *= scale
-        initial_boxes_xyxy[:, 1::2] *= scale
+        initial_boxes[:, 0::2] *= scale
+        initial_boxes[:, 1::2] *= scale
 
         candidate_mask = self.filter_box_candidates(
-            old_boxes=initial_boxes_xyxy,
-            new_boxes=boxes_xyxy,
+            old_boxes=initial_boxes,
+            new_boxes=boxes,
             area_thr=0.01 if segments is not None else 0.10,
         )
         sample.filter_by(candidate_mask)
@@ -275,7 +294,7 @@ class RandomAffine:
         return sample
 
 
-class LetterBox:
+class LetterBox(CocoTransform):
     """Resize image and padding for detection, instance segmentation, pose."""
 
     def __init__(
@@ -288,16 +307,17 @@ class LetterBox:
         stride=32,
     ):
         """Initialize LetterBox object with specific parameters."""
-        self.size = size if isinstance(size, tuple) else (size, size)
+        self.size = (size, size) if isinstance(size, int) else size
         self.auto = auto
         self.scaleFill = scaleFill
         self.scaleup = scaleup
         self.stride = stride
         self.center = center  # Put the image in the middle or top-left
 
-    def __call__(self, sample: CocoSample) -> CocoSample:
+    def __call__(self, sample: "CocoSample") -> "CocoSample":
         """Return updated labels and image with added border."""
-        image = sample.image
+        image: np.ndarray = sample.image
+        crowd_mask = sample.crowd_mask
         shape_old = image.shape[:2]
         shape_new = self.size
 
@@ -326,14 +346,59 @@ class LetterBox:
 
         if shape_old[::-1] != new_unpad:  # resize
             image = cv2.resize(image, new_unpad, interpolation=cv2.INTER_LINEAR)
+            if crowd_mask is not None:
+                crowd_mask = cv2.resize(crowd_mask, new_unpad, interpolation=cv2.INTER_LINEAR)
         top, bottom = int(round(pad_h - 0.1)) if self.center else 0, int(round(pad_h + 0.1))
         left, right = int(round(pad_w - 0.1)) if self.center else 0, int(round(pad_w + 0.1))
-        image = cv2.copyMakeBorder(
-            image, top, bottom, left, right, cv2.BORDER_CONSTANT, value=BORDER_VALUE
-        )  # add border
-        sample.transform.set_pad((top, left, bottom, right))
-        sample.transform.set_scale((scale_w, scale_h))
+        pad = (top, bottom, left, right)
+        image = cv2.copyMakeBorder(image, *pad, BORDER_TYPE, value=BORDER_VALUE)
+        if crowd_mask is not None:
+            crowd_mask = cv2.copyMakeBorder(crowd_mask, *pad, BORDER_TYPE, value=(0, 0, 0))
         sample.scale_coords(scale_w, scale_h)
         sample.add_coords(pad_w, pad_h)
         sample.image = image
+        sample.crowd_mask = crowd_mask
+        return sample
+
+
+class RandomHSV(CocoTransform):
+    def __init__(self, h_ratio=0.5, s_ratio=0.5, v_ratio=0.5) -> None:
+        self.h_ratio = h_ratio
+        self.s_ratio = s_ratio
+        self.v_ratio = v_ratio
+        self.apply = h_ratio != 0 and s_ratio != 0 and v_ratio != 0
+
+    def __call__(self, sample: "CocoSample") -> "CocoSample":
+        """
+        Applies random HSV augmentation to an image within the predefined limits.
+
+        The modified image replaces the original image in the input 'labels' dict.
+        """
+        if not self.apply:
+            return sample
+        image: np.ndarray = sample.image
+
+        h_gain = np.random.uniform(-1, 1) * self.h_ratio + 1
+        s_gain = np.random.uniform(-1, 1) * self.s_ratio + 1
+        v_gain = np.random.uniform(-1, 1) * self.v_ratio + 1
+
+        hue, sat, val = cv2.split(cv2.cvtColor(image, cv2.COLOR_RGB2HSV))
+
+        x = np.arange(0, 256, dtype=np.float32)
+        dtype = np.uint8
+        lut_hue = ((x * h_gain) % 180).astype(dtype)
+        lut_sat = np.clip(x * s_gain, 0, 255).astype(dtype)
+        lut_val = np.clip(x * v_gain, 0, 255).astype(dtype)
+
+        image_hsv = cv2.merge((cv2.LUT(hue, lut_hue), cv2.LUT(sat, lut_sat), cv2.LUT(val, lut_val)))
+        sample.image = cv2.cvtColor(image_hsv, cv2.COLOR_HSV2RGB)
+        return sample
+
+
+class FormatForDetection:
+    def __call__(self, sample: "CocoSample") -> "CocoSample":
+        h, w = sample.image.shape[:2]
+        sample.remove_zero_area_boxes()
+        sample.scale_coords(scale_x=1 / w, scale_y=1 / h)
+        sample.convert_boxes("xywh")
         return sample

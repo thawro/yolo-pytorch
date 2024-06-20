@@ -123,8 +123,9 @@ class ImageTransform:
 
 
 class ComposeTransform:
-    def __init__(self, transforms: list[Callable]):
+    def __init__(self, transforms: list[Callable], pre_mosaic: Callable | None = None):
         self.transforms = transforms
+        self.pre_mosaic = pre_mosaic
 
     def __call__(self, *args) -> tuple:
         for transform in self.transforms:

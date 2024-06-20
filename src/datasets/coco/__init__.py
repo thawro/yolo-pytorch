@@ -1,5 +1,1 @@
-from src.datasets.coco.coco import (
-    CocoAnnotation,
-    CocoDataset,
-    CocoInstancesDataset,
-)
+from src.datasets.coco.dataset import CocoAnnotation, CocoDataset, CocoInstancesDataset, CocoSample

@@ -1,15 +1,16 @@
 from abc import abstractmethod
-from typing import Any
+from typing import Any, Iterator
 
 import numpy as np
 import torch
 from torch import Tensor, nn
 from torch.nn.parallel import DistributedDataParallel as DDP
+from torch.nn.parameter import Parameter
 from torchinfo import summary
 
 from src.base.results import BaseResult
 from src.logger.pylogger import log
-from src.utils.model import parse_checkpoint
+from src.utils.torch_utils import parse_checkpoint
 
 
 class BaseModel:
@@ -18,16 +19,32 @@ class BaseModel:
     def __init__(
         self,
         net: nn.Module,
-        input_names: list[str] = ["input"],
-        output_names: list[str] = ["output"],
+        stride: int,
+        input_names: list[str],
+        output_names: list[str],
     ):
         super().__init__()
         self.net = net
+        self.stride = stride
         self.input_names = input_names
         self.output_names = output_names
 
+    def __call__(self, x: Tensor) -> Tensor:
+        return self.forward(x)
+
     def forward(self, x: Tensor):
         return self.net(x)
+
+    def train(self) -> "BaseModel":
+        self.net.train()
+        return self
+
+    def eval(self) -> "BaseModel":
+        self.net.eval()
+        return self
+
+    def parameters(self) -> Iterator[Parameter]:
+        return self.net.parameters()
 
     def to_CUDA(self, device_id: int):
         log.info(f"..Moving model to CUDA device (cuda:{device_id})..")

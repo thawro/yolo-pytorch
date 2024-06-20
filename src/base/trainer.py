@@ -1,3 +1,4 @@
+import gc
 import random
 
 import torch
@@ -8,8 +9,8 @@ from tqdm.auto import tqdm
 
 from src.logger.loggers import Loggers, Status
 from src.logger.pylogger import log, log_breaking_point, logged_tqdm
+from src.utils.training import get_device_and_id
 from src.utils.types import _accelerator, _stage
-from src.utils.utils import get_device_and_id
 
 from .callbacks import BaseCallback, Callbacks
 from .datamodule import DataModule
@@ -44,6 +45,7 @@ class Trainer:
         sync_batchnorm: bool = True,
         use_compile: bool = False,
         run_sanity_check: bool = False,
+        half_precision: bool = False,
     ):
         stages = ["train", "val", "eval_val"]
         self.use_DDP = use_DDP
@@ -62,6 +64,7 @@ class Trainer:
         self.epochs_metrics = MetricsStorage(name="Epochs")  # every step metrics
         self.validation_metrics = MetricsStorage(name="LogStep")  # validation metrics
         self.system_monitoring = SystemMonitoringStorage()
+        self.half_precision = half_precision
         self.results = []
 
     @property
@@ -122,7 +125,7 @@ class Trainer:
             val_metrics, val_results = trainer.module._validation_step(
                 batch, batch_idx, stage=stage
             )
-            meters.update(val_metrics, batch[0].shape[0])
+            meters.update(val_metrics, self.datamodule.batch_size)
 
             if batch_idx == random_idx and not sanity:
                 self.results.extend(val_results)
@@ -173,7 +176,7 @@ class Trainer:
             if is_break:
                 return {}, is_break
             train_metrics = trainer.module._training_step(batch, batch_idx)
-            meters.update(train_metrics, batch[0].shape[0])
+            meters.update(train_metrics, self.datamodule.batch_size)
             trainer.callbacks.on_step_end(self)
             trainer.current_step += 1
             trainer.module.set_attributes(current_step=trainer.current_step)
@@ -206,15 +209,6 @@ class Trainer:
         pretrained_ckpt_path: str | None = None,
         ckpt_path: str | None = None,
     ):
-        train_dataloader = datamodule.train_dataloader
-        val_dataloader = datamodule.val_dataloader
-
-        log.info(
-            "Dataloaders utilisation (per GPU):\n"
-            f"  Train: {self.get_limit_batches(train_dataloader)}/{len(train_dataloader)} batches\n"
-            f"  Val  : {self.get_limit_batches(val_dataloader)}/{len(val_dataloader)}  batches"
-        )
-
         module.pass_attributes(
             device_id=self.device_id,
             device=self.device,
@@ -222,6 +216,7 @@ class Trainer:
             callbacks=self.callbacks,
             datamodule=datamodule,
             limit_batches=int(self._limit_batches),
+            half_precision=self.half_precision,
         )
         # Correct order (?):
         # Compile -> CUDA -> weights init -> pretrained weights load -> previous run ckpt load -> DDP
@@ -242,6 +237,18 @@ class Trainer:
             if "module" in pretrained_ckpt:
                 pretrained_ckpt = pretrained_ckpt["module"]["model"]
             module.model.init_pretrained_weights(pretrained_ckpt)
+
+        if datamodule.batch_size < 1:
+            log.exception("Batch size must be greater than 0")
+        datamodule.setup_dataloaders()
+        train_dataloader = datamodule.train_dataloader
+        val_dataloader = datamodule.val_dataloader
+
+        log.info(
+            "Dataloaders utilisation (per GPU):\n"
+            f"  Train: {self.get_limit_batches(train_dataloader)}/{len(train_dataloader)} batches\n"
+            f"  Val  : {self.get_limit_batches(val_dataloader)}/{len(val_dataloader)}  batches"
+        )
 
         self.module = module
         self.datamodule = datamodule
@@ -290,6 +297,8 @@ class Trainer:
                 self.callbacks.on_epoch_end(self)
                 self._wait_for_all_workers()
                 self.results.clear()
+                gc.collect()
+                torch.cuda.empty_cache()
                 log_breaking_point(
                     f"<<<  Epoch {epoch} finished  >>>", n_bottom=1, worker=0, bottom_char="="
                 )
@@ -299,6 +308,12 @@ class Trainer:
             self.logger.finalize(Status.KILLED)
             raise e
         self.logger.finalize(status=Status.FINISHED)
+
+    def stop(self, status: Status = Status.STOPPED):
+        ckpt_dir = self.logger.loggers[0].ckpt_dir
+        ckpt_path = str(ckpt_dir / "last.pt")
+        self.save_checkpoint(ckpt_path)
+        self.logger.finalize(status)
 
     def load_checkpoint(self, ckpt_path: str):
         log.info(f"..Loading checkpoint from '{ckpt_path}'..")

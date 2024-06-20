@@ -39,10 +39,24 @@ lr_schedulers: dict[str, Type[optim.lr_scheduler.LRScheduler]] = {
 
 def create_optimizer(net: nn.Module, name: _optimizers, **params) -> optim.Optimizer:
     OptimizerClass = optimizers[name]
-    return OptimizerClass(
-        filter(lambda p: p.requires_grad, net.parameters()),
-        **params,
-    )
+    g_bias = []
+    g_norm = []
+    g_rest = []
+    norm_layers = tuple(v for k, v in nn.__dict__.items() if "Norm" in k)
+    for module_name, module in net.named_modules():
+        for param_name, param in module.named_parameters(recurse=False):
+            fullname = f"{module_name}.{param_name}" if module_name else param_name
+            if "bias" in fullname:  # bias (no decay)
+                g_bias.append(param)
+            elif isinstance(module, norm_layers):  # weight (no decay)
+                g_norm.append(param)
+            else:  # weight (with decay)
+                g_rest.append(param)
+    weight_decay = params.pop("weight_decay", 0)
+    optimizer = OptimizerClass(g_bias, **params)
+    optimizer.add_param_group({"params": g_rest, "weight_decay": weight_decay})  # group with decay
+    optimizer.add_param_group({"params": g_norm, "weight_decay": 0.0})  # group with Norm weights
+    return optimizer
 
 
 def create_lr_scheduler(

@@ -7,7 +7,7 @@ from typing import Callable
 from colorlog.escape_codes import escape_codes
 from tqdm.asyncio import tqdm_asyncio
 
-from src.utils.utils import get_rank
+from src.utils.training import get_rank
 
 fmt = "%(asctime)s %(levelname)s %(message)s"
 datefmt = "%Y-%m-%d %H:%M:%S"
@@ -106,6 +106,10 @@ class CustomFormatter(logging.Formatter):
         record.levelname = self.LEVEL_NAMES[record.levelno]
         if isinstance(record.msg, str) and self.device_info not in record.msg:
             record.msg = self.device_info + record.msg
+        if self.is_file:
+            for code in escape_codes.values():
+                if code in record.msg:
+                    record.msg = record.msg.replace(code, "")
         formatter = logging.Formatter(log_fmt, self.datefmt)
         return formatter.format(record)
 
@@ -124,6 +128,7 @@ def get_cmd_pylogger(name: str = __name__) -> logging.Logger:
     stream_handler.setFormatter(formatter)
     logger.addHandler(stream_handler)
     logger.setLevel(logging.DEBUG)
+    logger.propagate = False
     return logger
 
 
@@ -135,6 +140,7 @@ def get_file_pylogger(filepath: str, name: str = __name__) -> logging.Logger:
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
     logger.setLevel(logging.DEBUG)
+    logger.propagate = False
     return logger
 
 

@@ -15,7 +15,7 @@ from src.logger.pylogger import get_file_pylogger, log
 from src.utils import NOW, RESULTS_PATH
 from src.utils.config import LOG_DEVICE_ID
 from src.utils.files import load_yaml
-from src.utils.utils import get_device_and_id, is_main_process
+from src.utils.training import get_device_and_id, is_main_process
 
 from .callbacks import (
     ArtifactsLoggerCallback,
@@ -70,7 +70,7 @@ class AbstractConfig:
 
 @dataclass
 class TransformConfig(AbstractConfig):
-    out_size: int | tuple[int, int] | list[int]
+    size: int | tuple[int, int] | list[int]
     mean: list[float]
     std: list[float]
 
@@ -93,6 +93,7 @@ class DataloaderConfig(AbstractConfig):
 @dataclass
 class NetConfig(AbstractConfig):
     params: dict
+    stride: int
 
 
 @dataclass
@@ -103,6 +104,7 @@ class TrainerConfig(AbstractConfig):
     use_DDP: bool
     sync_batchnorm: bool
     use_compile: bool
+    half_precision: bool = False
 
 
 @dataclass
@@ -121,8 +123,7 @@ class SetupConfig(AbstractConfig):
         if self.ckpt_path is None:
             # new run
             return f"{self.timestamp}__{self.dataset}_{self.architecture}"
-        # resumed run
-        # ckpt_path is like:
+        # resumed run ckpt_path is like:
         # "<proj_root>/results/<exp_name>/<run_name>/<timestamp>/checkpoints/<ckpt_name>.pt"
         # so run_name is -4 idx after split
         run_name = self.ckpt_path.split("/")[-4]
@@ -156,6 +157,7 @@ class LRSchedulerConfig(AbstractConfig):
 
 @dataclass
 class ModuleConfig(AbstractConfig):
+    multiscale: bool
     optimizers: dict[str, OptimizerConfig]
     lr_schedulers: dict[str, LRSchedulerConfig]
 

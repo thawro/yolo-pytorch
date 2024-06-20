@@ -58,3 +58,13 @@ def get_num_params(model: nn.Module) -> int:
 def get_num_gradients(model: nn.Module) -> int:
     """Return the number of models parameters which require grad."""
     return sum(x.numel() for x in model.parameters() if x.requires_grad)
+
+
+def parse_checkpoint(ckpt: dict) -> dict:
+    redundant_prefixes = ["module.", "_orig_mod.", "net."]
+    for key in list(ckpt.keys()):
+        renamed_key = str(key)
+        for prefix in redundant_prefixes:
+            renamed_key = renamed_key.replace(prefix, "")
+        ckpt[renamed_key] = ckpt.pop(key)
+    return ckpt

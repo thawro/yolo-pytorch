@@ -9,9 +9,9 @@ import numpy as np
 from src.base.bin.inference import prepare_inference_config
 from src.base.datasets import DirectoryDataset, InferenceVideoDataset
 from src.base.datasets.video import VideoProcessingResult
-from src.keypoints.config import KeypointsConfig
-from src.keypoints.datasets.coco import CocoKeypointsDataset
-from src.keypoints.model import InferenceKeypointsModel
+from src.detection.config import DetectionConfig
+from src.detection.datasets.coco import CocoDetectionDataset
+from src.detection.model import InferenceDetectionModel
 from src.keypoints.visualization import plot_connections
 from src.logger.pylogger import log, log_breaking_point
 from src.utils.config import INFERENCE_OUT_PATH, YAML_EXP_PATH
@@ -46,7 +46,7 @@ def parse_args() -> argparse.Namespace:
     return args
 
 
-def video_processing_fn(model: InferenceKeypointsModel, image: np.ndarray) -> VideoProcessingResult:
+def video_processing_fn(model: InferenceDetectionModel, image: np.ndarray) -> VideoProcessingResult:
     speed_ms = {}
     with elapsed_timer() as latency_sec:
         latency_sec()
@@ -75,7 +75,7 @@ def video_processing_fn(model: InferenceKeypointsModel, image: np.ndarray) -> Vi
     return VideoProcessingResult(speed_ms, model_input_shape, out_frame=connections_plot, idx=None)
 
 
-def video_inference(model: InferenceKeypointsModel, filepath: str):
+def video_inference(model: InferenceDetectionModel, filepath: str):
     filename, ext = filepath.split("/")[-1].split(".")
     out_filepath_dir = KPTS_INFERENCE_OUT_PATH / "video"
     out_filepath_dir.mkdir(exist_ok=True, parents=True)
@@ -91,7 +91,7 @@ def main() -> None:
     log_breaking_point("Starting inference", n_top=1, n_bottom=1, top_char="*", bottom_char="*")
 
     cfg_path = str(YAML_EXP_PATH / "keypoints" / "higher_hrnet_32.yaml")
-    cfg: KeypointsConfig = prepare_inference_config(cfg_path, KeypointsConfig)
+    cfg: DetectionConfig = prepare_inference_config(cfg_path, DetectionConfig)
     model = cfg.create_inference_model(device="cuda:0")
 
     args = parse_args()
@@ -109,7 +109,7 @@ def main() -> None:
     else:
         log.info("Performing COCO val Inference")
         ds_cfg = cfg.dataloader.val_ds
-        ds = CocoKeypointsDataset(root=ds_cfg.root, split=ds_cfg.split)
+        ds = CocoDetectionDataset(root=ds_cfg.root, split=ds_cfg.split)
         out_dirpath = str(KPTS_INFERENCE_OUT_PATH / "val")
         ds.perform_inference(model=model, idx=0, load_annot=False, out_dirpath=out_dirpath)
 

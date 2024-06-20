@@ -1,85 +1,69 @@
 import numpy as np
+import torch
 from torch import Tensor
 
-from src.datasets.coco import CocoInstancesDataset
-from src.datasets.coco.sample import CocoSample
-from src.detection.transforms import ComposeCocoTransform, DetectionTransform
-from src.detection.visualization import plot_boxes
+from src.annots.ops import xywh2xyxy
+from src.annots.visuzalization import plot_boxes
+from src.datasets.coco import CocoInstancesDataset, CocoSample
+from src.detection.datasets.transforms import ComposeCocoTransform, DetectionTransform
 from src.utils.image import stack_horizontally
 
 
 class CocoDetectionDataset(CocoInstancesDataset):
     transform: ComposeCocoTransform
 
-    def plot(self, idx: int) -> np.ndarray:
-        img, boxes_xyxy, boxes_labels_ids = self[idx]
-        img_npy = self.inverse_preprocessing(img)
-        boxes_labels = [self.objs_labels[label_id] for label_id in boxes_labels_ids]
-        img_npy = plot_boxes(img_npy, boxes_xyxy, boxes_labels, boxes_labels_ids, boxes_conf=None)
-        raw_sample = self.get_raw_sample(idx)
-        raw_image = raw_sample.plot(max_size=img_npy.shape[0], segmentation=True, keypoints=False)
-        sample_vis = stack_horizontally([raw_image, img_npy])
-        return sample_vis
+    @staticmethod
+    def collate_fn(batch: list[CocoSample]) -> dict[str, Tensor]:
+        """Collates data samples into batches."""
+        images = np.stack([sample.image for sample in batch])
+        samples_num_objs = [len(sample.classes) for sample in batch]
+        batch_idxs = [torch.zeros(num_obj) + i for i, num_obj in enumerate(samples_num_objs)]
+        boxes_xywh = np.concatenate([sample.boxes.data for sample in batch])
+        classes = np.concatenate([sample.classes for sample in batch])
+        # segments = np.concatenate([sample.segments for sample in batch])
+        new_batch = {
+            "batch_idxs": torch.cat(batch_idxs),
+            "images": torch.from_numpy(images),
+            "boxes_xywh": torch.from_numpy(boxes_xywh),
+            "classes": torch.from_numpy(classes),
+            # "segments": torch.from_numpy(segments),
+        }
+        return new_batch
 
-    def __getitem__(self, idx: int) -> tuple[np.ndarray | Tensor, np.ndarray, np.ndarray]:
-        sample = self.get_raw_or_mosaic_sample(idx)
-        sample.filter_by(sample.is_crowd_obj)
-        if self.transform is not None:
-            sample = self.transform(sample)
-        return sample.image, sample.boxes_xyxy, sample.boxes_cls
-
-
-class TestCocoDetectionDataset(CocoInstancesDataset):
-    transform: ComposeCocoTransform
-
-    def plot(self, idx: int) -> np.ndarray:
+    def plot(self, idx: int, **kwargs) -> np.ndarray:
         sample = self[idx]
-        sample.inverse_preprocessing()
-        transformed_sample_plot = sample.plot(max_size=None, boxes=True, title="Trans sample")
-        max_size = sample.image.shape[0]
-
-        sample.inverse_transform()
-
+        image, boxes_xywh, classes = sample.image, sample.boxes.data, sample.classes
+        image_npy = self.inverse_preprocessing(image)
+        h, w = image_npy.shape[:2]
+        boxes_xywh[:, 0::2] *= w  # unnormalize
+        boxes_xywh[:, 1::2] *= h  # unnormalize
+        boxes_xyxy = xywh2xyxy(boxes_xywh)
+        boxes_labels = [self.objs_labels[label_id] for label_id in classes]
+        image_npy = plot_boxes(image_npy, boxes_xyxy, boxes_labels, classes)
         raw_sample = self.get_raw_sample(idx)
-        raw_sample_plot = raw_sample.plot(
-            max_size=max_size, segmentation=True, boxes=True, title="Raw sample"
-        )
-
-        inv_transformed_sample_plot = sample.plot(
-            max_size=max_size, boxes=True, title="Inv Trans sample"
-        )
-
-        sample_vis = stack_horizontally(
-            [raw_sample_plot, transformed_sample_plot, inv_transformed_sample_plot]
-        )
+        raw_image = raw_sample.plot(max_size=image_npy.shape[0], segmentation=True, keypoints=False)
+        sample_vis = stack_horizontally([raw_image, image_npy])
         return sample_vis
-
-    def __getitem__(self, idx: int) -> CocoSample:
-        sample = self.get_raw_or_mosaic_sample(idx)
-        if self.transform is not None:
-            sample = self.transform(sample)
-        return sample
 
 
 if __name__ == "__main__":
     from PIL import Image
 
-    from src.detection.transforms import DetectionTransform
+    from src.detection.datasets.transforms import DetectionTransform
 
     size = 640
     transform = DetectionTransform(size)
-    # ds = CocoKeypointsDataset("data/COCO/raw", "val2017", transform.inference, out_size, hm_resolutions)
-    ds = TestCocoDetectionDataset(
+    # ds = CocoKeypointsDataset("data/COCO", "val2017", transform.inference, out_size, hm_resolutions)
+    ds = CocoDetectionDataset(
         "data/COCO",
         "train2017",
         transform.train,
         size,
-        mosaic_probability=0.0,
+        mosaic_probability=1,
     )
+    ds.explore()
     grid = ds.plot_examples([0, 55, 2, 3, 4, 5, 6])
     Image.fromarray(grid).save("test.jpg")
-    # ds.explore(0)
 
 
 # TODO: add merge samples (mosaic, cutoff, copypaste, mixup)
-# TODO: add HSV aug

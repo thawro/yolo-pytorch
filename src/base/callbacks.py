@@ -21,6 +21,7 @@ from src.logger.monitoring.system import SystemMetricsMonitor
 from src.logger.pylogger import log
 from src.utils.config import LOG_DEVICE_ID
 from src.utils.files import save_txt_to_file, save_yaml
+from src.utils.utils import colorstr
 
 from .results import BaseResult, plot_results
 from .visualization import plot_metrics_matplotlib, plot_metrics_plotly, plot_system_monitoring
@@ -38,6 +39,10 @@ def get_metrics_storage(trainer: Trainer, mode: _log_mode) -> MetricsStorage:
 
 
 class BaseCallback:
+    @property
+    def name_prefix(self) -> str:
+        return colorstr(self.__class__.__name__) + ": "
+
     @abstractmethod
     def on_fit_start(self, trainer: Trainer):
         pass
@@ -144,7 +149,9 @@ class ArtifactsLoggerCallback(BaseCallback):
         metrics_filepaths = glob.glob(f"{log_dir}/epoch_metrics.*")
         for filepath in metrics_filepaths:
             trainer.logger.log_artifact(filepath, "epoch_metrics")
-        log.info("Artifacts logged to remote ('eval_examples' and 'epoch_metrics').")
+        log.info(
+            f"{self.name_prefix}Artifacts logged to remote ('eval_examples' and 'epoch_metrics')."
+        )
 
     def on_failure(self, trainer: Trainer, status: Status):
         log.warn("Finalizing loggers.")
@@ -174,13 +181,13 @@ class SaveModelCheckpoint(BaseCallback):
 
         self.best = torch.inf if mode == "min" else -torch.inf
         if mode == "min":
-            self.compare = lambda x, y: x < y
+            self.is_better = lambda x, y: x < y
         else:
-            self.compare = lambda x, y: x > y
+            self.is_better = lambda x, y: x > y
 
     def save_model(self, trainer: Trainer):
         ckpt_dir = trainer.logger.loggers[0].ckpt_dir
-
+        msg = f"{self.name_prefix}"
         if self.metric is not None and self.stage is not None:
             meters = trainer.meters[self.stage]
             if len(meters) == 0:
@@ -188,17 +195,16 @@ class SaveModelCheckpoint(BaseCallback):
                 log.exception(e)
                 raise e
             last = meters[self.metric].avg
-            log.info(
-                f"Current {self.stage}/{self.metric}={last:.3e},   Best {self.stage}/{self.metric}={self.best:.3e}"
-            )
-            if self.compare(last, self.best):
+            msg += f"Current {self.stage}/{self.metric}={last:.3e},   Best {self.stage}/{self.metric}={self.best:.3e}"
+
+            if self.is_better(last, self.best):
                 self.best = last
-                log.info(f"Found new best value for {self.stage}/{self.metric} ({self.best:.3e})")
+                msg += f"\nFound new best value for {self.stage}/{self.metric} ({self.best:.3e})"
                 trainer.save_checkpoint(str(ckpt_dir / f"{self.name}.pt"))
         if self.save_last:
             filename = "last"
-            # f"epoch_{trainer.current_epoch}_step_{trainer.current_step}"
             trainer.save_checkpoint(str(ckpt_dir / f"{filename}.pt"))
+        log.info(msg)
 
     def on_epoch_end(self, trainer: Trainer):
         self.save_model(trainer)
@@ -220,11 +226,12 @@ class SaveModelCheckpoint(BaseCallback):
 class ResultsPlotterCallback(BaseCallback):
     """Plot prediction examples"""
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, ncols: int = -1):
         self.name = name
+        self.ncols = ncols
 
     def plot_example_results(self, trainer: Trainer, results: list[BaseResult], filepath: str):
-        plot_results(results, plot_name=self.name, filepath=filepath)
+        plot_results(results, plot_name=self.name, filepath=filepath, ncols=self.ncols)
 
     def plot(self, trainer: Trainer, prefix: str) -> None:
         dirpath = trainer.logger.loggers[0].eval_examples_dir
@@ -234,7 +241,9 @@ class ResultsPlotterCallback(BaseCallback):
         filepath = str(dirpath / f"{prefix}{self.name}.jpg")
         if len(trainer.results) > 0:
             self.plot_example_results(trainer, trainer.results, filepath)
-            log.info(f"{self.name.capitalize()} results visualization saved at '{filepath}'")
+            log.info(
+                f"{self.name_prefix}{self.name.capitalize()} results visualization saved at '{filepath}'"
+            )
         else:
             log.warn("No results to visualize")
 
@@ -259,7 +268,7 @@ class MetricsPlotterCallback(BaseCallback):
 
             plotly_filepath = f"{log_path}/{mode}_metrics.html"
             plot_metrics_plotly(storage, step_name, filepath=plotly_filepath)
-            log.info(f"Metrics plots saved at '{plotly_filepath}'")
+            log.info(f"{self.name_prefix}Metrics plots saved at '{mpl_filepath}'")
         else:
             log.warn(f"No metrics to plot logged yet (mode={mode})")
 
@@ -344,7 +353,7 @@ class ModelSummary(BaseCallback):
 
         model = trainer.module.model
         model_summary = model.summary(self.depth)
-        log.info(f"Model layers summary\n{model_summary}")
+        log.info(f"{self.name_prefix}Model layers summary\n{model_summary}")
         model_dir = trainer.logger.loggers[0].model_dir
         Path(model_dir).mkdir(exist_ok=True, parents=True)
         filepath = f"{model_dir}/model_summary.txt"
@@ -363,7 +372,7 @@ class DatasetExamplesCallback(BaseCallback):
         self.random_idxs = random_idxs
 
     def on_fit_start(self, trainer: Trainer):
-        log.info("..Saving datasets samples examples..")
+        log.info(f"{self.name_prefix}Saving datasets samples examples")
         dirpath = trainer.logger.loggers[0].data_examples_dir
         for split in self.splits:
             dataset = trainer.datamodule.datasets[split]
@@ -377,3 +386,59 @@ class DatasetExamplesCallback(BaseCallback):
             grid = dataset.plot_examples(idxs, nrows=1)
             Image.fromarray(grid).save(filepath)
             log.info(f"      ..{split} dataset examples saved at '{filepath}'..")
+
+
+class EarlyStoppingCallback(BaseCallback):
+    def __init__(
+        self,
+        metric: str,
+        stage: str,
+        mode: str = "min",
+        patience: int = 30,
+    ):
+        self.metric = metric
+        self.stage = stage
+        self.mode = mode
+        self.patience = patience
+        self.best_epoch = 0
+        self.best = torch.inf if mode == "min" else -torch.inf
+        if mode == "min":
+            self.is_better = lambda x, y: x < y
+        else:
+            self.is_better = lambda x, y: x > y
+
+    def check(self, trainer: Trainer):
+        meters = trainer.meters[self.stage]
+        if len(meters) == 0:
+            e = ValueError(f"{self.metric} not yet logged to meters")
+            log.exception(e)
+            raise e
+        last = meters[self.metric].avg
+
+        if self.is_better(last, self.best):
+            self.best = last
+            self.best_epoch = trainer.current_epoch
+
+        epoch_diff = trainer.current_epoch - self.best_epoch
+        should_stop = epoch_diff >= self.patience
+        if should_stop:
+            log.info(
+                f"{self.name_prefix}Stopping training early. No improvement for > {self.patience} epochs."
+            )
+            trainer.stop(Status.STOPPED)
+
+    def on_epoch_end(self, trainer: Trainer):
+        self.check(trainer)
+
+    @property
+    def state_metric_name(self) -> str:
+        return f"best_{self.stage}_{self.metric}"
+
+    def state_dict(self) -> dict:
+        return {self.state_metric_name: self.best}
+
+    def load_state_dict(self, state_dict: dict):
+        self.best = state_dict.get(self.state_metric_name, self.best)
+        log.info(
+            f'     Loaded "{self.__class__.__name__}" state ({self.state_metric_name} = {self.best})'
+        )

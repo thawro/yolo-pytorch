@@ -20,7 +20,6 @@ x = torch.randn(1, 3, 640, 640)
 
 model = YOLOv10s(num_classes=80)
 model.fuse()
-
 f = "model.onnx"
 torch.onnx.export(model, args=x, f=f)
 model_onnx = onnx.load(f)
@@ -60,4 +59,4 @@ preds = model(x)
 
 
 for i in range(3):
-    print(preds[i].shape)
+    print(preds[0][i].shape)

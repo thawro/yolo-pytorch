@@ -1,6 +1,10 @@
+import math
+import random
 from abc import abstractmethod
 
-from torch import Tensor, optim
+import torch
+import torch.nn.functional as F
+from torch import Tensor, nn, optim
 from torch.cuda.amp.grad_scaler import GradScaler
 from torch.nn.modules.loss import _Loss
 
@@ -27,9 +31,12 @@ class BaseModule:
     current_epoch: int
     current_step: int
     limit_batches: int
+    multiscale: bool
     optimizers: dict[str, optim.Optimizer]
     schedulers: dict[str, LRScheduler]
     scalers: dict[str, GradScaler]
+    half_precision: bool
+    dtype: torch.dtype = torch.float32
 
     def __init__(
         self,
@@ -37,12 +44,14 @@ class BaseModule:
         loss_fn: _Loss,
         optimizers: dict[str, dict],
         lr_schedulers: dict[str, dict],
+        multiscale: bool = False,
     ):
         super().__init__()
         self.model = model
         self.loss_fn = loss_fn
         self._optimizers = optimizers
         self._lr_schedulers = lr_schedulers
+        self.multiscale = multiscale
 
         self.current_epoch = 0
         self.current_step = 0
@@ -81,6 +90,7 @@ class BaseModule:
         callbacks: "Callbacks",
         datamodule: DataModule,
         limit_batches: int,
+        half_precision: bool,
     ):
         self.device_id = device_id
         self.device = device
@@ -89,8 +99,28 @@ class BaseModule:
         self.datamodule = datamodule
         self.limit_batches = limit_batches
         self.total_batches = datamodule.total_batches
+        self.half_precision = half_precision
+        if half_precision:
+            self.dtype = torch.float16
+        else:
+            self.dtype = torch.float32
         if limit_batches > 0:
             self.total_batches = {k: limit_batches for k in self.total_batches}
+
+    def random_images_rescale(
+        self, images: Tensor, min_scale: float = 0.5, max_scale: float = 1.5
+    ) -> Tensor:
+        h, w = images.shape[2:]
+        size = max(h, w)
+        stride = self.model.stride
+        min_size, max_size = int(size * min_scale), int(size * max_scale + stride)
+        new_size = random.randrange(min_size, max_size) // stride * stride
+        scale = new_size / max(h, w)
+        if scale != 1:
+            new_h = math.ceil(h * scale / stride) * stride
+            new_w = math.ceil(w * scale / stride) * stride
+            return F.interpolate(images, size=[new_h, new_w], mode="bilinear", align_corners=False)
+        return images
 
     def set_attributes(self, **attributes):
         for name, attr in attributes.items():

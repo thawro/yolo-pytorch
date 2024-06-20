@@ -1,7 +1,7 @@
 setup:
   seed: 42
   experiment_name: detection
-  architecture: YOLOv10s
+  architecture: YOLOv8
   dataset: COCO
   run_name: null
   is_train: True
@@ -16,45 +16,59 @@ trainer:
   use_DDP: true
   sync_batchnorm: false
   use_compile: false
+  half_precision: true
 
 cudnn:
-  benchmark: True
+  benchmark: False
   deterministic: False
   enabled: True
 
 dataloader:
-  batch_size: 80
+  batch_size: 80 # 80 if float16 else 40
   pin_memory: true
   num_workers: 4
   train_ds:
     root: data/COCO
     split: train2017
+    mosaic_probability: 0
   val_ds:
     root: data/COCO
     split: val2017
+    mosaic_probability: 0
 
 transform:
+  scale_min: 0.5
+  scale_max: 1.5
+  degrees: 0
+  translate: 0.1
+  flip_lr: 0.5
+  flip_ud: 0
   mean: [0.485, 0.456, 0.406]
   std: [0.229, 0.224, 0.225]
-  out_size: [224, 224]
+  size: [640, 640]
 
-modmodule:
+module:
+  multiscale: False
   optimizers:
     optim:
-      name: Adam
+      name: SGD
       params:
-        lr: 0.001 # 0.0015 * ((2*36)/(4*12)) scale LR from paper by my batch_size (36) and GPU (2)
+        lr: 0.01
+        momentum: 0.9
+        weight_decay: 0.0005
   lr_schedulers:
     optim:
-      name: MultiStepLR
+      name: CosineAnnealingLR
       interval: epoch
       params:
-        milestones: [200, 260]
-        gamma: 0.1
+        T_max: 300
+        eta_min: 0
 
 net:
   params:
+    version: "S"
     num_classes: 80
+  stride: 32
 
 inference:
   use_flip: False

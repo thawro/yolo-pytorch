@@ -7,8 +7,7 @@ from torch.distributed import destroy_process_group, init_process_group
 
 from src.logger.loggers import Status
 from src.logger.pylogger import log
-from src.utils.model import seed_everything
-from src.utils.utils import get_rank
+from src.utils.training import get_rank, seed_everything
 
 from ..config import BaseConfig
 

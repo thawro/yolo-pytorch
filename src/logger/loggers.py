@@ -14,7 +14,7 @@ import mlflow
 import mlflow.client
 import mlflow.entities
 from src.utils.config import LOG_DEVICE_ID, NOW
-from src.utils.utils import is_main_process
+from src.utils.training import is_main_process
 
 from .pylogger import log
 
@@ -29,6 +29,7 @@ class Status(Enum):
     FINISHED = "FINISHED"
     FAILED = "FAILED"
     KILLED = "KILLED"
+    STOPPED = "STOPPED"
 
 
 class LoggerResults:

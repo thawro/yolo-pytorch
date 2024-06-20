@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{ include = "src" }]
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.13"
+python = ">=3.10,<3.13"
 torch = { version = "2.2.1+cu121", source = "torchcu121" }
 torchinfo = "^1.7.2"
 torchvision = { version = "0.17.1", source = "torchcu121" }
@@ -32,6 +32,7 @@ setuptools = "^69.2.0"
 onnx = "^1.16.1"
 onnxsim = "^0.4.36"
 thop = "^0.1.1.post2209072238"
+ipython = "^8.25.0"
 
 [tool.poetry.group.dev.dependencies]
 pylint = "^2.17.4"

@@ -83,7 +83,7 @@ def main() -> None:
     eval_config_filepath = f"{eval_results_dir}/config.yaml"
     coco_str_eval_filepath = f"{eval_results_dir}/coco_output.txt"
 
-    cfg: KeypointsConfig = prepare_eval_config(cfg_path, ckpt_path, KeypointsConfig)
+    cfg: DetectionConfig = prepare_eval_config(cfg_path, ckpt_path, DetectionConfig)
     model = cfg.create_inference_model(device="cuda:0")
 
     if "val" in eval_split:
@@ -93,7 +93,7 @@ def main() -> None:
     else:
         raise ValueError("Only val2017 and train2017 splits are available for evaluation")
 
-    ds = CocoKeypointsDataset(root=ds_cfg.root, split=ds_cfg.split)
+    ds = CocoDetectionDataset(root=ds_cfg.root, split=ds_cfg.split)
 
     results = evaluate_dataset(model, ds)
 

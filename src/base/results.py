@@ -1,3 +1,4 @@
+import math
 from dataclasses import dataclass
 
 import numpy as np
@@ -16,7 +17,7 @@ class BaseResult:
 
 
 def plot_results(
-    results: list[BaseResult], plot_name: str, filepath: str | None = None
+    results: list[BaseResult], plot_name: str, filepath: str | None = None, ncols: int = -1
 ) -> np.ndarray:
     n_rows = min(20, len(results))
     grids = []
@@ -26,7 +27,12 @@ def plot_results(
         plots = result.plot()
         result_plot = plots[plot_name]
         grids.append(result_plot)
-    final_grid = make_grid(grids, nrows=len(grids), pad=20)
+    n_grids = len(grids)
+    if ncols < 1:
+        nrows = n_grids
+    else:
+        nrows = math.ceil(n_grids / ncols)
+    final_grid = make_grid(grids, nrows=nrows, pad=20)
     if filepath is not None:
         im = Image.fromarray(final_grid)
         im.save(filepath)
