@@ -13,7 +13,9 @@ from src.base.config import (
 )
 from src.base.trainer import Trainer
 from src.detection.datasets.coco import CocoDetectionDataset
-from src.logger.pylogger import log
+from src.logger.pylogger import log_msg
+from src.utils.torch_utils import torch_distributed_zero_first
+from src.utils.training import get_rank
 
 from .architectures import YOLOv8, YOLOv10
 from .datamodule import DetectionDataModule
@@ -35,14 +37,9 @@ class DetectionTransformConfig(TransformConfig):
 
 
 @dataclass
-class DetectionDatasetConfig(DatasetConfig):
-    mosaic_probability: float
-
-
-@dataclass
 class DetectionDataloaderConfig(DataloaderConfig):
-    train_ds: DetectionDatasetConfig
-    val_ds: DetectionDatasetConfig
+    train_ds: DatasetConfig
+    val_ds: DatasetConfig
 
 
 @dataclass
@@ -62,14 +59,15 @@ class DetectionConfig(BaseConfig):
         return self.trainer.limit_batches > 0
 
     def create_datamodule(self) -> DetectionDataModule:
-        log.info("..Creating DetectionDataModule..")
+        log_msg("-> Creating DetectionDataModule")
         transform = DetectionTransform(**self.transform.to_dict())
-        train_ds = CocoDetectionDataset(
-            **self.dataloader.train_ds.to_dict(), size=transform.size, transform=transform.train
-        )
-        val_ds = CocoDetectionDataset(
-            **self.dataloader.val_ds.to_dict(), size=transform.size, transform=transform.inference
-        )
+        with torch_distributed_zero_first(get_rank()):  # init dataset *.cache only once if DDP
+            train_ds = CocoDetectionDataset(
+                **self.dataloader.train_ds.to_dict(), size=transform.size
+            )
+            train_ds.set_transform(transform.train_transform(train_ds))
+            val_ds = CocoDetectionDataset(**self.dataloader.val_ds.to_dict(), size=transform.size)
+            val_ds.set_transform(transform.inference_transform())
         size = transform.size
         return DetectionDataModule(
             train_ds=train_ds,
@@ -100,7 +98,7 @@ class DetectionConfig(BaseConfig):
         return {"YOLOv10": v10DetectionModule, "YOLOv8": v8DetectionModule}
 
     def _create_model(self) -> v10DetectionModel | v8DetectionModel | nn.Module:
-        log.info("..Creating Model..")
+        log_msg("-> Creating Model")
         net = self.create_net()
         if self.setup.is_train:
             ModelClass = self.models[self.setup.architecture]
@@ -109,7 +107,7 @@ class DetectionConfig(BaseConfig):
             return net
 
     def create_module(self) -> BaseDetectionModule:
-        log.info("..Creating MPPEDetectionModule..")
+        log_msg("-> Creating DetectionModule")
         model = self._create_model()
         LossClass = self.losses[self.setup.architecture]
         loss_fn = LossClass(strides=[8, 16, 32])

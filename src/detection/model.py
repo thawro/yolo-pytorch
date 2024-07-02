@@ -9,7 +9,8 @@ from src.annots.ops import ltrb2xywh, xywh2xyxy, xyxy2xywh
 from src.base.model import BaseImageModel, BaseInferenceModel
 from src.detection.architectures.yolo_v10.model import HeadPreds, YOLOv8, YOLOv10
 from src.detection.tal import make_anchors
-from src.logger.pylogger import log
+from src.logger.pylogger import log_msg
+from src.utils.utils import colorstr
 
 
 def _get_covariance_matrix(boxes):
@@ -208,6 +209,19 @@ def v10postprocess(boxes_xywh: Tensor, scores: Tensor, max_det: int = 300, num_c
     return boxes_xywh, scores, labels
 
 
+def initialize_weights(model: nn.Module):
+    """Initialize model weights to random values."""
+    for m in model.modules():
+        t = type(m)
+        if t is nn.Conv2d:
+            pass  # nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+        elif t is nn.BatchNorm2d:
+            m.eps = 1e-3
+            m.momentum = 0.03
+        elif t in {nn.Hardswish, nn.LeakyReLU, nn.ReLU, nn.ReLU6, nn.SiLU}:
+            m.inplace = True
+
+
 class BaseDetectionModel(BaseImageModel):
     net: YOLOv10 | YOLOv8
 
@@ -236,8 +250,9 @@ class BaseDetectionModel(BaseImageModel):
         self.dfl = head.dfl
 
     def init_weights(self):
-        # TODO
-        pass
+        log_msg(colorstr("v8DetectionModel: ") + "initializing weights")
+        self.net.head.bias_init()
+        initialize_weights(self.net)
 
     def example_input(self) -> dict[str, Tensor]:
         return super().example_input(1, 3, 640, 640)
@@ -267,6 +282,7 @@ class v8DetectionModel(BaseDetectionModel):
 
         boxes, cls = x_cat.split((self.num_reg_preds * 4, self.num_classes), 1)
         boxes_xywh = ltrb2xywh(self.dfl(boxes), self.anchors.unsqueeze(0), dim=1) * self.strides
+        # boxes_preds are xyxy
         boxes_preds = non_max_suppression(
             torch.cat((boxes_xywh, cls.sigmoid()), 1),
             conf_thres=0.25,

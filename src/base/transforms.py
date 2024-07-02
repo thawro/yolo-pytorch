@@ -2,23 +2,6 @@ from typing import Callable
 
 import cv2
 import numpy as np
-from torch import Tensor
-
-from src.utils.utils import _norm, list2array
-
-MEAN = np.array([0.485, 0.456, 0.406])
-STD = np.array([0.229, 0.224, 0.225])
-
-
-def inverse_preprocessing(
-    image: Tensor | np.ndarray, mean: _norm = MEAN, std: _norm = STD
-) -> np.ndarray:
-    if isinstance(image, Tensor):
-        image_npy = image.detach().cpu().numpy()
-    image_npy = image_npy.transpose(1, 2, 0)
-    image_npy = (image_npy * list2array(std)) + list2array(mean)
-    image_npy = (image_npy * 255).astype(np.uint8)
-    return image_npy
 
 
 def affine_transform(point: tuple[int, int], transform_matrix: np.ndarray):
@@ -110,22 +93,9 @@ def resize_align_multi_scale(
     return image_resized, center, scale
 
 
-class ImageTransform:
-    def __init__(
-        self,
-        size: int | tuple[int, int],
-        mean: list[float] = [0.485, 0.456, 0.406],
-        std: list[float] = [0.229, 0.224, 0.225],
-    ):
-        self.size = size
-        self.mean = mean
-        self.std = std
-
-
 class ComposeTransform:
-    def __init__(self, transforms: list[Callable], pre_mosaic: Callable | None = None):
+    def __init__(self, transforms: list[Callable]):
         self.transforms = transforms
-        self.pre_mosaic = pre_mosaic
 
     def __call__(self, *args) -> tuple:
         for transform in self.transforms:

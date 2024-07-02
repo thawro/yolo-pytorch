@@ -8,9 +8,66 @@ import torch
 from torch.utils.data import DataLoader, Dataset
 from torch.utils.data.distributed import DistributedSampler
 
-from src.logger.pylogger import log
+from src.logger.pylogger import log_msg
 from src.utils.image import make_grid
 from src.utils.types import _split
+from src.utils.utils import colorstr
+
+
+class InfiniteDataLoader(DataLoader):
+    """
+    Dataloader that reuses workers.
+
+    Uses same syntax as vanilla DataLoader.
+    """
+
+    def __init__(self, *args, **kwargs):
+        """Dataloader that infinitely recycles workers, inherits from DataLoader."""
+        super().__init__(*args, **kwargs)
+        object.__setattr__(self, "batch_sampler", _RepeatSampler(self.batch_sampler))
+        self.iterator = super().__iter__()
+
+    def __len__(self):
+        """Returns the length of the batch sampler's sampler."""
+        return len(self.batch_sampler.sampler)
+
+    def __iter__(self):
+        """Creates a sampler that repeats indefinitely."""
+        for _ in range(len(self)):
+            yield next(self.iterator)
+
+    def reset(self):
+        """
+        Reset iterator.
+
+        This is useful when we want to modify settings of dataset while training.
+        """
+        self.iterator = self._get_iterator()
+
+
+class _RepeatSampler:
+    """
+    Sampler that repeats forever.
+
+    Args:
+        sampler (Dataset.sampler): The sampler to repeat.
+    """
+
+    def __init__(self, sampler):
+        """Initializes an object that repeats a given sampler indefinitely."""
+        self.sampler = sampler
+
+    def __iter__(self):
+        """Iterates over the 'sampler' and yields its contents."""
+        while True:
+            yield from iter(self.sampler)
+
+
+def seed_worker(worker_id):  # noqa
+    """Set dataloader worker seed https://pytorch.org/docs/stable/notes/randomness.html#dataloader."""
+    worker_seed = torch.initial_seed() % 2**32
+    np.random.seed(worker_seed)
+    random.seed(worker_seed)
 
 
 class DataModule:
@@ -39,36 +96,44 @@ class DataModule:
         self._shuffle = None
         self.use_DDP = use_DDP
         self.collate_fn = collate_fn
-
-        self.datasets = {"train": train_ds, "val": val_ds, "test": test_ds}
-        self._log_statistics()
+        self.train_ds = train_ds
+        self.val_ds = val_ds
+        self.test_ds = test_ds
+        self._log_info()
         self.total_batches = {}
 
     def setup_dataloaders(self):
         self.train_dataloader = self._dataloader("train")
         self.val_dataloader = self._dataloader("val")
-        if self.datasets["test"] is not None:
+        if self.test_ds is not None:
             self.test_dataloader = self._dataloader("test")
 
-    def _log_statistics(self):
-        statistics_repr = []
-        for split, ds in self.datasets.items():
+    def _log_info(self):
+        prefix = colorstr("DataModule") + " stats:"
+        datamodule_info = []
+        datasets = {"train": self.train_ds, "val": self.val_ds, "test": self.test_ds}
+        for split, ds in datasets.items():
             if ds is not None:
-                ds_repr = f"{split}: {len(ds)} samples ({ds.__class__.__name__})"
-
+                dataset_info = split.rjust(8) + f": {len(ds)} samples ({ds.__class__.__name__})"
             else:
-                ds_repr = f"{split}: 0 (dataset is None)"
-            statistics_repr.append(ds_repr)
-        statistics_repr = "\n".join(statistics_repr)
-        log.info(f"DataModule statistics:\n{statistics_repr}")
+                dataset_info = f"\t{split}: 0 (dataset is None)"
+            datamodule_info.append(dataset_info)
+        datamodule_info = "\n   ".join(datamodule_info)
+        log_msg(f"{prefix}\n{datamodule_info}")
 
     def _dataloader(self, split: _split):
         shuffle = split == "train"
-        dataset = self.datasets[split]
-
+        if split == "train":
+            dataset = self.train_ds
+        elif split == "val":
+            dataset = self.val_ds
+        elif split == "test":
+            dataset = self.test_ds
+        if dataset is None:
+            raise ValueError(f"Dataset for {split} split is None")
+        rank = int(os.environ.get("LOCAL_RANK", 0))
         if self.use_DDP:
-            log.info(f"..{split} dataloader: using DistributedSampler..")
-            rank = int(os.environ.get("LOCAL_RANK", 0))
+            log_msg(f"\t{split} dataloader: using DistributedSampler")
             params = dict(
                 shuffle=False,
                 sampler=DistributedSampler(
@@ -76,15 +141,20 @@ class DataModule:
                 ),
             )
         else:
-            log.info(f"..{split} dataloader: Using default Sampler..")
+            log_msg(f"\t{split} dataloader: Using default Sampler")
             params = dict(shuffle=shuffle)
-        dataloader = DataLoader(
+
+        # generator = torch.Generator()
+        # generator.manual_seed(6148914691236517205 + rank)
+        dataloader = InfiniteDataLoader(
             dataset,
             num_workers=self.num_workers,
             pin_memory=self.pin_memory,
             drop_last=self.drop_last,
             batch_size=self.batch_size,
             collate_fn=self.collate_fn,
+            worker_init_fn=seed_worker,
+            # generator=generator,
             **params,
         )
         self.total_batches[split] = len(dataloader)
@@ -105,7 +175,7 @@ class DataModule:
         torch.cuda.set_rng_state_all(state_dict["torch_cuda_random_state_all"])
         # torch.cuda.set_rng_state(state_dict["torch_cuda_random_state"])
         np.random.set_state(state_dict["numpy_random_state"])
-        log.info("     Loaded datamodule state")
+        log_msg("Loaded datamodule state")
 
     def explore(self):
         import cv2

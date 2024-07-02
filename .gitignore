@@ -169,3 +169,5 @@ pretrained/*
 mlflow/artifacts
 mlflow/example_outputs
 inference_out/*
+datasets/
+runs/

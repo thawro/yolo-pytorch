@@ -15,34 +15,37 @@ class CocoDetectionDataset(CocoInstancesDataset):
     @staticmethod
     def collate_fn(batch: list[CocoSample]) -> dict[str, Tensor]:
         """Collates data samples into batches."""
-        images = np.stack([sample.image for sample in batch])
-        samples_num_objs = [len(sample.classes) for sample in batch]
-        batch_idxs = [torch.zeros(num_obj) + i for i, num_obj in enumerate(samples_num_objs)]
-        boxes_xywh = np.concatenate([sample.boxes.data for sample in batch])
-        classes = np.concatenate([sample.classes for sample in batch])
-        # segments = np.concatenate([sample.segments for sample in batch])
-        new_batch = {
-            "batch_idxs": torch.cat(batch_idxs),
-            "images": torch.from_numpy(images),
-            "boxes_xywh": torch.from_numpy(boxes_xywh),
-            "classes": torch.from_numpy(classes),
-            # "segments": torch.from_numpy(segments),
-        }
+        batch_dct = [sample.to_batch() for sample in batch]
+        del batch
+        keys = batch_dct[0].keys()
+        values = list(zip(*[list(b.values()) for b in batch_dct]))
+        new_batch = {}
+        for i, k in enumerate(keys):
+            value = values[i]
+            if k == "images":
+                value = torch.from_numpy(np.stack(value, 0))
+            elif k in {"masks", "kpts", "boxes_xywh", "classes", "segments", "obb"}:
+                value = torch.from_numpy(np.concatenate(value, 0))
+            elif k == "num_obj":
+                value = torch.cat([torch.zeros(num_obj) + i for i, num_obj in enumerate(value)])
+                k = "batch_idxs"
+            elif k in {"scale_wh", "pad_tlbr"}:
+                value = torch.from_numpy(np.array(value))
+            new_batch[k] = value
         return new_batch
 
     def plot(self, idx: int, **kwargs) -> np.ndarray:
         sample = self[idx]
         image, boxes_xywh, classes = sample.image, sample.boxes.data, sample.classes
-        image_npy = self.inverse_preprocessing(image)
-        h, w = image_npy.shape[:2]
+        h, w = image.shape[:2]
         boxes_xywh[:, 0::2] *= w  # unnormalize
         boxes_xywh[:, 1::2] *= h  # unnormalize
         boxes_xyxy = xywh2xyxy(boxes_xywh)
         boxes_labels = [self.objs_labels[label_id] for label_id in classes]
-        image_npy = plot_boxes(image_npy, boxes_xyxy, boxes_labels, classes)
+        image = plot_boxes(image, boxes_xyxy, boxes_labels, classes)
         raw_sample = self.get_raw_sample(idx)
-        raw_image = raw_sample.plot(max_size=image_npy.shape[0], segmentation=True, keypoints=False)
-        sample_vis = stack_horizontally([raw_image, image_npy])
+        raw_image = raw_sample.plot(max_size=h, segmentation=True, keypoints=False)
+        sample_vis = stack_horizontally([raw_image, image])
         return sample_vis
 
 
@@ -57,10 +60,9 @@ if __name__ == "__main__":
     ds = CocoDetectionDataset(
         "data/COCO",
         "train2017",
-        transform.train,
         size,
-        mosaic_probability=1,
     )
+    ds.set_transform(transform.train_transform(ds))
     ds.explore()
     grid = ds.plot_examples([0, 55, 2, 3, 4, 5, 6])
     Image.fromarray(grid).save("test.jpg")

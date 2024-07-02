@@ -9,30 +9,25 @@ import torch.distributed as dist
 def seed_everything(seed: int):
     from src.logger.pylogger import log
 
-    log.info(f"..Setting seed to {seed}..")
+    log.info(f"-> Setting seed to {seed}")
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
 
 
-def is_dist_avail_and_initialized() -> bool:
-    if not dist.is_available():
-        return False
-    if not dist.is_initialized():
-        return False
-    return True
+def is_dist_available_and_initialized() -> bool:
+    return dist.is_available() and dist.is_initialized()
 
 
 def get_rank() -> int:
-    if not is_dist_avail_and_initialized():
-        return 0
-    return dist.get_rank()
+    if is_dist_available_and_initialized():
+        return dist.get_rank()
+    return 0
 
 
 def is_main_process() -> bool:
-    rank = get_rank()
-    return rank == 0
+    return get_rank() == 0
 
 
 def get_device_and_id(accelerator: str, use_DDP: bool) -> tuple[str, int]:

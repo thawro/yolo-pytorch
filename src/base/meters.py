@@ -70,11 +70,13 @@ class Meters:
         for name in self.meters:
             self.meters[name].all_reduce()
 
-    def update(self, metrics: dict[str, float], n: int):
+    def update(self, metrics: dict[str, float], n: int, use_DDP: bool | None = None):
+        if use_DDP is None:
+            use_DDP = self.use_DDP
         for name, value in metrics.items():
             if name not in self.meters:
                 # create new meter if metric not yet logged
-                self.meters[name] = AverageMeter(name, self.use_DDP)
+                self.meters[name] = AverageMeter(name, use_DDP)
             self.meters[name].update(value, n=n)
 
     def to_dict(self) -> dict[str, float | int]:

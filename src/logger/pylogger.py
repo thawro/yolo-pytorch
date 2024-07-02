@@ -2,10 +2,8 @@ import io
 import logging
 import re
 import warnings
-from typing import Callable
 
 from colorlog.escape_codes import escape_codes
-from tqdm.asyncio import tqdm_asyncio
 
 from src.utils.training import get_rank
 
@@ -81,7 +79,11 @@ class CustomFormatter(logging.Formatter):
 
     @property
     def device_info(self) -> str:
-        return f"[{self.device}]   "
+        return f"[{self.device.center(7)}] "
+
+    @property
+    def rank_info(self) -> str:
+        return f"[rank={get_rank()}]"
 
     @classmethod
     def add_color_to_levelname(cls, fmt: str, color: str):
@@ -105,10 +107,10 @@ class CustomFormatter(logging.Formatter):
 
         record.levelname = self.LEVEL_NAMES[record.levelno]
         if isinstance(record.msg, str) and self.device_info not in record.msg:
-            record.msg = self.device_info + record.msg
+            record.msg = self.rank_info + self.device_info + record.msg
         if self.is_file:
             for code in escape_codes.values():
-                if code in record.msg:
+                if not isinstance(record.msg, Exception) and code in record.msg:
                     record.msg = record.msg.replace(code, "")
         formatter = logging.Formatter(log_fmt, self.datefmt)
         return formatter.format(record)
@@ -144,7 +146,7 @@ def get_file_pylogger(filepath: str, name: str = __name__) -> logging.Logger:
     return logger
 
 
-def remove_last_line(file_log: logging.Logger):
+def remove_last_logged_line(file_log: logging.Logger):
     """Remove the last line of log file"""
     file: io.TextIOWrapper = file_log.handlers[0].stream
     file.seek(0)
@@ -153,21 +155,6 @@ def remove_last_line(file_log: logging.Logger):
     file.truncate()
     file.writelines(lines[:-1])
     file.seek(0, 2)
-
-
-def logged_tqdm(file_log: logging.Logger, tqdm_iter: tqdm_asyncio, fn: Callable, kwargs: dict):
-    """Pass tqdm progressbar to log file and shot it in cmd.
-    tqdm output is passed to stdout or stderr, so there is a need to pass its str form to the log file aswell,
-    however logging by default appends to log files so there was a need to remove last line at each iteration, so
-    the progress bar seems to be updated in the same line.
-    """
-    for sample in tqdm_iter:
-        file_log.info(str(tqdm_iter))
-        kwargs, is_break = fn(sample, **kwargs)
-        remove_last_line(file_log)
-        if is_break:
-            break
-    file_log.info(str(tqdm_iter))
 
 
 def log_breaking_point(
@@ -202,6 +189,19 @@ def showwarning(
     log.warning(message)
 
 
+def log_msg(msg: str, level: int = logging.INFO, rank: int = 0):
+    if get_rank() == rank:
+        level2fn[level](msg)
+
+
 log = get_cmd_pylogger(__name__)
+
+level2fn = {
+    logging.INFO: log.info,
+    logging.WARN: log.warning,
+    logging.ERROR: log.error,
+    logging.CRITICAL: log.critical,
+    logging.DEBUG: log.debug,
+}
 
 warnings.showwarning = showwarning

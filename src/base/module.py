@@ -52,7 +52,6 @@ class BaseModule:
         self._optimizers = optimizers
         self._lr_schedulers = lr_schedulers
         self.multiscale = multiscale
-
         self.current_epoch = 0
         self.current_step = 0
 
@@ -61,14 +60,17 @@ class BaseModule:
     ) -> tuple[dict[str, optim.Optimizer], dict[str, LRScheduler]]:
         optimizers = {}
         lr_schedulers = {}
+        # optims_warmups = {}
         for name, optimizer in self._optimizers.items():
             optimizers[name] = create_optimizer(
                 net=self.model.net, name=optimizer["name"], **optimizer["params"]
             )
+
         for name, lr_scheduler in self._lr_schedulers.items():
             lr_schedulers[name] = create_lr_scheduler(
                 optimizer=optimizers[name],
                 name=lr_scheduler["name"],
+                # optim_warmups=optims_warmups[name],
                 interval=lr_scheduler["interval"],
                 **lr_scheduler["params"],
             )
@@ -131,14 +133,14 @@ class BaseModule:
         for name, optimizer in self.optimizers.items():
             optimizer.load_state_dict(state_dict["optimizers"][name])
             lr = optimizer.param_groups[0]["lr"]
-            log.info(f'     Loaded "{name}" Optimizer state (lr = {lr})')
+            log.info(f'\tLoaded "{name}" Optimizer state (lr = {lr})')
         for name, lr_scheduler in self.lr_schedulers.items():
             lr_scheduler.load_state_dict(state_dict["lr_schedulers"][name])
             last_epoch = lr_scheduler.lr_scheduler.last_epoch
-            log.info(f'     Loaded "{name}" LR Scheduler state (last_epoch = {last_epoch})')
+            log.info(f'\tLoaded "{name}" LR Scheduler state (last_epoch = {last_epoch})')
         for name, scaler in self.scalers.items():
             scaler.load_state_dict(state_dict["scalers"][name])
-            log.info(f'     Loaded "{name}" Scaler state')
+            log.info(f'\tLoaded "{name}" Scaler state')
 
     def state_dict(self) -> dict:
         optimizers_state = {

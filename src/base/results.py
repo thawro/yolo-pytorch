@@ -32,7 +32,7 @@ def plot_results(
         nrows = n_grids
     else:
         nrows = math.ceil(n_grids / ncols)
-    final_grid = make_grid(grids, nrows=nrows, pad=20)
+    final_grid = make_grid(grids, nrows=nrows, pad=20, match_size=True)
     if filepath is not None:
         im = Image.fromarray(final_grid)
         im.save(filepath)

@@ -47,7 +47,7 @@ class BaseModel:
         return self.net.parameters()
 
     def to_CUDA(self, device_id: int):
-        log.info(f"..Moving model to CUDA device (cuda:{device_id})..")
+        log.info(f"-> Moving model to CUDA device (cuda:{device_id})")
         self.net = self.net.cuda(device_id)
 
     def to_DDP(self, device_id: int, use_batchnorm: bool):
@@ -55,9 +55,9 @@ class BaseModel:
         # https://discuss.pytorch.org/t/training-performance-degrades-with-distributeddataparallel/47152/31
         # the forums say that the proper way to use DDP and BatchNorm layers is to use cudnn.enabled = False
         # but it slows the training by 1.5-2x times
-        log.info("..Moving Module to DDP (Data Distributed Parallel)..")
+        log.info("-> Moving Module to DDP (Data Distributed Parallel)")
         if use_batchnorm:
-            log.info("      ..Converting BatchNorm to SyncBatchNorm..")
+            log.info("\tConverting BatchNorm to SyncBatchNorm")
             self.net = torch.nn.SyncBatchNorm.convert_sync_batchnorm(self.net)
         self.net = DDP(
             self.net,
@@ -65,7 +65,7 @@ class BaseModel:
         )
 
     def compile(self):
-        log.info("..Compiling Module (`torch.compile(net)`)..")
+        log.info("-> Compiling Module (with torch.compile)")
         self.net = torch.compile(self.net)
 
     @property
@@ -116,10 +116,10 @@ class BaseModel:
 
     def load_state_dict(self, state_dict: dict):
         self.net.load_state_dict(state_dict)
-        log.info("     Loaded model state")
+        log.info("\t Loaded model state")
 
     def init_pretrained_weights(self, ckpt: dict):
-        log.info("..Setting weights according to pretrained checkpoint..")
+        log.info("-> Setting weights according to pretrained checkpoint")
         parameters_names = set()
         for name, _ in self.net.named_parameters():
             parameters_names.add(name)
@@ -141,7 +141,7 @@ class BaseModel:
                 state_dict[name] = m
         log_method = log.warn if total_loaded == 0 else log.info
         log_method(
-            f"      Loaded {total_loaded} parameters (total_from = {total_from}, total_to = {total_to})"
+            f"\tLoaded {total_loaded} parameters (total_from = {total_from}, total_to = {total_to})"
         )
         self.net.load_state_dict(state_dict, strict=False)
 
@@ -189,7 +189,7 @@ class BaseInferenceModel:
             ckpt = ckpt["module"]["model"]
         ckpt = parse_checkpoint(ckpt)
         self.net.load_state_dict(ckpt)
-        log.info(f"Loaded checkpoint from {ckpt_path}")
+        log.info(f"\tLoaded checkpoint from {ckpt_path}")
 
     def prepare_input(self, image: np.ndarray) -> Tensor | Any:
         raise NotImplementedError()

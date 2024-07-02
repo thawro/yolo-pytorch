@@ -11,16 +11,32 @@ GRAY = (128, 128, 128)
 WHITE = (255, 255, 255)
 YELLOW = (255, 255, 0)
 
+BORDER_VALUE = (114, 114, 114)
+BORDER_TYPE = cv2.BORDER_CONSTANT
+
 
 def make_grid(
-    images: list[np.ndarray], nrows: int = 1, pad: int = 5, match_size: bool = False
+    images: list[np.ndarray],
+    nrows: int = 1,
+    pad: int = 5,
+    match_size: bool = False,
 ) -> np.ndarray:
     _images = [img.copy() for img in images]
     if match_size:
         max_h = max([img.shape[0] for img in _images])
         max_w = max([img.shape[1] for img in _images])
         for i in range(len(_images)):
-            _images[i] = cv2.resize(_images[i], (max_w, max_h))
+            h, w = _images[i].shape[:2]
+            pad_y = max_h - h
+            top = pad_y // 2
+            bottom = pad_y - top
+            pad_x = max_w - w
+            left = pad_x // 2
+            right = pad_x - left
+            _images[i] = cv2.copyMakeBorder(
+                _images[i], top, bottom, left, right, BORDER_TYPE, value=BORDER_VALUE
+            )
+            # _images[i] = cv2.resize(_images[i], (max_w, max_h))
 
     h, w = _images[0].shape[:2]
     ncols = int(np.ceil(len(_images) / nrows).item())

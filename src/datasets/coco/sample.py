@@ -7,7 +7,6 @@ import numpy as np
 import pycocotools
 
 from src.annots import Boxes, Keypoints, Segments
-from src.datasets.coco.transforms import BORDER_VALUE, CocoTransform, LetterBox
 from src.datasets.coco.utils import (
     COCO_KPT_LIMBS,
     COCO_OBJ_LABELS,
@@ -111,11 +110,15 @@ class CocoAnnotation:
         return CocoAnnotation(objects, meta)
 
     @classmethod
-    def from_yaml(cls, annot_filepath: str) -> "CocoAnnotation":
-        annot = load_yaml(annot_filepath)
+    def from_dict(cls, annot: dict) -> "CocoAnnotation":
         objects = annot["objects"]
         meta = CocoMetaInformation(**annot["meta"])
         return cls.from_coco_annot(objects, meta)
+
+    @classmethod
+    def from_yaml(cls, annot_filepath: str) -> "CocoAnnotation":
+        annot = load_yaml(annot_filepath)
+        return cls.from_dict(annot)
 
     def get_joints(self) -> np.ndarray:
         num_people = len(self)
@@ -189,12 +192,15 @@ class SampleTransform:
 
 class CocoSample:
     image: np.ndarray
+    image_filepath: str
     classes: np.ndarray
     is_crowd_obj = np.ndarray
     crowd_mask: np.ndarray
     boxes: Boxes
     segments: Segments
     kpts: Keypoints
+    scale_wh: tuple[float, float]
+    pad_tlbr: tuple[float, float, float, float]
 
     def __init__(
         self,
@@ -205,6 +211,7 @@ class CocoSample:
         segments: np.ndarray,
         crowd_mask: np.ndarray,
         is_crowd_obj: np.ndarray,
+        image_filepath: str,
     ):
         self.image = image
         self.crowd_mask = crowd_mask
@@ -212,8 +219,31 @@ class CocoSample:
         self.kpts = Keypoints(kpts)
         self.segments = Segments(segments)
         self.classes = classes
-        self.num_obj = len(classes)
         self.is_crowd_obj = is_crowd_obj
+        self.image_filepath = image_filepath
+        self.scale_wh = 1, 1
+        self.pad_tlbr = 0, 0, 0, 0
+
+    @property
+    def num_obj(self) -> int:
+        return len(self.classes)
+
+    def to_batch(self) -> dict[str, np.ndarray]:
+        # TODO: add protocol
+        batch_sample = {
+            "images": self.image,
+            "boxes_xywh": self.boxes.data,
+            "classes": self.classes,
+            "num_obj": self.num_obj,
+            "pad_tlbr": self.pad_tlbr,
+            "scale_wh": self.scale_wh,
+            "image_filepath": self.image_filepath,
+        }
+        if self.segments.data is not None:
+            batch_sample["segments"] = self.segments.data
+        if self.kpts.data is not None:
+            batch_sample["kpts"] = self.kpts.data
+        return batch_sample
 
     def remove_zero_area_boxes(self):
         valid_area_mask = self.boxes.area > 0
@@ -369,61 +399,3 @@ class CocoSample:
             crowd_mask=crowd_mask,
             is_crowd_obj=is_crowd_obj,
         )
-
-
-def create_mosaic_sample(
-    samples: list[CocoSample], pre_transform: CocoTransform | None = None, size: int = 640
-) -> CocoSample:
-    assert len(samples) == 4
-    if pre_transform is None:
-        pre_transform = LetterBox(size=size)
-    mosaic_size = size * 2
-    mosaic_boxes = []
-    mosaic_classes = []
-    mosaic_kpts = []
-    mosaic_segments = []
-    mosaic_is_crowd_obj = []
-    mosaic_image = np.full([mosaic_size, mosaic_size, 3], BORDER_VALUE[0], dtype=np.uint8)
-    mosaic_crowd_mask = np.empty([mosaic_size, mosaic_size], dtype=np.uint8)
-
-    xc, yc = size, size
-    for i, sample in enumerate(samples):
-        if i == 0:  # top-left
-            xmin, ymin = 0, 0
-        elif i == 1:  # top-right
-            xmin, ymin = xc, 0
-        elif i == 2:  # bottom-left
-            xmin, ymin = 0, yc
-        else:  # bottom-right
-            xmin, ymin = xc, yc
-        ymax = ymin + size
-        xmax = xmin + size
-        if pre_transform is not None:
-            sample = pre_transform(sample)
-
-        mosaic_image[ymin:ymax, xmin:xmax] = sample.image
-        if sample.crowd_mask is not None:
-            mosaic_crowd_mask[ymin:ymax, xmin:xmax] = sample.crowd_mask
-
-        sample.add_coords(xmin, ymin)
-        sample.convert_boxes("xyxy")
-        mosaic_boxes.append(sample.boxes.data)
-        mosaic_segments.append(sample.segments.data)
-        mosaic_kpts.append(sample.kpts.data)
-        mosaic_classes.append(sample.classes)
-        mosaic_is_crowd_obj.append(sample.is_crowd_obj)
-
-    def cat_or_none(arrays: list[np.ndarray]) -> np.ndarray | None:
-        if any(el is None for el in arrays):
-            return None
-        return np.concatenate(arrays)
-
-    return CocoSample(
-        image=mosaic_image,
-        boxes_xyxy=cat_or_none(mosaic_boxes),
-        classes=cat_or_none(mosaic_classes),
-        kpts=cat_or_none(mosaic_kpts),
-        segments=cat_or_none(mosaic_segments),
-        crowd_mask=mosaic_crowd_mask,
-        is_crowd_obj=cat_or_none(mosaic_is_crowd_obj),
-    )

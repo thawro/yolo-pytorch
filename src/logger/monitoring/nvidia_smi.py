@@ -1,6 +1,7 @@
+import logging
 import os
 
-from src.logger.pylogger import log
+from src.logger.pylogger import log_msg
 
 from .base import BaseSystemMonitor
 
@@ -20,8 +21,8 @@ class NvidiaSmiMonitor(BaseSystemMonitor):
     def __init__(self, log_filepath: str, sampling_interval: float = 1):
         super().__init__(sampling_interval)
         self.log_filepath = log_filepath
-        log.info(
-            f"..Initializing nvidia-smi output logging (every {self.sampling_interval} seconds) to '{self.log_filepath}'.."
+        log_msg(
+            f"-> Initializing nvidia-smi output logging (every {self.sampling_interval} seconds) to '{self.log_filepath}'"
         )
 
     def monitor(self):
@@ -38,11 +39,11 @@ class NvidiaSmiMonitor(BaseSystemMonitor):
         """Stop monitoring system metrics."""
         if self._process is None:
             return
-        log.info("Stopping system metrics monitoring...")
+        log_msg("-> Stopping system metrics monitoring")
         self._shutdown_event.set()
         try:
             self._process.join()
-            log.info("Successfully terminated system metrics monitoring!")
+            log_msg("Successfully terminated system metrics monitoring!")
         except Exception as e:
-            log.error(f"Error terminating system metrics monitoring process: {e}.")
+            log_msg(f"Error terminating system metrics monitoring process: {e}.", logging.ERROR)
         self._process = None

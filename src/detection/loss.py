@@ -213,7 +213,7 @@ class v8DetectionLoss(nn.Module):
 
         # 5
         targets = torch.cat((gt_classes.view(-1, 1), gt_boxes_xywh), 1)
-        targets = self.preprocess(gt_batch_idxs, targets, batch_size)
+        targets = self.preprocess(gt_batch_idxs.to(device), targets.to(device), batch_size)
         targets[..., 1:5] = xywh2xyxy(targets[..., 1:5].mul_(scale_xyxy))
         gt_classes, gt_boxes_xyxy = targets.split((1, 4), 2)
 
@@ -229,7 +229,7 @@ class v8DetectionLoss(nn.Module):
         pd_boxes_xyxy = ltrb2xyxy(pd_boxes_ltrb, anchor_points)
 
         # 8
-        agt_boxes_xyxy, agt_classes, agt_cls_scores, agt_fg_mask, _ = self.assigner(
+        agt_boxes_xyxy, _, agt_cls_scores, agt_fg_mask, _ = self.assigner(
             (pd_boxes_xyxy.detach() * stride_tensor).to(gt_boxes_xyxy.dtype),
             pd_cls_scores.detach().sigmoid(),
             gt_boxes_xyxy,

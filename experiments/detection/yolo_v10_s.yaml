@@ -30,11 +30,9 @@ dataloader:
   train_ds:
     root: data/COCO
     split: train2017
-    mosaic_probability: 0
   val_ds:
     root: data/COCO
     split: val2017
-    mosaic_probability: 0
 
 transform:
   scale_min: 0.5
@@ -43,9 +41,7 @@ transform:
   translate: 0.1
   flip_lr: 0.5
   flip_ud: 0
-  mean: [0.485, 0.456, 0.406]
-  std: [0.229, 0.224, 0.225]
-  size: [640, 640]
+  size: 640
 
 module:
   multiscale: False
@@ -56,12 +52,16 @@ module:
         lr: 0.01
         momentum: 0.9
         weight_decay: 0.0005
+        nesterov: true
   lr_schedulers:
     optim:
       name: CosineAnnealingLR
+      warmup_start_momentum: 0.8
+      warmup_start_bias_lr: 0.0
+      warmup_epochs: 3
       interval: epoch
       params:
-        T_max: 300
+        T_max: 100
         eta_min: 0
 
 net:

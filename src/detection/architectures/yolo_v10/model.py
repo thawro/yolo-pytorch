@@ -95,8 +95,14 @@ class BaseYOLOv10(BaseYOLO):
         P3, P4, P5 = self.backbone(images)
         N3, N4, N5 = self.neck(P3, P4, P5)
         one2one_preds = self.head_one2one(N3, N4, N5)
+        if self.is_fused:
+            return one2one_preds
         one2many_preds = self.head_one2many(N3, N4, N5)
         return one2one_preds, one2many_preds
+
+    def fuse(self):
+        del self.head_one2many
+        super().fuse()
 
 
 class BaseYOLOv8(BaseYOLO):

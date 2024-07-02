@@ -42,7 +42,7 @@ class SystemMetricsMonitor(BaseSystemMonitor):
         time.sleep(15)
 
         Args:
-            sampling_interval: float, default to 10. The interval (in seconds) at which to pull system
+            sampling_interval: float, default to 1. The interval (in seconds) at which to pull system
                 metrics
             samples_before_logging: int, default to 1. The number of samples to aggregate before
                 logging.
@@ -50,8 +50,8 @@ class SystemMetricsMonitor(BaseSystemMonitor):
 
     def __init__(
         self,
-        sampling_interval=10,
-        samples_before_logging=1,
+        sampling_interval: int = 1,
+        samples_before_logging: int = 1,
         metrics_callback: MetricsCallbackProtocol | None = None,
     ):
         super().__init__(sampling_interval)

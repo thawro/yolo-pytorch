@@ -1,4 +1,5 @@
 import collections.abc
+import json
 import logging
 import sys
 from abc import abstractmethod
@@ -9,11 +10,10 @@ from typing import Literal, Type
 from dacite import from_dict
 from torch import nn
 
-from src.logger.loggers import Loggers, MLFlowLogger, Status
+from src.logger.loggers import Loggers, MLFlowLogger, Status, TerminalLogger
 from src.logger.monitoring import NvidiaSmiMonitor
-from src.logger.pylogger import get_file_pylogger, log
+from src.logger.pylogger import get_file_pylogger, log, log_msg
 from src.utils import NOW, RESULTS_PATH
-from src.utils.config import LOG_DEVICE_ID
 from src.utils.files import load_yaml
 from src.utils.training import get_device_and_id, is_main_process
 
@@ -58,21 +58,22 @@ class AbstractConfig:
 
     @classmethod
     def from_dict(cls, cfg_dict: dict):
-        # cfg_dict = update_config(cfg_dict, cls)
         return from_dict(data_class=cls, data=cfg_dict)
 
     @classmethod
-    def from_yaml_to_dict(cls, filepath: str | Path) -> dict:
+    def from_yaml_to_dict(
+        cls, filepath: str | Path, verbose: bool = True
+    ) -> dict | tuple[dict, str]:
         cfg_dict = load_yaml(filepath)
-        cfg_dict = update_config(cfg_dict, cls)
+        cfg_dict, msg = update_config(cfg_dict, cls)
+        if verbose:
+            return cfg_dict, msg
         return cfg_dict
 
 
 @dataclass
 class TransformConfig(AbstractConfig):
     size: int | tuple[int, int] | list[int]
-    mean: list[float]
-    std: list[float]
 
 
 @dataclass
@@ -152,6 +153,9 @@ class OptimizerConfig(AbstractConfig):
 class LRSchedulerConfig(AbstractConfig):
     name: str
     interval: Literal["epoch", "step"]
+    warmup_start_momentum: float
+    warmup_start_bias_lr: float
+    warmup_epochs: int
     params: dict
 
 
@@ -183,8 +187,9 @@ class BaseConfig(AbstractConfig):
         if self.is_debug:
             self.setup.experiment_name = "debug"
             if is_main_process():
-                log.critical(
-                    "..Running in debug mode (`limit_batches` is > 0). Updating config: `setup.experiment.name = 'debug'` .."
+                log_msg(
+                    "-> Running in debug mode (`limit_batches` is > 0). Updating config: `setup.experiment.name = 'debug'`",
+                    logging.CRITICAL,
                 )
         self.device, self.device_id = get_device_and_id(
             self.trainer.accelerator, self.trainer.use_DDP
@@ -192,8 +197,6 @@ class BaseConfig(AbstractConfig):
         if not self.setup.is_train:  # no logging for eval/test/inference
             return
         self._initialize_logger()
-        if self.device_id == LOG_DEVICE_ID:
-            self.logger.start_run()
 
     def _initialize_logger(self):
         file_log_dirpath = f"{self.log_path}/logs"
@@ -202,7 +205,7 @@ class BaseConfig(AbstractConfig):
         file_log = get_file_pylogger(file_log_filepath, "log_file")
         # insert handler to enable file logs in command line aswell
         log.handlers.insert(0, file_log.handlers[0])
-        log.info(f"..Saving {self.device} logs to {file_log_filepath}..")
+        log_msg(f"-> Saving {self.device} logs to {file_log_filepath}")
         for handler in log.handlers:
             formatter = handler.formatter
             if formatter is not None and hasattr(formatter, "_set_device"):
@@ -212,6 +215,7 @@ class BaseConfig(AbstractConfig):
             nvidia_log_filepath = f"{file_log_dirpath}/nvidia-smi.log"
             nvidia_monitor = NvidiaSmiMonitor(nvidia_log_filepath, sampling_interval=5)
             nvidia_monitor.start()
+            self.logger.start_run()
 
     @property
     def log_path(self) -> str:
@@ -229,13 +233,13 @@ class BaseConfig(AbstractConfig):
         return self.trainer.limit_batches > 0
 
     def get_optimizers_params(self) -> dict[str, dict]:
-        log.info("..Parsing Optimizers config..")
+        log_msg("-> Parsing Optimizers config")
         return {
             name: optimizer_cfg.to_dict() for name, optimizer_cfg in self.module.optimizers.items()
         }
 
     def get_lr_schedulers_params(self) -> dict[str, dict]:
-        log.info("..Parsing LR Schedulers config..")
+        log_msg("-> Parsing LR Schedulers config")
         return {
             name: scheduler_cfg.to_dict()
             for name, scheduler_cfg in self.module.lr_schedulers.items()
@@ -248,9 +252,9 @@ class BaseConfig(AbstractConfig):
 
     def create_net(self) -> nn.Module:
         arch = self.setup.architecture
-        params_repr = "\n".join([f"     {k}: {v}" for k, v in self.net.params.items()])
+        params_repr = "\n".join([f"\t{k}: {v}" for k, v in self.net.params.items()])
         arch_repr = f"{arch}\n{params_repr}"
-        log.info(f"..Initializing {arch} Neural Network..\n{arch_repr}")
+        log_msg(f"-> Initializing {arch}\n{arch_repr}")
 
         assert (
             arch in self.architectures
@@ -269,7 +273,8 @@ class BaseConfig(AbstractConfig):
         raise NotImplementedError()
 
     def create_callbacks(self) -> list[BaseCallback]:
-        log.info("..Initializing Callbacks..")
+        log_msg("-> Initializing Callbacks")
+
         callbacks = [
             MetricsPlotterCallback(),
             MetricsSaverCallback(),
@@ -281,11 +286,13 @@ class BaseConfig(AbstractConfig):
             ArtifactsLoggerCallback(),  # make sure it is last
         ]
         for callback in callbacks:
-            log.info(f"     Initialized {callback.__class__.__name__}")
+            log_msg(f"\t[v] {callback.__class__.__name__}")
+
         return callbacks
 
     def create_logger(self, file_log: logging.Logger) -> Loggers:
-        log.info("..Initializing Logger..")
+        log_msg("-> Initializing Logger")
+
         loggers = [
             MLFlowLogger(
                 self.log_path,
@@ -295,6 +302,7 @@ class BaseConfig(AbstractConfig):
                 resume=True,
             )
         ]
+        # loggers = [TerminalLogger(self.log_path, self.to_dict())]
         logger = Loggers(loggers, self.device_id, file_log)
         return logger
 
@@ -303,7 +311,7 @@ class BaseConfig(AbstractConfig):
         return Trainer
 
     def create_trainer(self) -> Trainer:
-        log.info("..Initializing Trainer..")
+        log_msg("-> Initializing Trainer")
         try:
             callbacks = self.create_callbacks()
             trainer = self.TrainerClass(
@@ -313,7 +321,7 @@ class BaseConfig(AbstractConfig):
             )
             return trainer
         except Exception as e:
-            log.error(str(e))
+            log_msg(str(e), logging.ERROR)
             self.logger.finalize(Status.FAILED)
             raise e
 
@@ -341,15 +349,15 @@ def parse_cli_value(value: str) -> int | float | str | None:
             return value
 
 
-def update_dict(dct: dict, update_dct: dict) -> dict:
+def update_dict(dct: dict, update_dct: dict, msg: str = "") -> tuple[dict, str]:
     for k, v in update_dct.items():
         if isinstance(v, collections.abc.Mapping):
-            dct[k] = update_dict(dct.get(k, {}), v)
+            dct[k], msg = update_dict(dct.get(k, {}), v, msg)
         else:
             new_value = parse_cli_value(v)
-            log.info(f"     {k} value updated to {new_value}")
+            msg += f"\t{k} value updated to {new_value}\n"
             dct[k] = new_value
-    return dct
+    return dct, msg
 
 
 def parse_args_for_config(ConfigClass: Type[BaseConfig] = BaseConfig) -> dict:
@@ -376,9 +384,11 @@ def parse_args_for_config(ConfigClass: Type[BaseConfig] = BaseConfig) -> dict:
     return name2value
 
 
-def update_config(cfg_dict: dict, ConfigClass: Type[BaseConfig] = BaseConfig) -> dict:
+def update_config(cfg_dict: dict, ConfigClass: Type[BaseConfig] = BaseConfig) -> tuple[dict, str]:
     update_dct = parse_args_for_config(ConfigClass)
+
+    msg = ""
     if len(update_dct) > 0:
-        log.info(f"..Updating config dict using CLI args:\n{update_dct}")
-        cfg_dict = update_dict(cfg_dict, update_dct)
-    return cfg_dict
+        msg = f"-> Updating config dict using CLI args:\n{json.dumps(update_dct, indent=2)}\n"
+        cfg_dict, msg = update_dict(cfg_dict, update_dct, msg)
+    return cfg_dict, msg

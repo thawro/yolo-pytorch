@@ -77,9 +77,10 @@ class RandomAffine(CocoTransform):
         degrees: int = 0,
         translate: float = 0.1,
         scale_min: float = 0.5,
-        scale_max: float = 2,
+        scale_max: float = 1.5,
         shear: float = 0.0,
         perspective: float = 0.0,
+        size: int = 640,
     ):
         self.degrees = degrees
         self.translate = translate
@@ -87,10 +88,10 @@ class RandomAffine(CocoTransform):
         self.scale_max = scale_max
         self.shear = shear
         self.perspective = perspective
-        self.height = -1
-        self.width = -1
+        self.size = (size, size)
+        self.height, self.width = size, size
 
-    def get_transform_matrix_and_scale(self) -> tuple[np.ndarray, float]:
+    def get_transform_matrix_and_scale(self, img_h: int, img_w: int) -> tuple[np.ndarray, float]:
         x_perspective = random.uniform(-self.perspective, self.perspective)
         y_perspective = random.uniform(-self.perspective, self.perspective)
         angle = random.uniform(-self.degrees, self.degrees)
@@ -102,8 +103,8 @@ class RandomAffine(CocoTransform):
 
         # Center
         C = np.eye(3, dtype=np.float32)
-        C[0, 2] = -self.width / 2  # x translation (pixels)
-        C[1, 2] = -self.height / 2  # y translation (pixels)
+        C[0, 2] = -img_w / 2  # x translation (pixels)
+        C[1, 2] = -img_h / 2  # y translation (pixels)
 
         # Perspective
         P = np.eye(3, dtype=np.float32)
@@ -256,13 +257,10 @@ class RandomAffine(CocoTransform):
         segments = sample.segments.data
         kpts = sample.kpts.data
 
-        height, width = image.shape[:2]
-        self.height, self.width = height, width
-        self.size = (width, height)
-
         initial_boxes = boxes.copy()
+        img_h, img_w = image.shape[:2]
+        M, scale = self.get_transform_matrix_and_scale(img_h, img_w)
 
-        M, scale = self.get_transform_matrix_and_scale()
         image = self.affine_transform(image, M)
         if crowd_mask is not None:
             crowd_mask = self.affine_transform(crowd_mask, M, border_value=(0, 0, 0))
@@ -281,8 +279,7 @@ class RandomAffine(CocoTransform):
         sample.image = image
         sample.crowd_mask = crowd_mask
 
-        initial_boxes[:, 0::2] *= scale
-        initial_boxes[:, 1::2] *= scale
+        initial_boxes[:, :4] *= scale
 
         candidate_mask = self.filter_box_candidates(
             old_boxes=initial_boxes,
@@ -290,7 +287,7 @@ class RandomAffine(CocoTransform):
             area_thr=0.01 if segments is not None else 0.10,
         )
         sample.filter_by(candidate_mask)
-        sample.clip_coords(min_x=0, min_y=0, max_x=width, max_y=height)
+        sample.clip_coords(min_x=0, min_y=0, max_x=self.width, max_y=self.height)
         return sample
 
 
@@ -300,11 +297,11 @@ class LetterBox(CocoTransform):
     def __init__(
         self,
         size: int | tuple[int, int] = (640, 640),
-        auto=False,
-        scaleFill=False,
-        scaleup=True,
-        center=True,
-        stride=32,
+        auto: bool = False,
+        scaleFill: bool = False,
+        scaleup: bool = True,
+        center: bool = True,
+        stride: int = 32,
     ):
         """Initialize LetterBox object with specific parameters."""
         self.size = (size, size) if isinstance(size, int) else size
@@ -354,8 +351,40 @@ class LetterBox(CocoTransform):
         image = cv2.copyMakeBorder(image, *pad, BORDER_TYPE, value=BORDER_VALUE)
         if crowd_mask is not None:
             crowd_mask = cv2.copyMakeBorder(crowd_mask, *pad, BORDER_TYPE, value=(0, 0, 0))
+        sample.scale_wh = scale_w, scale_h
+        sample.pad_tlbr = top, left, bottom, right
         sample.scale_coords(scale_w, scale_h)
         sample.add_coords(pad_w, pad_h)
+        sample.image = image
+        sample.crowd_mask = crowd_mask
+        return sample
+
+
+class Resize(CocoTransform):
+    """Resize image and padding for detection, instance segmentation, pose."""
+
+    def __init__(self, max_size: int = 640):
+        self.max_size = max_size
+
+    def __call__(self, sample: "CocoSample") -> "CocoSample":
+        """Return updated labels and image with added border."""
+        image: np.ndarray = sample.image
+        crowd_mask = sample.crowd_mask
+        h_old, w_old = image.shape[:2]
+        scale = self.max_size / max(h_old, w_old)
+
+        if scale == 1:
+            return sample
+
+        h_new = int(round(h_old * scale))
+        w_new = int(round(w_old * scale))
+        image = cv2.resize(image, (w_new, h_new), interpolation=cv2.INTER_LINEAR)
+
+        if crowd_mask is not None:
+            crowd_mask = cv2.resize(crowd_mask, (w_new, h_new), interpolation=cv2.INTER_LINEAR)
+
+        sample.scale_coords(scale, scale)
+        sample.scale_wh = scale, scale
         sample.image = image
         sample.crowd_mask = crowd_mask
         return sample

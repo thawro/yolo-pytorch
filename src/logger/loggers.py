@@ -1,5 +1,6 @@
 """Loggers for training logging."""
 
+import json
 import logging
 import subprocess
 import uuid
@@ -13,10 +14,11 @@ import yaml
 import mlflow
 import mlflow.client
 import mlflow.entities
-from src.utils.config import LOG_DEVICE_ID, NOW
+from src.utils.config import NOW
 from src.utils.training import is_main_process
+from src.utils.utils import colorstr
 
-from .pylogger import log
+from .pylogger import log_msg
 
 mlflow.enable_system_metrics_logging()
 
@@ -87,8 +89,8 @@ class BaseLogger:
 
     def _log_config_info(self):
         if is_main_process():
-            config_repr = "\n".join([f"     '{name}': {cfg}" for name, cfg in self.config.items()])
-            log.info(f"Experiment config:\n{config_repr}")
+            cfg_repr = json.dumps(self.config, indent=3)
+            log_msg(f"Experiment config:\n{cfg_repr}")
 
     @property
     def run_id(self) -> str:
@@ -99,7 +101,7 @@ class BaseLogger:
             return self._run_id
 
     def start_run(self):
-        log.info(f"..Starting {self.__class__.__name__} run")
+        log_msg(f"-> Starting {colorstr(self.__class__.__name__)}")
 
     def log(self, key: str, value: float, step: int | None = None) -> None:
         """Log single metric."""
@@ -127,7 +129,7 @@ class BaseLogger:
         self.log_artifact(config_local_filepath, "")
         # log to remote history directory
         self.log_artifact(config_local_filepath, self.history_artifacts_dir)
-        log.info(f"{self.__class__.__name__}: config file logged to remote.")
+        log_msg("Config file logged to remote.")
 
     def log_logs(self):
         logs_local_dirpath = str(self.logs_dir)
@@ -147,15 +149,16 @@ class BaseLogger:
 
     def finalize(self, status: Status) -> None:
         """Close logger"""
-        log.warn(f"Experiment {status.value}. Closing {self.__class__.__name__}")
+        log_msg(f"Experiment {status.value}. Closing {self.__class__.__name__}", logging.WARN)
 
 
 class Loggers:
     """Class to be used in Trainer"""
 
     def __init__(self, loggers: list[BaseLogger], device_id: int, file_log: logging.Logger):
-        # make sure that only device at LOG_DEVICE_ID is logging
-        if device_id != LOG_DEVICE_ID:
+        # make sure that only main process is logging
+        self.log_path = loggers[0].log_path
+        if not is_main_process():
             loggers = []
         self.loggers = loggers
         self.device_id = device_id
@@ -216,14 +219,14 @@ class TerminalLogger(BaseLogger):
 
     def log(self, key: str, value: float, step: int | None = None) -> None:
         super().log(key, value, step)
-        log.info(f"Step {step}, {key}: {value}")
+        log_msg(f"Step {step}, {key}: {value}")
 
     def log_metrics(self, metrics: dict[str, float], step: int | None = None) -> None:
         super().log_metrics(metrics, step)
 
     def log_params(self, params: dict[str, Any]) -> None:
         super().log_params(params)
-        log.info(f"Params: {params}")
+        log_msg(f"Params: {params}")
 
 
 run_id_to_system_metrics_monitor = {}
@@ -268,19 +271,22 @@ class MLFlowLogger(BaseLogger):
         if not is_main_process():
             return
         if self.auto_run_server:
-            log.warning(
-                "..Starting MLFlow server using 'mlflow/run_mlflow.sh' script (`auto_run_server` is set to `True`).."
+            log_msg(
+                "-> Starting MLFlow server using 'mlflow/run_mlflow.sh' script (`auto_run_server` is set to `True`).",
+                logging.WARN,
             )
             msg = subprocess.run("make mlflow_server &", shell=True)
-            log.info(str(msg))
-        else:
-            log.critical(
-                "MLFlowLogger `auto_run_server` is set to `False`. "
-                "You must ensure that mlflow server is started before using this logger"
-                "(using e.g. 'mlflow/run_mlflow.sh' script). "
-                "Sadly there is no option to check if the mlflow server was started. "
-                "If the server wasn't started you need to exit the program by clicking CTRL-C."
-            )
+            log_msg(str(msg))
+        # else:
+        #     msg = (
+        #         "MLFlowLogger `auto_run_server` is set to `False`. "
+        #         "You must ensure that mlflow server is started before using this logger"
+        #         "(using e.g. 'mlflow/run_mlflow.sh' script). "
+        #         "Sadly there is no option to check if the mlflow server was started. "
+        #         "If the server wasn't started you need to exit the program by clicking CTRL-C."
+        #     )
+        #     log.warn(msg)
+        #     raise ValueError(msg)
 
     def start_run(self):
         super().start_run()
@@ -292,7 +298,7 @@ class MLFlowLogger(BaseLogger):
             experiment = client.get_experiment(experiment_id)
         experiment_id = experiment.experiment_id
         if not self.resume:
-            log.info(f"     Creating new run with {self.run_name} name")
+            log_msg(f"-> Creating new run with {self.run_name} name")
             run = client.create_run(experiment_id, run_name=self.run_name)
 
         elif self._run_id is None:
@@ -303,33 +309,28 @@ class MLFlowLogger(BaseLogger):
             )
             num_runs = len(runs)
             if num_runs == 0:
-                log.info(
-                    f"     There is no run with '{self.run_name}' name on mlflow server (for experiment '{self.experiment_name}')"
+                log_msg(
+                    f"\tThere is no run with '{self.run_name}' name on mlflow server (for experiment '{self.experiment_name}')"
                 )
-                log.info(f"     Creating new run with '{self.run_name}' name")
+                log_msg(f"\t-> Creating new run with '{self.run_name}' name")
                 run = client.create_run(experiment_id, run_name=self.run_name)
             if num_runs == 1:
-                log.info(f"     Found existing run with '{self.run_name}' name on mlflow server")
+                log_msg(f"\tFound existing run with '{self.run_name}' name on mlflow server")
                 run = runs[0]
                 run = client.get_run(run.info.run_id)
-                log.info(f"     Resuming Run '{run.info.run_name}' (ID = {run.info.run_id})")
+                log_msg(f"-> Resuming Run '{run.info.run_name}' (ID = {run.info.run_id})")
             elif num_runs > 1:
-                log.warn(
-                    f"     More than one run with '{self.run_name}' name found on mlflow server. Raising Exception"
+                log_msg(
+                    f"\tMore than one run with '{self.run_name}' name found on mlflow server. Raising Exception",
+                    logging.WARN,
                 )
-                e = ValueError()
-                log.exception(e)
-                raise e
+                raise ValueError()
         else:
-            try:
-                run = client.get_run(self._run_id)  # get run by id
-                log.info(f"     Resuming Run {run.info.run_name} (ID = {run.info.run_id})")
-            except Exception as e:
-                log.exception(e)
-                raise e
+            run = client.get_run(self._run_id)  # get run by id
+            log_msg(f"-> Resuming Run {run.info.run_name} (ID = {run.info.run_id})")
         self.client = client
         if self.log_system_metrics:
-            log.info("     Starting SystemMetricsMonitor")
+            log_msg("-> Starting SystemMetricsMonitor")
             from mlflow.system_metrics.system_metrics_monitor import SystemMetricsMonitor
 
             system_monitor = SystemMetricsMonitor(
@@ -345,7 +346,7 @@ class MLFlowLogger(BaseLogger):
         run_url = (
             f"{self.tracking_uri}/#/experiments/{experiment.experiment_id}/runs/{run.info.run_id}"
         )
-        log.info(f"     Visit run at: {run_url}")
+        log_msg(f"Visit run at: {run_url}")
 
     @property
     def run_id(self) -> str:
@@ -382,7 +383,7 @@ class MLFlowLogger(BaseLogger):
         Returns path to the downloaded artifact
         """
         dst_path = str(self.log_path / "loaded")
-        log.info(f"Downloading {artifact_path} from mlflow run {self.run_id} to {dst_path}")
+        log_msg(f"-> Downloading {artifact_path} from mlflow run {self.run_id} to {dst_path}")
         return self.client.download_artifacts(
             run_id=self.run_id,
             artifact_path=artifact_path,

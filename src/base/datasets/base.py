@@ -13,7 +13,6 @@ from torch.utils.data import Dataset
 from typing_extensions import Protocol
 
 from src.base.model import BaseInferenceModel
-from src.base.transforms import inverse_preprocessing
 from src.logger.pylogger import log
 from src.utils.image import make_grid, resize_with_aspect_ratio
 
@@ -177,16 +176,6 @@ class BaseImageDataset(Dataset, ExplorerDataset, InferenceDataset):
 
     def load_annot(self, idx: int) -> Any:
         raise NotImplementedError()
-
-    def inverse_preprocessing(self, image: Tensor | np.ndarray) -> np.ndarray:
-        if self.transform is not None:
-            img_npy = inverse_preprocessing(image)
-        else:
-            if isinstance(image, Tensor):
-                img_npy = image.numpy()
-            else:
-                img_npy = image.copy()
-        return img_npy
 
 
 class DirectoryDataset(Dataset, InferenceDataset):

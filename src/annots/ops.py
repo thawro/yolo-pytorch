@@ -23,6 +23,17 @@ def xyxy2xywh(boxes: np.ndarray | Tensor) -> np.ndarray | Tensor:
     return boxes_
 
 
+def xyxy2xywh_coco(boxes: np.ndarray | Tensor) -> np.ndarray | Tensor:
+    boxes_ = _empty_like(boxes)
+    xmin, ymin = boxes[..., 0], boxes[..., 1]
+    xmax, ymax = boxes[..., 2], boxes[..., 3]
+    boxes_[..., 0] = xmin
+    boxes_[..., 1] = ymin
+    boxes_[..., 2] = xmax - xmin  # w
+    boxes_[..., 3] = ymax - ymin  # h
+    return boxes_
+
+
 def xywh2xyxy(boxes: np.ndarray | Tensor) -> np.ndarray | Tensor:
     boxes_ = _empty_like(boxes)
     xy = boxes[..., :2]  # centers
@@ -65,22 +76,22 @@ def clip_boxes(
     return boxes_xyxy
 
 
-def postprocess_boxes(
-    boxes_xyxy: np.ndarray | Tensor, dst_shape: list, src_shape: list
-) -> np.ndarray | Tensor:
-    dst_h, dst_w = dst_shape[:2]
-    src_h, src_w = src_shape[:2]
+# def postprocess_boxes(
+#     boxes_xyxy: np.ndarray | Tensor, dst_shape: list, src_shape: list
+# ) -> np.ndarray | Tensor:
+#     dst_h, dst_w = dst_shape[:2]
+#     src_h, src_w = src_shape[:2]
 
-    scale = min(src_h / dst_h, src_w / dst_w)  # scale  = old / new
-    pad_x = round((src_w - dst_w * scale) / 2 - 0.1)
-    pad_y = round((src_h - dst_h * scale) / 2 - 0.1)
+#     scale = min(src_h / dst_h, src_w / dst_w)  # scale  = old / new
+#     pad_x = round((src_w - dst_w * scale) / 2 - 0.1)
+#     pad_y = round((src_h - dst_h * scale) / 2 - 0.1)
 
-    boxes_xyxy[..., 0] -= pad_x
-    boxes_xyxy[..., 1] -= pad_y
-    boxes_xyxy[..., 2] -= pad_x
-    boxes_xyxy[..., 3] -= pad_y
-    boxes_xyxy[..., :4] /= scale
-    return clip_boxes(boxes_xyxy, 0, 0, dst_w, dst_h)
+#     boxes_xyxy[..., 0] -= pad_x
+#     boxes_xyxy[..., 1] -= pad_y
+#     boxes_xyxy[..., 2] -= pad_x
+#     boxes_xyxy[..., 3] -= pad_y
+#     boxes_xyxy[..., :4] /= scale
+#     return clip_boxes(boxes_xyxy, 0, 0, dst_w, dst_h)
 
 
 def boxes_iou(

@@ -6,9 +6,15 @@ from typing import Literal
 import matplotlib.pyplot as plt
 import plotly.express as px
 import plotly.graph_objects as go
+import seaborn as sns
 from plotly.subplots import make_subplots
 
 from src.base.storage import MetricsStorage, SystemMonitoringStorage
+
+sns.set_style("whitegrid")
+
+
+stages = ["train", "val", "test", "sanity"]
 
 
 def plot_metrics_matplotlib(
@@ -22,18 +28,26 @@ def plot_metrics_matplotlib(
     metrics.pop("epoch")
     metrics.pop("step")
     ncols = len(metrics)
+    palette = plt.get_cmap("tab10")
+    palette_2 = plt.get_cmap("Set1")
+
+    colors = {stage: palette(i) for i, stage in enumerate(stages)}
 
     fig, axes = plt.subplots(1, ncols, figsize=(8 * ncols, 8))
     if ncols == 1:
         axes = [axes]
     for (metric_name, split_values), ax in zip(metrics.items(), axes):
-        for split, logged_values in split_values.items():
+        for i, (split, logged_values) in enumerate(split_values.items()):
             if "sanity" in split:  # dont plot sanity check metrics
                 continue
             steps = [logged[step_name] for logged in logged_values]
             values = [logged["value"] for logged in logged_values]
-            ax.plot(steps, values, label=split)
-            ax.scatter(steps, values)
+            if split in colors:
+                color = colors[split]
+            else:
+                color = palette_2(i)
+            ax.plot(steps, values, label=split, color=color)
+            ax.scatter(steps, values, color=color)
             ax.legend()
             ax.set_title(metric_name, fontsize=18)
             ax.set_xlabel(metrics_storage.name, fontsize=14)
@@ -50,6 +64,8 @@ def plot_metrics_plotly(
 ) -> None:
     """Plot metrics for each split and step"""
     palette = px.colors.qualitative.T10
+    palette_2 = px.colors.qualitative.Plotly
+    colors = {stage: palette[i] for i, stage in enumerate(stages)}
     metrics = metrics_storage.metrics.copy()
     metrics.pop("epoch")
     metrics.pop("step")
@@ -65,6 +81,7 @@ def plot_metrics_plotly(
     single_split_keys = [k for k, v in metrics.items() if len(v) == 1]
     multi_split_keys = [k for k, v in metrics.items() if len(v) > 1]
     showlegend = None
+    shown_legendgroups = []
     fig = make_subplots(rows=nrows, cols=ncols, subplot_titles=titles)
     for i, (metric_name, split_values) in enumerate(metrics.items()):
         if showlegend is not None and showlegend:
@@ -72,6 +89,7 @@ def plot_metrics_plotly(
         if showlegend is None and metric_name in multi_split_keys:
             # _showlegend = True
             showlegend = True
+
         tickformat = ".6f"
         if horizontal:
             row, col = 1, i + 1
@@ -80,24 +98,30 @@ def plot_metrics_plotly(
         for j, (split, logged_values) in enumerate(split_values.items()):
             if "sanity" in split:  # dont plot sanity check metrics
                 continue
-            c = palette[j]
+
             steps = [logged[step_name] for logged in logged_values]
             values = [logged["value"] for logged in logged_values]
             # show the legend only for first plot of multi_split metrics
 
+            if "LR" in metric_name or "momentum" in metric_name:
+                param_group_idx = int(split.split("_")[-1])
+                color = palette_2[param_group_idx]
+            else:
+                color = colors[split]
             fig.add_trace(
                 go.Scatter(
                     x=steps,
                     y=values,
                     name=split,
                     mode="lines+markers",
-                    marker=dict(color=c),
+                    marker=dict(color=color),
                     legendgroup=split,
-                    showlegend=showlegend if showlegend else False,
+                    showlegend=split not in shown_legendgroups,
                 ),
                 row=row,
                 col=col,
             )
+            shown_legendgroups.append(split)
             if min(values) < 1e-4 or max(values) > 1e4:
                 tickformat = ".3e"
         fig.update_yaxes(tickformat=tickformat, row=row, col=col)
@@ -118,7 +142,6 @@ def plot_metrics_plotly(
     fig_w += margin["l"] + margin["r"]
 
     fig.update_layout(height=fig_h, width=fig_w, margin=margin, legend=legend)
-
     if filepath is not None:
         fig.write_html(filepath)
 

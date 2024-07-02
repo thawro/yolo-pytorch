@@ -1,3 +1,5 @@
+import math
+
 import torch
 from torch import Tensor, nn
 
@@ -36,17 +38,31 @@ class YOLOv10RegressionHead(nn.Module):
 
 
 class YOLOv10SingleScaleHead(nn.Module):
+    end2end = True
+
     def __init__(
         self,
         in_channels: int,
         cls_mid_chanels: int,
         reg_mid_channels: int,
         num_classes: int,
+        stride: int,
         num_reg_preds: int = 1,
     ):
         super().__init__()
+        self.num_classes = num_classes
+        self.stride = stride
         self.reg_head = YOLOv10RegressionHead(in_channels, reg_mid_channels, num_reg_preds)
         self.cls_head = YOLOv10ClassificationHead(in_channels, cls_mid_chanels, num_classes)
+
+    def bias_init(self):
+        """Initialize Detect() biases, WARNING: requires stride availability."""
+        image_size = 640
+        self.reg_head.net[-1].bias.data[:] = 1.0  # box
+        # cls (.01 objects, 80 classes, 640 img)
+        self.cls_head.net[-1].bias.data[: self.num_classes] = math.log(
+            5 / self.num_classes / (image_size / self.stride) ** 2
+        )
 
     def forward(self, P: Tensor) -> Tensor:
         cls_preds = self.cls_head(P)
@@ -63,17 +79,23 @@ class YOLOv10Head(nn.Module):
         self.num_reg_preds = num_reg_preds
         self.num_classes = num_classes
         self.num_outputs = num_classes + num_reg_preds * 4
+        strides = [8, 16, 32]
         self.P3_head = YOLOv10SingleScaleHead(
-            ch3, cls_mid_ch, reg_mid_ch, num_classes, num_reg_preds
+            ch3, cls_mid_ch, reg_mid_ch, num_classes, strides[0], num_reg_preds
         )
         self.P4_head = YOLOv10SingleScaleHead(
-            ch4, cls_mid_ch, reg_mid_ch, num_classes, num_reg_preds
+            ch4, cls_mid_ch, reg_mid_ch, num_classes, strides[1], num_reg_preds
         )
         self.P5_head = YOLOv10SingleScaleHead(
-            ch5, cls_mid_ch, reg_mid_ch, num_classes, num_reg_preds
+            ch5, cls_mid_ch, reg_mid_ch, num_classes, strides[2], num_reg_preds
         )
         # DFL channels (ch[0] // 16 to scale 4/8/12/16/20 for n/s/m/l/x)
         self.dfl = DFL(self.num_reg_preds) if self.num_reg_preds > 1 else nn.Identity()
+
+    def bias_init(self):
+        self.P3_head.bias_init()
+        self.P4_head.bias_init()
+        self.P5_head.bias_init()
 
     def forward(self, P3: Tensor, P4: Tensor, P5: Tensor) -> tuple[Tensor, Tensor, Tensor]:
         p3_preds = self.P3_head(P3)

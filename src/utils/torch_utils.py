@@ -1,7 +1,9 @@
+from contextlib import contextmanager
 from copy import deepcopy
 
 import thop
 import torch
+import torch.distributed as dist
 from torch import nn
 
 
@@ -16,28 +18,30 @@ def get_flops(model: nn.Module, imgsz: int | tuple[int, int] = 640) -> float:
     return flops
 
 
-def model_info(model: nn.Module, detailed=False, verbose=True, imgsz=640):
+def model_info(model: nn.Module, detailed=False, imgsz=640):
     """
     Model information.
 
     imgsz may be int or list, i.e. imgsz=640 or imgsz=[640, 320].
     """
-    if not verbose:
-        return
     num_params = get_num_params(model)
     num_gradients = get_num_gradients(model)
     num_layers = len(list(model.modules()))
+    info = ""
     if detailed:
-        print(
-            f"{'layer':>5} {'name':>40} {'gradient':>9} {'parameters':>12} {'shape':>20} {'mu':>10} {'sigma':>10}"
-        )
+        info += f"{'layer':>5} {'name':>40} {'gradient':>9} {'parameters':>12} {'shape':>20} {'mu':>10} {'sigma':>10}\n"
         for i, (name, p) in enumerate(model.named_parameters()):
             name = name.replace("module_list.", "")
-            print(
-                "%5g %40s %9s %12g %20s %10.3g %10.3g %10s"
-                % (i, name, p.requires_grad, p.numel(), list(p.shape), p.mean(), p.std(), p.dtype)
+            info += "%5g %40s %9s %12g %20s %10.3g %10.3g %10s \n" % (
+                i,
+                name,
+                p.requires_grad,
+                p.numel(),
+                list(p.shape),
+                p.mean(),
+                p.std(),
+                p.dtype,
             )
-
     flops = get_flops(model, imgsz)
     giga_flops = flops / 1e9
     fused = " (fused)" if model.is_fused else ""
@@ -46,8 +50,8 @@ def model_info(model: nn.Module, detailed=False, verbose=True, imgsz=640):
     params = f"{num_params} parameters"
     gradients = f"{num_gradients} gradients"
     flops = f"{giga_flops:.1f} GFLOPs" if giga_flops else ""
-    print(f"{name}, summary: {layers}, {params}, {gradients}, {flops}")
-    return num_layers, num_params, num_gradients, flops
+    info += f"\n{name}, summary: {layers}, {params}, {gradients}, {flops}\n"
+    return info, num_layers, num_params, num_gradients, flops
 
 
 def get_num_params(model: nn.Module) -> int:
@@ -68,3 +72,14 @@ def parse_checkpoint(ckpt: dict) -> dict:
             renamed_key = renamed_key.replace(prefix, "")
         ckpt[renamed_key] = ckpt.pop(key)
     return ckpt
+
+
+@contextmanager
+def torch_distributed_zero_first(local_rank: int):
+    """Decorator to make all processes in distributed training wait for each local_master to do something."""
+    initialized = dist.is_available() and dist.is_initialized()
+    if initialized and local_rank not in {-1, 0}:
+        dist.barrier(device_ids=[local_rank])
+    yield
+    if initialized and local_rank == 0:
+        dist.barrier(device_ids=[0])

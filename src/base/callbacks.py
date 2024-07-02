@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import logging
 import random
 from typing import TYPE_CHECKING, Literal
 
 from PIL import Image
+
+from src.logger.pylogger import log_msg
 
 if TYPE_CHECKING:
     from src.base.storage import MetricsStorage
@@ -11,16 +14,19 @@ if TYPE_CHECKING:
     from .trainer import Trainer
 
 import glob
+import time
 from abc import abstractmethod
 from pathlib import Path
 
 import torch
+from torch.nn.parallel import DistributedDataParallel as DDP
 
 from src.logger.loggers import Status
 from src.logger.monitoring.system import SystemMetricsMonitor
 from src.logger.pylogger import log
-from src.utils.config import LOG_DEVICE_ID
 from src.utils.files import save_txt_to_file, save_yaml
+from src.utils.torch_utils import model_info
+from src.utils.training import is_main_process
 from src.utils.utils import colorstr
 
 from .results import BaseResult, plot_results
@@ -41,7 +47,7 @@ def get_metrics_storage(trainer: Trainer, mode: _log_mode) -> MetricsStorage:
 class BaseCallback:
     @property
     def name_prefix(self) -> str:
-        return colorstr(self.__class__.__name__) + ": "
+        return colorstr(f"{self.__class__.__name__}: ")
 
     @abstractmethod
     def on_fit_start(self, trainer: Trainer):
@@ -81,8 +87,8 @@ class BaseCallback:
 
 class Callbacks:
     def __init__(self, callbacks: list[BaseCallback], device_id: int):
-        # make sure that only device at LOG_DEVICE_ID is callbacking
-        if device_id != LOG_DEVICE_ID:
+        # make sure that only main process is callbacking
+        if not is_main_process():
             callbacks = []
         self.callbacks = callbacks
         self.device_id = device_id
@@ -149,12 +155,10 @@ class ArtifactsLoggerCallback(BaseCallback):
         metrics_filepaths = glob.glob(f"{log_dir}/epoch_metrics.*")
         for filepath in metrics_filepaths:
             trainer.logger.log_artifact(filepath, "epoch_metrics")
-        log.info(
-            f"{self.name_prefix}Artifacts logged to remote ('eval_examples' and 'epoch_metrics')."
-        )
+        log_msg(f"{self.name_prefix}Artifacts logged to remote (eval_examples and epoch_metrics).")
 
     def on_failure(self, trainer: Trainer, status: Status):
-        log.warn("Finalizing loggers.")
+        log_msg("Finalizing loggers.", logging.WARN)
         trainer.logger.log_logs()
         trainer.logger.finalize(status=status)
 
@@ -162,19 +166,16 @@ class ArtifactsLoggerCallback(BaseCallback):
 class SaveModelCheckpoint(BaseCallback):
     def __init__(
         self,
-        name: str | None = None,
+        name: str = "best",
         stage: str | None = None,
         metric: str | None = None,
-        mode: str | None = "min",
+        mode: Literal["min", "max"] = "min",
         last: bool = False,
-        verbose: bool = False,
     ):
-        self.name = name if name is not None else "best"
-
+        self.name = name
         self.stage = stage
         self.metric = metric
         self.save_last = last
-        self.verbose = verbose
         self.mode = mode
 
         self.callback_name = f"{metric if metric else ''} {self.name} ({mode})"
@@ -192,19 +193,18 @@ class SaveModelCheckpoint(BaseCallback):
             meters = trainer.meters[self.stage]
             if len(meters) == 0:
                 e = ValueError(f"{self.metric} not yet logged to meters")
-                log.exception(e)
+                log_msg(str(e), logging.ERROR)
                 raise e
             last = meters[self.metric].avg
-            msg += f"Current {self.stage}/{self.metric}={last:.3e},   Best {self.stage}/{self.metric}={self.best:.3e}"
+            msg += f"{self.stage}/{self.metric}, Current={last:.3e}, Best={self.best:.3e}"
 
             if self.is_better(last, self.best):
                 self.best = last
-                msg += f"\nFound new best value for {self.stage}/{self.metric} ({self.best:.3e})"
+                msg += f" (Found new best {self.stage}/{self.metric}: {self.best:.3e})"
                 trainer.save_checkpoint(str(ckpt_dir / f"{self.name}.pt"))
         if self.save_last:
-            filename = "last"
-            trainer.save_checkpoint(str(ckpt_dir / f"{filename}.pt"))
-        log.info(msg)
+            trainer.save_checkpoint(str(ckpt_dir / "last.pt"))
+        log_msg(msg)
 
     def on_epoch_end(self, trainer: Trainer):
         self.save_model(trainer)
@@ -218,8 +218,8 @@ class SaveModelCheckpoint(BaseCallback):
 
     def load_state_dict(self, state_dict: dict):
         self.best = state_dict.get(self.state_metric_name, self.best)
-        log.info(
-            f'     Loaded "{self.__class__.__name__}" state ({self.state_metric_name} = {self.best})'
+        log_msg(
+            f'\tLoaded "{self.__class__.__name__}" state ({self.state_metric_name} = {self.best})'
         )
 
 
@@ -230,18 +230,17 @@ class ResultsPlotterCallback(BaseCallback):
         self.name = name
         self.ncols = ncols
 
-    def plot_example_results(self, trainer: Trainer, results: list[BaseResult], filepath: str):
-        plot_results(results, plot_name=self.name, filepath=filepath, ncols=self.ncols)
-
     def plot(self, trainer: Trainer, prefix: str) -> None:
         dirpath = trainer.logger.loggers[0].eval_examples_dir
         dirpath.mkdir(exist_ok=True, parents=True)
         if self.name != "":
             prefix = f"{prefix}_"
         filepath = str(dirpath / f"{prefix}{self.name}.jpg")
-        if len(trainer.results) > 0:
-            self.plot_example_results(trainer, trainer.results, filepath)
-            log.info(
+        if len(trainer.val_results) > 0:
+            plot_results(
+                trainer.val_results, plot_name=self.name, filepath=filepath, ncols=self.ncols
+            )
+            log_msg(
                 f"{self.name_prefix}{self.name.capitalize()} results visualization saved at '{filepath}'"
             )
         else:
@@ -259,18 +258,17 @@ class MetricsPlotterCallback(BaseCallback):
 
     def plot(self, trainer: Trainer, mode: _log_mode) -> None:
         log_path = trainer.logger.loggers[0].log_path
-
         storage = get_metrics_storage(trainer, mode)
-        if len(storage.metrics) > 0:
-            step_name = "epoch" if mode == "epoch" else "step"
-            mpl_filepath = f"{log_path}/{mode}_metrics.jpg"
-            plot_metrics_matplotlib(storage, step_name, filepath=mpl_filepath)
-
-            plotly_filepath = f"{log_path}/{mode}_metrics.html"
-            plot_metrics_plotly(storage, step_name, filepath=plotly_filepath)
-            log.info(f"{self.name_prefix}Metrics plots saved at '{mpl_filepath}'")
-        else:
+        if len(storage.metrics) == 0:
             log.warn(f"No metrics to plot logged yet (mode={mode})")
+            return
+        step_name = "epoch" if mode == "epoch" else "step"
+        mpl_filepath = f"{log_path}/{mode}_metrics.jpg"
+        plot_metrics_matplotlib(storage, step_name, filepath=mpl_filepath)
+
+        plotly_filepath = f"{log_path}/{mode}_metrics.html"
+        plot_metrics_plotly(storage, step_name, filepath=plotly_filepath)
+        log_msg(f"{self.name_prefix}Metrics plots saved at '{mpl_filepath}'")
 
     def on_epoch_end(self, trainer: Trainer) -> None:
         self.plot(trainer, mode="epoch")
@@ -282,7 +280,16 @@ class MetricsPlotterCallback(BaseCallback):
 class SystemMetricsMonitoringCallback(BaseCallback):
     """Plot per epoch metrics"""
 
-    def __init__(self, sampling_interval: int = 10, samples_before_logging: int = 1) -> None:
+    def __init__(
+        self,
+        plot_every_n_sec: int = 30,
+        sampling_interval: int = 10,
+        samples_before_logging: int = 1,
+        verbose: bool = False,
+    ) -> None:
+        self.prev_time = time.time()
+        self.verbose = verbose
+        self.plot_every_n_sec = plot_every_n_sec
         self.sampling_interval = sampling_interval
         self.samples_before_logging = samples_before_logging
 
@@ -293,6 +300,8 @@ class SystemMetricsMonitoringCallback(BaseCallback):
         storage = trainer.system_monitoring
         if len(storage.metrics) > 0:
             plot_system_monitoring(storage, filepath)
+            if self.verbose:
+                log_msg(f"{self.name_prefix}System metrics saved at {filepath}")
 
     def on_fit_start(self, trainer: Trainer):
         system_monitor = SystemMetricsMonitor(
@@ -303,7 +312,11 @@ class SystemMetricsMonitoringCallback(BaseCallback):
         system_monitor.start()
 
     def on_step_end(self, trainer: Trainer) -> None:
-        self.plot(trainer)
+        current_time = time.time()
+        duration_sec = current_time - self.prev_time
+        if duration_sec > self.plot_every_n_sec:
+            self.plot(trainer)
+            self.prev_time = current_time
 
 
 class MetricsSaverCallback(BaseCallback):
@@ -314,11 +327,11 @@ class MetricsSaverCallback(BaseCallback):
         log_path = trainer.logger.loggers[0].log_path
         filepath = filepath = f"{log_path}/{mode}_metrics.yaml"
 
-        if len(storage.metrics) > 0:
-            metrics = storage.to_dict()
-            save_yaml(metrics, filepath)
-        else:
+        if len(storage.metrics) == 0:
             log.warn(f"No metrics to save logged yet (mode={mode})")
+            return
+        metrics = storage.to_dict()
+        save_yaml(metrics, filepath)
 
     def on_epoch_end(self, trainer: Trainer) -> None:
         self.save(trainer, mode="epoch")
@@ -334,13 +347,20 @@ class MetricsLogger(BaseCallback):
         msgs = ""
         for stage, metrics in trainer.epochs_metrics.inverse_nest().items():
             last_epoch_metrics = {name: values[-1]["value"] for name, values in metrics.items()}
-            msg = []
+            stage_msg = []
             for name, value in last_epoch_metrics.items():
-                msg.append(f"{stage}/{name}: {value:.3e}")
-            msg = "  ".join(msg)
-            msgs += f"     {msg}\n"
-        msgs = msgs[:-2]  # remove last line break
-        log.info(f"Epoch {trainer.current_epoch} metrics:\n{msgs}")
+                # optim_LR_names = [f"{name}_LR" for name in trainer.module.optimizers.keys()]
+                restricted_names = ["epoch", "step"]
+                if name not in restricted_names:
+                    if value <= 1e-3 or value >= 1e3:
+                        value_str = f"{value:.3e}"
+                    else:
+                        value_str = f"{value:.3f}"
+                    stage_msg.append(f"{name}: {value_str}")
+            stage_msg = stage.rjust(8) + ":\t" + "   ".join(stage_msg) + "\n"
+            msgs += stage_msg
+        prefix = colorstr(f"Epoch {trainer.current_epoch}: ")
+        log_msg(f"{prefix}\n{msgs}")
 
 
 class ModelSummary(BaseCallback):
@@ -348,12 +368,15 @@ class ModelSummary(BaseCallback):
         self.depth = depth
 
     def on_fit_start(self, trainer: Trainer):
-        log.info(f"Optimizers\n{trainer.module.optimizers}")
-        log.info(f"LR Schedulers\n{trainer.module.lr_schedulers}")
+        log_msg(f"{colorstr('Optimizers: ')}\n{trainer.module.optimizers}")
+        log_msg(f"{colorstr('LR Schedulers: ')}\n{trainer.module.lr_schedulers}")
 
-        model = trainer.module.model
-        model_summary = model.summary(self.depth)
-        log.info(f"{self.name_prefix}Model layers summary\n{model_summary}")
+        net = trainer.module.model.net
+        if isinstance(net, DDP):
+            net = net.module
+        model_summary, *_ = model_info(net)
+        # model_summary = model.summary(self.depth)
+        log_msg(f"{self.name_prefix}\n{model_summary}")
         model_dir = trainer.logger.loggers[0].model_dir
         Path(model_dir).mkdir(exist_ok=True, parents=True)
         filepath = f"{model_dir}/model_summary.txt"
@@ -372,10 +395,13 @@ class DatasetExamplesCallback(BaseCallback):
         self.random_idxs = random_idxs
 
     def on_fit_start(self, trainer: Trainer):
-        log.info(f"{self.name_prefix}Saving datasets samples examples")
+        log_msg(f"{self.name_prefix}Saving datasets samples examples")
         dirpath = trainer.logger.loggers[0].data_examples_dir
         for split in self.splits:
-            dataset = trainer.datamodule.datasets[split]
+            if split == "train":
+                dataset = trainer.datamodule.train_dataloader.dataset
+            elif split == "val":
+                dataset = trainer.datamodule.val_dataloader.dataset
             dirpath.mkdir(exist_ok=True, parents=True)
             filepath = str(dirpath / f"{split}.jpg")
 
@@ -385,7 +411,7 @@ class DatasetExamplesCallback(BaseCallback):
                 idxs = list(range(self.n))
             grid = dataset.plot_examples(idxs, nrows=1)
             Image.fromarray(grid).save(filepath)
-            log.info(f"      ..{split} dataset examples saved at '{filepath}'..")
+            log_msg(f"\t{split} dataset examples saved at '{filepath}'")
 
 
 class EarlyStoppingCallback(BaseCallback):
@@ -393,9 +419,10 @@ class EarlyStoppingCallback(BaseCallback):
         self,
         metric: str,
         stage: str,
-        mode: str = "min",
+        mode: Literal["min", "max"] = "min",
         patience: int = 30,
     ):
+        assert mode in {"min", "max"}
         self.metric = metric
         self.stage = stage
         self.mode = mode
@@ -422,7 +449,7 @@ class EarlyStoppingCallback(BaseCallback):
         epoch_diff = trainer.current_epoch - self.best_epoch
         should_stop = epoch_diff >= self.patience
         if should_stop:
-            log.info(
+            log_msg(
                 f"{self.name_prefix}Stopping training early. No improvement for > {self.patience} epochs."
             )
             trainer.stop(Status.STOPPED)
@@ -439,6 +466,6 @@ class EarlyStoppingCallback(BaseCallback):
 
     def load_state_dict(self, state_dict: dict):
         self.best = state_dict.get(self.state_metric_name, self.best)
-        log.info(
-            f'     Loaded "{self.__class__.__name__}" state ({self.state_metric_name} = {self.best})'
+        log_msg(
+            f'\tLoaded "{self.__class__.__name__}" state ({self.state_metric_name} = {self.best})'
         )

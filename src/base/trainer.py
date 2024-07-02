@@ -1,6 +1,9 @@
 import gc
+import logging
 import random
+from abc import abstractmethod
 
+import numpy as np
 import torch
 import torch.distributed as dist
 from torch.utils.data import DataLoader
@@ -8,15 +11,17 @@ from torch.utils.data.distributed import DistributedSampler
 from tqdm.auto import tqdm
 
 from src.logger.loggers import Loggers, Status
-from src.logger.pylogger import log, log_breaking_point, logged_tqdm
-from src.utils.training import get_device_and_id
+from src.logger.pylogger import log, log_breaking_point, log_msg, remove_last_logged_line
+from src.utils.training import get_device_and_id, is_main_process
 from src.utils.types import _accelerator, _stage
+from src.utils.utils import colorstr
 
 from .callbacks import BaseCallback, Callbacks
 from .datamodule import DataModule
 from .meters import Meters
 from .module import BaseModule
 from .storage import MetricsStorage, SystemMonitoringStorage
+from .validator import BaseValidator
 
 # TODO:
 # fix compile + DDP
@@ -33,6 +38,7 @@ from .storage import MetricsStorage, SystemMonitoringStorage
 class Trainer:
     module: BaseModule
     datamodule: DataModule
+    validator: BaseValidator | None
 
     def __init__(
         self,
@@ -65,11 +71,37 @@ class Trainer:
         self.validation_metrics = MetricsStorage(name="LogStep")  # validation metrics
         self.system_monitoring = SystemMonitoringStorage()
         self.half_precision = half_precision
-        self.results = []
+        self.val_results = []
 
     @property
     def map_location(self) -> dict[str, str]:
         return {"cuda:0": self.device}
+
+    def warmup_lr(self, batch_idx: int, dataloader: DataLoader):
+        for name in self.module.optimizers:
+            _lr_scheduler = self.module._lr_schedulers[name]
+            _optimizer = self.module._optimizers[name]
+            warmup_epochs = _lr_scheduler["warmup_epochs"]
+            warmup_start_bias_lr = _lr_scheduler["warmup_start_bias_lr"]
+            warmup_start_momentum = _lr_scheduler["warmup_start_momentum"]
+            warmup_end_lr = _optimizer["params"]["lr"]
+            warmup_end_momentum = _optimizer["params"].get("momentum", None)
+            num_batches = len(dataloader)
+            num_warmup_iters = (
+                max(round(warmup_epochs * num_batches), 100) if warmup_epochs > 0 else -1
+            )
+            num_iter = batch_idx + num_batches * self.current_epoch
+            if num_iter <= num_warmup_iters:
+                xi = [0, num_warmup_iters]  # x interp
+                optimizer = self.module.optimizers["optim"]
+                for j, x in enumerate(optimizer.param_groups):
+                    # Bias lr falls from 0.1 to lr0, all other lrs rise from 0.0 to lr0
+                    warmup_start_lr = warmup_start_bias_lr if j == 0 else 0.0
+                    x["lr"] = np.interp(num_iter, xi, [warmup_start_lr, warmup_end_lr]).item()
+                    if "momentum" in x:
+                        x["momentum"] = np.interp(
+                            num_iter, xi, [warmup_start_momentum, warmup_end_momentum]
+                        ).item()
 
     def get_limit_batches(self, dataloader: DataLoader) -> int:
         if self._limit_batches <= 0:
@@ -81,15 +113,31 @@ class Trainer:
             storage = self.validation_metrics
         else:
             storage = self.epochs_metrics
+        # Optimizers metrics (LR and momentum)
         if "train" in stages:
-            metrics = {
-                f"{name}_LR": optimizer.param_groups[0]["lr"]
-                for name, optimizer in self.module.optimizers.items()
-            }
-            metrics["epoch"] = self.current_epoch
-            metrics["step"] = self.current_step
-            self.logger.log_metrics(metrics, self.current_epoch)
-            storage.append(metrics, self.current_step, self.current_epoch, split="train")
+            # for i, param_group in enumerate(optimizer.param_groups)
+            optims_pg_metrics = [
+                {"epoch": self.current_epoch, "step": self.current_step} for _ in range(3)
+            ]
+            for name, optimizer in self.module.optimizers.items():
+                for i, param_group in enumerate(optimizer.param_groups):
+                    optims_pg_metrics[i][f"{name}_LR"] = param_group["lr"]
+                    if "momentum" in param_group:
+                        optims_pg_metrics[i][f"{name}_momentum"] = param_group["momentum"]
+
+            for i, metrics in enumerate(optims_pg_metrics):
+                self.logger.log_metrics(metrics, self.current_epoch)
+                storage.append(metrics, self.current_step, self.current_epoch, split=f"pg_{i}")
+
+            # metrics = {
+            #     f"{name}_LR": optimizer.param_groups[0]["lr"]
+            #     for name, optimizer in self.module.optimizers.items()
+            # }
+            # metrics["epoch"] = self.current_epoch
+            # metrics["step"] = self.current_step
+            # self.logger.log_metrics(metrics, self.current_epoch)
+            # storage.append(metrics, self.current_step, self.current_epoch, split="train")
+
         for stage in stages:
             metrics = self.meters[stage].to_dict()
             storage.append(metrics, self.current_step, self.current_epoch, stage)
@@ -102,58 +150,38 @@ class Trainer:
 
         meters = self.meters[stage]
         meters.reset()
-        limit_batches = self.get_limit_batches(dataloader)
-
-        random_idx = random.randint(0, limit_batches - 1)
 
         if sanity:
             limit_batches = 10
             random_idx = 0
+        else:
+            limit_batches = self.get_limit_batches(dataloader)
+            random_idx = random.randint(0, limit_batches - 1)
 
-        def fn(
-            batch,
-            batch_idx: int,
-            random_idx: int,
-            meters: Meters,
-            limit_batches: int,
-            stage: str,
-            trainer: "Trainer",
-        ):
-            is_break = limit_batches == 0
-            if is_break:
-                return {}, is_break
-            val_metrics, val_results = trainer.module._validation_step(
-                batch, batch_idx, stage=stage
-            )
+        tqdm_iter = tqdm(dataloader, leave=True, desc=stage, ncols=100, total=limit_batches)
+
+        for idx, batch in enumerate(tqdm_iter):
+            self.logger.file_log.info(str(tqdm_iter))
+            if limit_batches == 0:
+                break
+            with torch.no_grad():
+                val_metrics, val_results = self.module._validation_step(batch, idx, stage=stage)
             meters.update(val_metrics, self.datamodule.batch_size)
 
-            if batch_idx == random_idx and not sanity:
-                self.results.extend(val_results)
-            trainer.callbacks.on_step_end(self)
-            batch_idx += 1
-            limit_batches -= 1
-            kwargs = dict(
-                batch_idx=batch_idx,
-                random_idx=random_idx,
-                meters=meters,
-                limit_batches=limit_batches,
-                stage=stage,
-                trainer=trainer,
-            )
-            return kwargs, is_break
+            if self.validator is not None and not sanity:
+                self.validator.update_results(val_results)
 
-        with torch.no_grad():
-            kwargs = dict(
-                batch_idx=0,
-                random_idx=random_idx,
-                meters=meters,
-                limit_batches=limit_batches,
-                stage=stage,
-                trainer=self,
-            )
-            tqdm_iter = tqdm(dataloader, leave=True, desc=stage, ncols=100, total=limit_batches)
-            logged_tqdm(self.logger.file_log, tqdm_iter, fn, kwargs)
-            meters.all_reduce()
+            if idx == random_idx and not sanity:
+                self.val_results.extend(val_results)
+            self.callbacks.on_step_end(self)
+            limit_batches -= 1
+            remove_last_logged_line(self.logger.file_log)
+        self.logger.file_log.info(str(tqdm_iter))
+        if self.validator is not None and is_main_process():
+            validator_metrics = self.validator.evaluate()
+            meters.update(validator_metrics, 1, use_DDP=False)
+
+        meters.all_reduce()
 
     def sanity_check(self, dataloader: DataLoader):
         """Run sanity check"""
@@ -165,34 +193,20 @@ class Trainer:
         meters.reset()
         limit_batches = self.get_limit_batches(train_dataloader)
 
-        def fn(
-            batch,
-            batch_idx: int,
-            limit_batches: int,
-            meters: Meters,
-            trainer: "Trainer",
-        ):
-            is_break = limit_batches == 0
-            if is_break:
-                return {}, is_break
-            train_metrics = trainer.module._training_step(batch, batch_idx)
-            meters.update(train_metrics, self.datamodule.batch_size)
-            trainer.callbacks.on_step_end(self)
-            trainer.current_step += 1
-            trainer.module.set_attributes(current_step=trainer.current_step)
-            batch_idx += 1
-            limit_batches -= 1
-            kwargs = dict(
-                batch_idx=batch_idx,
-                limit_batches=limit_batches,
-                meters=meters,
-                trainer=trainer,
-            )
-            return kwargs, is_break
-
-        kwargs = dict(batch_idx=0, limit_batches=limit_batches, meters=meters, trainer=self)
         tqdm_iter = tqdm(train_dataloader, leave=True, desc="Train", ncols=100, total=limit_batches)
-        logged_tqdm(self.logger.file_log, tqdm_iter, fn, kwargs)
+        for idx, batch in enumerate(tqdm_iter):
+            self.warmup_lr(idx, train_dataloader)
+            self.logger.file_log.info(str(tqdm_iter))
+            if limit_batches == 0:
+                break
+            train_metrics = self.module._training_step(batch, idx)
+            meters.update(train_metrics, self.datamodule.batch_size)
+            self.callbacks.on_step_end(self)
+            self.current_step += 1
+            self.module.set_attributes(current_step=self.current_step)
+            limit_batches -= 1
+            remove_last_logged_line(self.logger.file_log)
+        self.logger.file_log.info(str(tqdm_iter))
         meters.all_reduce()
 
     def _wait_for_all_workers(self):
@@ -206,9 +220,21 @@ class Trainer:
         self,
         module: BaseModule,
         datamodule: DataModule,
+        validator: BaseValidator | None = None,
         pretrained_ckpt_path: str | None = None,
         ckpt_path: str | None = None,
     ):
+        log_msg(colorstr("Setting up Trainer"))
+        datamodule.setup_dataloaders()
+        train_dataloader = datamodule.train_dataloader
+        val_dataloader = datamodule.val_dataloader
+
+        log_msg(
+            "Dataloaders utilisation (per GPU):\n"
+            f"\tTrain: {self.get_limit_batches(train_dataloader)}/{len(train_dataloader)} batches\n"
+            f"\tVal  : {self.get_limit_batches(val_dataloader)}/{len(val_dataloader)}  batches"
+        )
+
         module.pass_attributes(
             device_id=self.device_id,
             device=self.device,
@@ -229,9 +255,12 @@ class Trainer:
 
         module.model.init_weights()
         if pretrained_ckpt_path is None:
-            log.warn("..Skipping pretrained weights loading (pretrained_ckpt_path is None)..")
+            log_msg(
+                "-> Skipping pretrained weights loading (pretrained_ckpt_path is None)",
+                logging.WARN,
+            )
         else:
-            log.info(f"..Loading pretrained checkpoint (from '{pretrained_ckpt_path}')..")
+            log_msg(f"Loading pretrained checkpoint (from '{pretrained_ckpt_path}')")
             pretrained_ckpt = torch.load(pretrained_ckpt_path, map_location=self.map_location)
             # NOTE: its trainer ckpt, so we need to extract model state from it
             if "module" in pretrained_ckpt:
@@ -239,36 +268,33 @@ class Trainer:
             module.model.init_pretrained_weights(pretrained_ckpt)
 
         if datamodule.batch_size < 1:
-            log.exception("Batch size must be greater than 0")
-        datamodule.setup_dataloaders()
-        train_dataloader = datamodule.train_dataloader
-        val_dataloader = datamodule.val_dataloader
+            e = ValueError("Batch size must be greater than 0")
+            log_msg(str(e), logging.ERROR)
+            raise e
 
-        log.info(
-            "Dataloaders utilisation (per GPU):\n"
-            f"  Train: {self.get_limit_batches(train_dataloader)}/{len(train_dataloader)} batches\n"
-            f"  Val  : {self.get_limit_batches(val_dataloader)}/{len(val_dataloader)}  batches"
-        )
+        if self.half_precision:
+            log_msg("-> Using half precision (autocast to float16)")
 
         self.module = module
         self.datamodule = datamodule
+        self.validator = self.get_validator()
         self.module.set_optimizers()
         if ckpt_path is not None:
             self.load_checkpoint(ckpt_path)
 
+        self.callbacks.on_fit_start(self)
+
         if self.use_DDP:
-            self.module.model.to_DDP(self.device_id, self.sync_batchnorm)
             if self.use_compile:
                 self.module.model.compile()
+            self.module.model.to_DDP(self.device_id, self.sync_batchnorm)
 
         self.module.set_attributes(current_step=self.current_step)
-
-        self.callbacks.on_fit_start(self)
 
         if self.run_sanity_check:
             self.sanity_check(val_dataloader)
 
-        self._wait_for_all_workers()
+        # self._wait_for_all_workers()
         if ckpt_path is None:
             msg = "<<<  Training started  >>>"
         else:
@@ -292,22 +318,24 @@ class Trainer:
                 self.single_epoch(train_dataloader)
                 self.evaluate(val_dataloader, stage="val")
                 self._update_metrics(stages=["train", "val"])
-                self._wait_for_all_workers()
+                # self._wait_for_all_workers()
                 self.module.on_epoch_end()
                 self.callbacks.on_epoch_end(self)
-                self._wait_for_all_workers()
-                self.results.clear()
-                gc.collect()
-                torch.cuda.empty_cache()
+                # self._wait_for_all_workers()
+                self.val_results.clear()
                 log_breaking_point(
                     f"<<<  Epoch {epoch} finished  >>>", n_bottom=1, worker=0, bottom_char="="
                 )
         except KeyboardInterrupt as e:
-            log.error(str(e) + "KeyboardInterrupt")
+            log_msg(str(e) + "KeyboardInterrupt", logging.ERROR)
             self.callbacks.on_failure(self, Status.KILLED)
             self.logger.finalize(Status.KILLED)
+            gc.collect()
+            torch.cuda.empty_cache()
             raise e
         self.logger.finalize(status=Status.FINISHED)
+        gc.collect()
+        torch.cuda.empty_cache()
 
     def stop(self, status: Status = Status.STOPPED):
         ckpt_dir = self.logger.loggers[0].ckpt_dir
@@ -316,7 +344,7 @@ class Trainer:
         self.logger.finalize(status)
 
     def load_checkpoint(self, ckpt_path: str):
-        log.info(f"..Loading checkpoint from '{ckpt_path}'..")
+        log_msg(f"->\tLoading checkpoint from '{ckpt_path}'")
         ckpt_state = torch.load(ckpt_path, map_location=self.map_location)
         self.epochs_metrics.load_state_dict(ckpt_state["metrics"]["steps"])
         self.validation_metrics.load_state_dict(ckpt_state["metrics"]["validation"])
@@ -326,13 +354,13 @@ class Trainer:
         step, epoch = ckpt_state["step"], ckpt_state["epoch"]
         self.current_step = step
         self.current_epoch = epoch + 1
-        log.info(f"     Loaded current_step ({step}) and current_epoch ({epoch}) state")
+        log_msg(f"\tLoaded current_step ({step}) and current_epoch ({epoch}) state")
 
     def save_checkpoint(self, ckpt_path: str):
         if self.device_id != 0:  # save only for cuda:0 (DDP)
             return
-        log.info(
-            f"Saving checkpoint (epoch={self.current_epoch}, step={self.current_step}) to '{ckpt_path}'"
+        log_msg(
+            f"->Saving checkpoint (epoch={self.current_epoch}, step={self.current_step}) to '{ckpt_path}'"
         )
         module_state = self.module.state_dict()
         datamodule_state = self.datamodule.state_dict()
@@ -353,3 +381,7 @@ class Trainer:
             "step": self.current_step,
         }
         torch.save(ckpt_state, ckpt_path)
+
+    @abstractmethod
+    def get_validator(self) -> BaseValidator:
+        raise NotImplementedError()

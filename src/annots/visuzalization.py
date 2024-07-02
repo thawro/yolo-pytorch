@@ -21,9 +21,12 @@ def plot_boxes(
     classes: list[str] | np.ndarray | None,
     classes_ids: list[int] | np.ndarray | None,
     conf: list[float] | np.ndarray | None = None,
+    # label_fmt: str = "<label_id>: <conf>",
 ) -> np.ndarray:
     num_objects = len(boxes_xyxy)
     boxes_image = image.copy()
+    size = max(image.shape[:2])
+    thickness = round(int(0.4 * 1 / 100 * size))
     for idx in range(num_objects):
         label_id, label = "", ""
         if classes_ids is not None:
@@ -37,8 +40,9 @@ def plot_boxes(
         xmin, ymin, xmax, ymax = boxes_xyxy[idx]
         pt1 = int(xmin), int(ymin)
         pt2 = int(xmax), int(ymax)
-        cv2.rectangle(boxes_image, pt1, pt2, color=color, thickness=3)
-        info = f"{label}"
+        cv2.rectangle(boxes_image, pt1, pt2, color=color, thickness=thickness)
+        # info = f"{label}"
+        info = f"{label_id}"
         if conf is not None:
             info += f" {conf[idx]:.2f}"
 
